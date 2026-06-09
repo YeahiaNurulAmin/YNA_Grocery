@@ -103,7 +103,7 @@ const Seller = () => {
         // Seed existing orders as "seen" on first load so we only notify about NEW ones
         axios.get("/api/order/seller").then(({ data }) => {
             if (data.success) addSeenIds(data.orders.map(o => o._id));
-        }).catch(() => {});
+        }).catch(() => { });
 
         pollingRef.current = setInterval(checkForNewOrders, 15000);
         return () => clearInterval(pollingRef.current);

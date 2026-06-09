@@ -101,13 +101,13 @@ const EditProduct = () => {
     };
 
     return (
-        <div className="no-scrollbar overflow-y-scroll py-6 md:py-10 flex flex-col justify-between bg-white">
+        <div className="no-scrollbar overflow-y-scroll py-6 md:py-10 flex flex-col justify-between bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100">
             <form
                 onSubmit={submitHandler}
                 className="lg:p-10 md:p-6 p-4 space-y-4 md:space-y-5 max-w-lg w-full">
                 {isLoading ? (
                     <div className="flex items-center justify-center py-10">
-                        <p className="text-gray-600">Loading product...</p>
+                        <p className="text-gray-600 dark:text-slate-400">Loading product...</p>
                     </div>
                 ) : (
                     <>
@@ -144,13 +144,13 @@ const EditProduct = () => {
                                                             productData.images[index],
                                                         )}
                                                         alt=""
-                                                        className="w-full h-full object-cover rounded"
+                                                        className="w-full h-full object-cover rounded border dark:border-slate-700"
                                                     />
                                                 ) : productData.existingImages[index] ? (
                                                     <img
                                                         src={productData.existingImages[index]}
                                                         alt=""
-                                                        className="w-full h-full object-cover rounded"
+                                                        className="w-full h-full object-cover rounded border dark:border-slate-700"
                                                     />
                                                 ) : (
                                                     <div className="w-full h-full flex items-center justify-center border-2 border-dashed border-primary/50 rounded-lg bg-primary/5 cursor-pointer hover:bg-primary/10 hover:border-primary transition-all text-primary/60">
@@ -191,7 +191,7 @@ const EditProduct = () => {
                             })
                         }
                         placeholder="Type here"
-                        className="outline-none py-2 md:py-2.5 px-3 rounded border border-gray-500/40 text-sm"
+                        className="outline-none py-2 md:py-2.5 px-3 rounded border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:border-primary transition-colors text-sm"
                         required
                     />
                 </div>
@@ -211,7 +211,7 @@ const EditProduct = () => {
                                 description: e.target.value,
                             })
                         }
-                        className="outline-none py-2 md:py-2.5 px-3 rounded border border-gray-500/40 resize-none text-sm"
+                        className="outline-none py-2 md:py-2.5 px-3 rounded border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:border-primary transition-colors resize-none text-sm"
                         placeholder="Type here"></textarea>
                 </div>
                 <div className="w-full flex flex-col gap-1">
@@ -227,10 +227,10 @@ const EditProduct = () => {
                                 category: e.target.value,
                             })
                         }
-                        className="outline-none py-2 md:py-2.5 px-3 rounded border border-gray-500/40 text-sm">
+                        className="outline-none py-2 md:py-2.5 px-3 rounded border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:border-primary transition-colors text-sm">
                         <option value="">Select Category</option>
                         {categories.map((item, index) => (
-                            <option key={index} value={item.text}>
+                            <option key={index} value={item.text} className="bg-white dark:bg-slate-800">
                                 {item.text}
                             </option>
                         ))}
@@ -254,7 +254,7 @@ const EditProduct = () => {
                                 })
                             }
                             placeholder="0"
-                            className="outline-none py-2 md:py-2.5 px-3 rounded border border-gray-500/40 text-sm"
+                            className="outline-none py-2 md:py-2.5 px-3 rounded border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:border-primary transition-colors text-sm"
                             required
                         />
                     </div>
@@ -275,7 +275,7 @@ const EditProduct = () => {
                                 })
                             }
                             placeholder="0"
-                            className="outline-none py-2 md:py-2.5 px-3 rounded border border-gray-500/40 text-sm"
+                            className="outline-none py-2 md:py-2.5 px-3 rounded border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:border-primary transition-colors text-sm"
                             required
                         />
                     </div>
@@ -290,7 +290,7 @@ const EditProduct = () => {
                             <button
                                 type="button"
                                 onClick={() => navigate("/seller/products")}
-                                className="w-full sm:w-40 py-2 md:py-3 px-4 rounded-lg bg-gray-300 hover:bg-gray-400 text-gray-800 text-sm md:text-base font-medium transition-all duration-200">
+                                className="w-full sm:w-40 py-2 md:py-3 px-4 rounded-lg bg-gray-300 dark:bg-slate-700 hover:bg-gray-400 dark:hover:bg-slate-600 text-gray-800 dark:text-slate-200 text-sm md:text-base font-medium transition-all duration-200">
                                 CANCEL
                             </button>
                         </div>

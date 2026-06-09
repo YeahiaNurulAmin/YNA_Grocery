@@ -11,6 +11,7 @@ import productRouter from "./routes/productRoute.js";
 import cartRoute from "./routes/cartRoute.js";
 import addressRoute from "./routes/addressRoute.js";
 import orderRouter from "./routes/orderRoute.js";
+import couponRouter from "./routes/couponRoute.js";
 import { verifyPayment } from "./controllers/orderController.js";
 
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
@@ -75,8 +76,10 @@ app.use("/api/cart", cartRoute);
 app.use("/api/address", addressRoute);  
 // Order Routes
 app.use("/api/order", orderRouter);
+// Coupon Routes
+app.use("/api/coupons", couponRouter);
 
-// Trigger restart 2
+// Trigger restart 5 - restore srv URI
 app.listen(port, () => {
     console.log(`Server running on port ${port}`);
     

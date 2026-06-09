@@ -17,6 +17,7 @@ import AddProduct from './pages/seller/AddProduct'
 import ProductsList from './pages/seller/ProductsList'
 import OrdersList from './pages/seller/OrdersList'
 import OrderHistory from './pages/seller/OrderHistory'
+import Coupons from './pages/seller/Coupons'
 import EditProduct from './pages/seller/EditProduct'
 import LoadingPage from './pages/seller/LoadingPage'
 
@@ -46,6 +47,7 @@ const App = () => {
             <Route path='products' element={isSeller && <ProductsList />} />
             <Route path='orders' element={isSeller && <OrdersList />} />
             <Route path='history' element={isSeller && <OrderHistory />} />
+            <Route path='coupons' element={isSeller && <Coupons />} />
             <Route path='update-product/:id' element={isSeller && <EditProduct />} />
           </Route>
 

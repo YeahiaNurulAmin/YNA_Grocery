@@ -16,6 +16,7 @@ import SellerLogin from './components/seller/SellerLogin'
 import AddProduct from './pages/seller/AddProduct'
 import ProductsList from './pages/seller/ProductsList'
 import OrdersList from './pages/seller/OrdersList'
+import OrderHistory from './pages/seller/OrderHistory'
 import EditProduct from './pages/seller/EditProduct'
 import LoadingPage from './pages/seller/LoadingPage'
 
@@ -44,6 +45,7 @@ const App = () => {
             <Route index element={isSeller && <AddProduct />} />
             <Route path='products' element={isSeller && <ProductsList />} />
             <Route path='orders' element={isSeller && <OrdersList />} />
+            <Route path='history' element={isSeller && <OrderHistory />} />
             <Route path='update-product/:id' element={isSeller && <EditProduct />} />
           </Route>
 

@@ -16,7 +16,7 @@ export const AppContextProvider = ({ children }) => {
     const navigate = useNavigate();
     // States
     const [user, setUser] = useState(null);
-    const [isSeller, setIsSeller] = useState(false);
+    const [isSeller, setIsSeller] = useState(true);
     const [showUserLogin, setShowUserLogin] = useState(false);
     const [products, setProducts] = useState([]);
     const [cartItems, setCartItems] = useState({});
@@ -35,7 +35,7 @@ export const AppContextProvider = ({ children }) => {
             console.log("Error fetching seller status:", error);
         }
     };
-    
+
 
     // Fetch user auth status
     const fetchUser = async () => {
@@ -43,7 +43,7 @@ export const AppContextProvider = ({ children }) => {
             const { data } = await axios.get("/api/users/is-auth");
 
             console.log("User auth response:", data);
-            
+
             if (data.success) {
                 setUser(data.user);
                 setCartItems(data.cartItems || {});
@@ -52,7 +52,7 @@ export const AppContextProvider = ({ children }) => {
                 setCartItems({});
             }
         } catch (error) {
-            
+
             console.error("Error in fetchUser", error);
             setCartItems({});
         }
@@ -81,7 +81,7 @@ export const AppContextProvider = ({ children }) => {
         let itemData = structuredClone(cartItems);
 
         console.log("Adding to cart:", itemID);
-        
+
         if (itemData[itemID]) {
             console.log("Item already in cart, incrementing quantity");
             itemData[itemID] += 1;
@@ -140,7 +140,7 @@ export const AppContextProvider = ({ children }) => {
         fetchSellerStatus();
         fetchUser();
     }, []);
-// Update cart in the database
+    // Update cart in the database
     useEffect(() => {
         const updateCartInDB = async () => {
             try {
@@ -159,7 +159,7 @@ export const AppContextProvider = ({ children }) => {
             updateCartInDB();
         }
     }, [cartItems]);
-    
+
 
     const value = {
         navigate,

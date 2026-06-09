@@ -11,6 +11,15 @@ const Seller = () => {
         { name: "Add Product", path: "/seller", icon: <img src={assets.add_icon} alt="add_icon" className="w-6 h-6" /> },
         { name: "Products", path: "/seller/products", icon: <img src={assets.product_list_icon} alt="product_list_icon" className="w-6 h-6" /> },
         { name: "Orders", path: "/seller/orders", icon: <img src={assets.order_icon} alt="order_icon" className="w-6 h-6" /> },
+        { 
+            name: "History", 
+            path: "/seller/history", 
+            icon: (
+                <svg className="w-6 h-6 text-current" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
+                </svg>
+            )
+        },
     ];
 
     const logoutHandler = async () => {

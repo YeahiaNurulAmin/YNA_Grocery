@@ -28,10 +28,7 @@ await connectCloudinary();
 const port = process.env.PORT || 4000;
 
 // Allow multiple origins from a comma-separated environment variable
-const allowedOrigins = process.env.ALLOWED_ORIGINS
-    ?.split(",")
-    .map((origin) => origin.trim())
-    .filter(Boolean) || [];
+const allowedOrigins = process.env.ALLOWED_ORIGINS || "http://localhost:5173";
 
 // Middlewares - Apply CORS first
 app.use(cors({

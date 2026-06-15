@@ -16,7 +16,7 @@
             "src": "/api/(.*)",
             "methods": ["OPTIONS"],
             "headers": {
-                "Access-Control-Allow-Origin": "https://yna-grocery.vercel.app",
+                "Access-Control-Allow-Origin": "https://yna-grocery-liart.vercel.app",
                 "Access-Control-Allow-Methods": "GET, POST, PUT, DELETE, PATCH, OPTIONS",
                 "Access-Control-Allow-Headers": "Content-Type, Authorization",
                 "Access-Control-Allow-Credentials": "true",
@@ -27,7 +27,7 @@
         {
             "src": "/(.*)",
             "headers": {
-                "Access-Control-Allow-Origin": "https://yna-grocery.vercel.app",
+                "Access-Control-Allow-Origin": "https://yna-grocery-liart.vercel.app",
                 "Access-Control-Allow-Credentials": "true"
             },
             "dest": "server.js"

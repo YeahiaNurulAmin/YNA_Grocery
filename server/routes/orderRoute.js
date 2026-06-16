@@ -1,5 +1,6 @@
 import express from "express";
 import authUser from "../middlewares/authUser.js";
+import authSeller from "../middlewares/authSeller.js";
 import { getAllOrders, getOrdersByUserId, placeOrderCOD, placeOrderOnline, updateOrderStatus } from "../controllers/orderController.js";
 
 const orderRouter = express.Router();
@@ -11,8 +12,8 @@ orderRouter.post("/online", authUser, placeOrderOnline);
 // Get Orders by User ID: /api/order/user
 orderRouter.get("/user", authUser, getOrdersByUserId);
 // Get all orders (for seller / admin): /api/order/seller
-orderRouter.get("/seller", authUser, getAllOrders);
+orderRouter.get("/seller", authSeller, getAllOrders);
 // Update Order Status: /api/order/status
-orderRouter.post("/status", authUser, updateOrderStatus);
+orderRouter.post("/status", authSeller, updateOrderStatus);
 
 export default orderRouter;

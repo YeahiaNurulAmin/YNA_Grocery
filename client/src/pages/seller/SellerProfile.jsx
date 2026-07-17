@@ -8,7 +8,7 @@ import { User } from "lucide-react";
 const SellerProfile = () => (
   <div className="animate-fade-in max-w-xl">
     <SectionHeader eyebrow="Account" title="Profile" subtitle="Seller admin identity for this store." />
-    <Card className="!p-6">
+    <Card className="p-6!">
       <div className="flex items-center gap-4 mb-6">
         <div className="w-16 h-16 rounded-[20px] bg-primary/15 text-primary flex items-center justify-center">
           <User className="w-7 h-7" />

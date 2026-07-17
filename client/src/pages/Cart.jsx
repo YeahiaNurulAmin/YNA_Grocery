@@ -14,8 +14,11 @@ const Cart = () => {
     cartItems,
     setCartItems,
     products,
+    productsLoading,
+    productsError,
     navigate,
     removeFromCart,
+    clearFromCart,
     updateCartItem,
     user,
     axios,
@@ -88,7 +91,10 @@ const Cart = () => {
     for (let itemID in cartItems) {
       const foundProduct = products.find((product) => product._id === itemID);
       if (foundProduct) {
-        totalPrice += (foundProduct.offerPrice || foundProduct.price) * cartItems[itemID];
+        const offer = Number(foundProduct.offerPrice) || 0;
+        const price = Number(foundProduct.price) || 0;
+        const unit = offer > 0 && offer < price ? offer : price;
+        totalPrice += unit * cartItems[itemID];
       }
     }
     setItemsPrice(totalPrice);
@@ -135,7 +141,7 @@ const Cart = () => {
 
   const hasItemsInCart = cartItems && Object.keys(cartItems).length > 0;
 
-  if (!(products?.length > 0 && hasItemsInCart)) {
+  if (!hasItemsInCart) {
     return (
       <div className="py-16 mb-nav">
         <EmptyState
@@ -145,6 +151,31 @@ const Cart = () => {
           action={
             <Button onClick={() => navigate("/products")}>
               <ArrowLeft className="w-4 h-4" /> Continue Shopping
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
+
+  if (productsLoading) {
+    return (
+      <div className="py-16 mb-nav text-center text-sm text-text-secondary">
+        Loading your cart…
+      </div>
+    );
+  }
+
+  if (productsError) {
+    return (
+      <div className="py-16 mb-nav">
+        <EmptyState
+          icon={ShoppingBag}
+          title="Couldn’t load cart products"
+          description={productsError}
+          action={
+            <Button onClick={() => window.location.reload()}>
+              Try again
             </Button>
           }
         />
@@ -168,9 +199,11 @@ const Cart = () => {
           <div className="space-y-3">
             {cartArray.map((product) => {
               const img = product.images?.[0] || product.image?.[0];
-              const unit = product.offerPrice || product.price;
+              const offer = Number(product.offerPrice) || 0;
+              const price = Number(product.price) || 0;
+              const unit = offer > 0 && offer < price ? offer : price;
               return (
-                <Card key={product._id} className="!p-4" hover={false}>
+                <Card key={product._id} className="p-4!" hover={false}>
                   <div className="flex gap-4 items-center">
                     <button
                       type="button"
@@ -198,9 +231,9 @@ const Cart = () => {
                     <div className="flex flex-col items-end gap-3 shrink-0">
                       <button
                         type="button"
-                        onClick={() => removeFromCart(product._id)}
+                        onClick={() => clearFromCart(product._id)}
                         className="text-text-tertiary hover:text-error transition-colors cursor-pointer"
-                        aria-label={`Remove ${product.name}`}
+                        aria-label={`Remove ${product.name} from cart`}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -208,6 +241,7 @@ const Cart = () => {
                         <button
                           type="button"
                           className="w-8 h-full flex items-center justify-center text-primary cursor-pointer"
+                          aria-label={`Decrease quantity of ${product.name}`}
                           onClick={() => {
                             if (product.quantity <= 1) removeFromCart(product._id);
                             else updateCartItem(product._id, product.quantity - 1);
@@ -219,6 +253,7 @@ const Cart = () => {
                         <button
                           type="button"
                           className="w-8 h-full flex items-center justify-center text-primary cursor-pointer"
+                          aria-label={`Increase quantity of ${product.name}`}
                           onClick={() => {
                             const max = product.stockQuantity < 9 ? product.stockQuantity : 9;
                             if (product.quantity < max) updateCartItem(product._id, product.quantity + 1);
@@ -245,7 +280,7 @@ const Cart = () => {
 
         {/* Sticky summary */}
         <aside className="lg:w-[380px] shrink-0">
-          <Card className="lg:sticky lg:top-24 !p-6 space-y-5">
+          <Card className="lg:sticky lg:top-24 p-6! space-y-5">
             <h2 className="font-heading text-lg font-bold text-text-primary">Order Summary</h2>
 
             <div>

@@ -27,7 +27,7 @@ const FAQ = () => {
       />
       <div className="space-y-3">
         {faqs.map((item, i) => (
-          <Card key={i} className="!p-0 overflow-hidden" padding={false}>
+          <Card key={i} className="p-0! overflow-hidden" padding={false}>
             <button
               type="button"
               onClick={() => setOpen(open === i ? -1 : i)}

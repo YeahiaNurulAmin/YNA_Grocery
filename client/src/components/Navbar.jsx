@@ -21,6 +21,7 @@ const Navbar = () => {
     setShowUserLogin,
     navigate,
     cartItems,
+    setCartItems,
     searchQuery,
     setSearchQuery,
     axios,
@@ -33,6 +34,7 @@ const Navbar = () => {
       const { data } = await axios.get("/api/users/logout");
       if (data.success) {
         toast.success(data.message);
+        setCartItems({});
         setUser(null);
         navigate("/");
       } else {

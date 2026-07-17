@@ -134,7 +134,6 @@ There is no separate “admin” vs “seller” role — the seller dashboard g
 
 | Item | Status |
 |------|--------|
-| Contact page | Linked but no route/page |
 | Footer help links (FAQs, Delivery Info, etc.) | Placeholder `#` URLs |
 | Forgot password | UI only — not wired |
 | Newsletter Subscribe | UI only — no API |
@@ -185,18 +184,18 @@ Seller: /seller login → Add/Edit products → Manage stock
 | Token | Hex |
 |-------|-----|
 | White | `#ffffff` |
-| Cream | `#fafaf9` |
-| Light mint | `#e8f5e9` |
-| Soft peach | `#fff3e0` |
+| Cream | `#fafafa` |
+| Light mint | `#f0fdf4` |
+| Soft peach | `#fff7ed` |
 
 ### Backgrounds (dark mode)
 
 | Token | Hex |
 |-------|-----|
-| White (surface) | `#1e293b` |
-| Cream | `#0f172a` |
-| Light mint | `#1e3a29` |
-| Soft peach | `#2d1f0f` |
+| White (surface) | `#111827` |
+| Cream | `#030712` |
+| Light mint | `#052e1c` |
+| Soft peach | `#1c1008` |
 
 ---
 
@@ -204,7 +203,7 @@ Seller: /seller login → Add/Edit products → Manage stock
 
 | Token | Light | Dark |
 |-------|-------|------|
-| Primary | `#1e293b` | `#f1f5f9` |
+| Primary | `#0f172a` | `#f8fafc` |
 | Secondary | `#475569` | `#cbd5e1` |
 | Tertiary | `#64748b` | `#94a3b8` |
 | Placeholder | `#94a3b8` | `#64748b` |
@@ -213,11 +212,11 @@ Seller: /seller login → Add/Edit products → Manage stock
 
 | Token | Light | Dark |
 |-------|-------|------|
-| dark | `#1e293b` | `#f1f5f9` |
-| gray-800 | `#475569` | `#cbd5e1` |
+| dark | `#0f172a` | `#f8fafc` |
+| gray-800 | `#334155` | `#cbd5e1` |
 | gray-600 | `#64748b` | `#94a3b8` |
 | gray-400 | `#94a3b8` | `#475569` |
-| gray-300 | `#cbd5e1` | `#334155` |
+| gray-300 | `#e2e8f0` | `#334155` |
 | gray-100 | `#f8fafc` | `#1e293b` |
 
 ---
@@ -226,8 +225,8 @@ Seller: /seller login → Add/Edit products → Manage stock
 
 | Token | Light | Dark |
 |-------|-------|------|
-| Border | `#cbd5e1` | `#334155` |
-| Border light | `#e2e8f0` | `#1e293b` |
+| Border | `#e2e8f0` | `#1e293b` |
+| Border light | `#f1f5f9` | `#0f172a` |
 
 ---
 
@@ -267,7 +266,7 @@ Seller: /seller login → Add/Edit products → Manage stock
 | Footer | White → primary green gradient |
 | Overlays (modals) | Black at ~60% opacity |
 
-**Font:** Open Sans (global). Outfit is imported but not applied.
+**Font:** Inter body (`font-body`), Manrope headings (`font-heading`). Source of truth: `client/src/index.css`.
 
 ---
 

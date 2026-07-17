@@ -2,7 +2,7 @@
  * AllProducts — full catalog with advanced filtering, sorting, and search.
  * Route: /products. Uses ProductFilters (frontend-only; no API changes).
  */
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Package, SlidersHorizontal, ArrowUpDown, X } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 import ProductCard from "../components/ProductCard";
@@ -22,11 +22,16 @@ import {
 } from "../components/ui";
 import { categories } from "../assets/assets";
 
+const FOCUSABLE =
+  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 const AllProducts = () => {
-  const { products, searchQuery, setSearchQuery, currency } = useAppContext();
+  const { products, productsLoading, searchQuery, setSearchQuery, currency } = useAppContext();
   const [filters, setFilters] = useState({ ...DEFAULT_FILTERS });
   const [sort, setSort] = useState("featured");
   const [mobileOpen, setMobileOpen] = useState(false);
+  const drawerRef = useRef(null);
+  const previouslyFocusedRef = useRef(null);
 
   const priceBounds = useMemo(() => {
     if (!products.length) return { min: 0, max: 100 };
@@ -43,11 +48,16 @@ const AllProducts = () => {
   );
 
   const activeCount = countActiveFilters(filters);
-  const loading = products.length === 0;
+  const loading = productsLoading;
 
   const clearFilters = () => {
     setFilters({ ...DEFAULT_FILTERS });
     setSort("featured");
+  };
+
+  const resetFiltersAndSearch = () => {
+    clearFilters();
+    setSearchQuery("");
   };
 
   const removeCategory = (path) => {
@@ -57,11 +67,55 @@ const AllProducts = () => {
     }));
   };
 
+  const closeMobileFilters = () => setMobileOpen(false);
+
   // Lock body scroll when mobile filter drawer is open
   useEffect(() => {
     document.body.style.overflow = mobileOpen ? "hidden" : "";
     return () => {
       document.body.style.overflow = "";
+    };
+  }, [mobileOpen]);
+
+  // Modal focus management for mobile filter drawer
+  useEffect(() => {
+    if (!mobileOpen) return undefined;
+    previouslyFocusedRef.current = document.activeElement;
+    const root = drawerRef.current;
+    if (!root) return undefined;
+
+    const getFocusable = () =>
+      [...root.querySelectorAll(FOCUSABLE)].filter(
+        (el) => el.offsetParent !== null || el === document.activeElement
+      );
+
+    const focusables = getFocusable();
+    (focusables[0] || root).focus();
+
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        closeMobileFilters();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const els = getFocusable();
+      if (els.length === 0) return;
+      const first = els[0];
+      const last = els[els.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      previouslyFocusedRef.current?.focus?.();
     };
   }, [mobileOpen]);
 
@@ -257,7 +311,7 @@ const AllProducts = () => {
               title="No products match"
               description="Try clearing filters or adjusting price and category."
               action={
-                <Button variant="outline" onClick={clearFilters}>
+                <Button variant="outline" onClick={resetFiltersAndSearch}>
                   Reset filters
                 </Button>
               }
@@ -279,9 +333,16 @@ const AllProducts = () => {
             type="button"
             className="absolute inset-0 bg-black/40 backdrop-blur-sm cursor-pointer"
             aria-label="Close filters"
-            onClick={() => setMobileOpen(false)}
+            onClick={closeMobileFilters}
           />
-          <div className="absolute inset-y-0 right-0 w-full max-w-sm p-4 animate-slide-up overflow-y-auto">
+          <div
+            ref={drawerRef}
+            role="dialog"
+            aria-modal="true"
+            aria-label="Product filters"
+            tabIndex={-1}
+            className="absolute inset-y-0 right-0 w-full max-w-sm p-4 animate-slide-up overflow-y-auto outline-none"
+          >
             <ProductFilters
               filters={filters}
               setFilters={setFilters}
@@ -289,7 +350,7 @@ const AllProducts = () => {
               setSort={setSort}
               priceBounds={priceBounds}
               onClear={clearFilters}
-              onClose={() => setMobileOpen(false)}
+              onClose={closeMobileFilters}
             />
           </div>
         </div>

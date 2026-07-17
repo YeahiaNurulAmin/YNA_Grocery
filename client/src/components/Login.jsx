@@ -1,19 +1,66 @@
 /**
- * Login — auth modal for login / register / forgot-password UI.
- * Wired to existing /api/users/login and /api/users/register; forgot is UI-only.
+ * Login — auth modal for login / register; forgot-password reports unavailable (no reset API).
+ * Wired to existing /api/users/login and /api/users/register. Focus-managed dialog.
  */
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { X, Mail, Lock, User } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 import { Button, Input } from "./ui";
 import { YNALogo } from "../assets/YNALogo";
 import toast from "react-hot-toast";
 
+const FOCUSABLE =
+  'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
 const Login = () => {
   const [state, setState] = useState("login");
   const { setShowUserLogin, setUser, axios, navigate } = useAppContext();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const dialogRef = useRef(null);
+  const previouslyFocusedRef = useRef(null);
+
+  const close = () => setShowUserLogin(false);
+
+  useEffect(() => {
+    previouslyFocusedRef.current = document.activeElement;
+    const root = dialogRef.current;
+    if (!root) return undefined;
+
+    const getFocusable = () =>
+      [...root.querySelectorAll(FOCUSABLE)].filter(
+        (el) => el.offsetParent !== null || el === document.activeElement
+      );
+
+    const focusables = getFocusable();
+    (focusables[0] || root).focus();
+
+    const onKeyDown = (e) => {
+      if (e.key === "Escape") {
+        e.preventDefault();
+        close();
+        return;
+      }
+      if (e.key !== "Tab") return;
+      const els = getFocusable();
+      if (els.length === 0) return;
+      const first = els[0];
+      const last = els[els.length - 1];
+      if (e.shiftKey && document.activeElement === first) {
+        e.preventDefault();
+        last.focus();
+      } else if (!e.shiftKey && document.activeElement === last) {
+        e.preventDefault();
+        first.focus();
+      }
+    };
+
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      previouslyFocusedRef.current?.focus?.();
+    };
+  }, []);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -23,7 +70,7 @@ const Login = () => {
   const submitHandler = async (event) => {
     event.preventDefault();
     if (state === "forgot") {
-      toast.success("If an account exists, reset instructions were sent.");
+      toast.error("Password reset is not available yet. Please contact support.");
       setState("login");
       return;
     }
@@ -49,25 +96,27 @@ const Login = () => {
   const titles = {
     login: { h: "Welcome back", p: "Sign in to continue shopping" },
     register: { h: "Create account", p: "Join YNA Grocery in a minute" },
-    forgot: { h: "Reset password", p: "We'll send a reset link to your email" },
+    forgot: { h: "Reset password", p: "Password reset is not available yet" },
   };
 
   return (
     <div
       className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm p-4 animate-fade-in"
-      onClick={() => setShowUserLogin(false)}
+      onClick={close}
       role="dialog"
       aria-modal="true"
       aria-labelledby="auth-title"
     >
       <form
+        ref={dialogRef}
+        tabIndex={-1}
         onSubmit={submitHandler}
         onClick={(e) => e.stopPropagation()}
-        className="relative w-full max-w-md bg-bg-white border border-border rounded-[28px] shadow-xl px-7 py-9 animate-scale-in"
+        className="relative w-full max-w-md bg-bg-white border border-border rounded-[28px] shadow-xl px-7 py-9 animate-scale-in outline-none"
       >
         <button
           type="button"
-          onClick={() => setShowUserLogin(false)}
+          onClick={close}
           className="absolute top-4 right-4 w-9 h-9 rounded-[12px] flex items-center justify-center text-text-tertiary hover:bg-surface-muted cursor-pointer"
           aria-label="Close"
         >
@@ -139,7 +188,7 @@ const Login = () => {
         )}
 
         <Button type="submit" className="w-full mt-6" size="lg" loading={loading}>
-          {state === "login" ? "Sign in" : state === "register" ? "Create account" : "Send reset link"}
+          {state === "login" ? "Sign in" : state === "register" ? "Create account" : "Continue"}
         </Button>
 
         <p className="mt-5 text-center text-sm text-text-secondary">

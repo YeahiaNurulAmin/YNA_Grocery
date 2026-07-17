@@ -1,6 +1,6 @@
 /**
  * SellerLogin — seller/admin authentication gate for /seller routes.
- * Posts to /api/seller/login; signup toggle remains UI-only.
+ * Posts to /api/seller/login only (no signup toggle).
  */
 import { useState, useEffect } from "react";
 import { Mail, Lock } from "lucide-react";
@@ -11,9 +11,8 @@ import toast from "react-hot-toast";
 
 const SellerLogin = () => {
   const { isSeller, setIsSeller, navigate, axios } = useAppContext();
-  const [state, setState] = useState("login");
   const [loading, setLoading] = useState(false);
-  const [formData, setFormData] = useState({ name: "", email: "", password: "" });
+  const [formData, setFormData] = useState({ email: "", password: "" });
 
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
@@ -26,10 +25,6 @@ const SellerLogin = () => {
   const submitHandler = async (e) => {
     try {
       e.preventDefault();
-      if (state !== "login") {
-        toast.error("Seller signup is not available — use admin credentials.");
-        return;
-      }
       setLoading(true);
       const { data } = await axios.post("/api/seller/login", {
         email: formData.email,
@@ -43,7 +38,13 @@ const SellerLogin = () => {
         toast.error(data.message || "Login failed");
       }
     } catch (error) {
-      toast.error("An error occurred during login");
+      const status = error.response?.status;
+      const message = error.response?.data?.message;
+      if (status === 401 && message) {
+        toast.error(message);
+      } else {
+        toast.error(message || "An error occurred during login");
+      }
       console.log(error);
     } finally {
       setLoading(false);
@@ -98,17 +99,6 @@ const SellerLogin = () => {
         <Button type="submit" className="w-full mt-6" size="lg" loading={loading}>
           Sign in
         </Button>
-
-        <p className="text-center text-sm text-text-secondary mt-5">
-          {state === "login" ? "Need an account?" : "Have an account?"}{" "}
-          <button
-            type="button"
-            onClick={() => setState((prev) => (prev === "login" ? "register" : "login"))}
-            className="text-primary font-semibold cursor-pointer"
-          >
-            {state === "login" ? "Sign up" : "Sign in"}
-          </button>
-        </p>
       </form>
     </div>
   );

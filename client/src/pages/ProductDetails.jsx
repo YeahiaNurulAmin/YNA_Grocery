@@ -4,17 +4,20 @@
  */
 import React, { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
-import { Star, ShoppingBag, Zap } from "lucide-react";
+import { Star, ShoppingBag, Zap, Package } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 import ProductCard from "../components/ProductCard";
-import { Button, Badge, Card, SectionHeader } from "../components/ui";
+import { isValidOffer, getUnitPrice } from "../components/ProductFilters";
+import { Button, Badge, Card, SectionHeader, EmptyState, Skeleton } from "../components/ui";
+
+const firstProductImage = (p) => p?.images?.[0] || p?.image?.[0] || null;
 
 const ProductDetails = () => {
-  const { products, navigate, addToCart, currency } = useAppContext();
+  const { products, productsLoading, navigate, addToCart, currency } = useAppContext();
   const { id } = useParams();
-  const [product, setProduct] = React.useState(products.find((p) => p._id === id));
+  const [product, setProduct] = React.useState(() => products.find((p) => p._id === id));
   const [relatedProducts, setRelatedProducts] = React.useState([]);
-  const [thumbnail, setThumbnail] = React.useState(product?.images?.[0]);
+  const [thumbnail, setThumbnail] = React.useState(() => firstProductImage(product));
 
   useEffect(() => {
     const found = products.find((p) => p._id === id);
@@ -23,15 +26,46 @@ const ProductDetails = () => {
 
   useEffect(() => {
     if (!product) return;
-    setThumbnail(product.images?.[0] || null);
+    setThumbnail(firstProductImage(product));
     setRelatedProducts(
       products.filter((item) => item.category === product.category && item._id !== product._id).slice(0, 5)
     );
   }, [product, products]);
 
-  if (!product) return null;
+  if (productsLoading) {
+    return (
+      <div className="py-8 md:py-12 mb-nav animate-fade-in">
+        <div className="grid lg:grid-cols-2 gap-10">
+          <Skeleton className="aspect-square rounded-[24px]" />
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-2/3" />
+            <Skeleton className="h-6 w-1/3" />
+            <Skeleton className="h-24 w-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
 
-  const hasOffer = product.offerPrice && product.offerPrice < product.price;
+  if (!product) {
+    return (
+      <div className="py-16 mb-nav">
+        <EmptyState
+          icon={Package}
+          title="Product not found"
+          description="This product doesn’t exist or is no longer available."
+          action={
+            <Button asChild>
+              <Link to="/products">Browse products</Link>
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
+
+  const hasOffer = isValidOffer(product);
+  const unitPrice = getUnitPrice(product);
   const images = product.images || [];
 
   return (
@@ -105,7 +139,7 @@ const ProductDetails = () => {
           <div>
             <div className="flex items-baseline gap-3">
               <span className="font-heading text-3xl font-bold text-text-primary">
-                {currency}{product.offerPrice || product.price}
+                {currency}{unitPrice}
               </span>
               {hasOffer && (
                 <span className="text-text-tertiary line-through text-lg">
@@ -116,7 +150,7 @@ const ProductDetails = () => {
             <p className="text-xs text-text-tertiary mt-1">Inclusive of all taxes</p>
           </div>
 
-          <Card className="!p-5" padding={false}>
+          <Card className="p-5!" padding={false}>
             <h3 className="font-heading font-semibold text-text-primary mb-3">About this product</h3>
             <ul className="space-y-2">
               {(product.description || []).map((desc, index) => (
@@ -151,7 +185,7 @@ const ProductDetails = () => {
             </Button>
           </div>
 
-          <Card className="!p-5 bg-surface-muted/50">
+          <Card className="p-5! bg-surface-muted/50">
             <h3 className="font-heading font-semibold text-sm text-text-primary mb-2">Reviews</h3>
             <p className="text-sm text-text-tertiary">
               Customer reviews coming soon. Rated {product.rating || 0}/5 by early shoppers.

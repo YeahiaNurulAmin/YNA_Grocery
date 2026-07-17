@@ -18,6 +18,7 @@ const AddProduct = () => {
     category: "",
     price: "",
     offerPrice: "",
+    quantity: "10",
     images: [],
   });
 
@@ -43,6 +44,7 @@ const AddProduct = () => {
           category: productData.category,
           price: productData.price,
           offerPrice: productData.offerPrice,
+          quantity: Number(productData.quantity) || 10,
         })
       );
       files.forEach((image) => formData.append("images", image));
@@ -58,6 +60,7 @@ const AddProduct = () => {
           category: "",
           price: "",
           offerPrice: "",
+          quantity: "10",
           images: [],
         });
         fetchProducts?.();
@@ -80,7 +83,7 @@ const AddProduct = () => {
         title="Add product"
         subtitle="Upload images and set pricing for a new grocery item."
       />
-      <Card className="!p-6">
+      <Card className="p-6!">
         <form onSubmit={submitHandler} className="space-y-5">
           <div>
             <p className="text-sm font-medium text-text-secondary mb-2">Product images</p>
@@ -165,6 +168,14 @@ const AddProduct = () => {
               onChange={(e) => setProductData({ ...productData, offerPrice: e.target.value })}
             />
           </div>
+          <Input
+            label="Initial quantity"
+            type="number"
+            min={0}
+            value={productData.quantity}
+            onChange={(e) => setProductData({ ...productData, quantity: e.target.value })}
+            required
+          />
           <Button type="submit" loading={loading} className="w-full sm:w-auto">
             <Plus className="w-4 h-4" /> Add product
           </Button>

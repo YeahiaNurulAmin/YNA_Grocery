@@ -25,13 +25,19 @@ export const DEFAULT_FILTERS = {
   onSale: false,
 };
 
-export const getUnitPrice = (p) =>
-  Number(p.offerPrice > 0 ? p.offerPrice : p.price) || 0;
-
-export const getDiscountPercent = (p) => {
+export const isValidOffer = (p) => {
   const price = Number(p.price) || 0;
   const offer = Number(p.offerPrice) || 0;
-  if (!price || !offer || offer >= price) return 0;
+  return offer > 0 && offer < price;
+};
+
+export const getUnitPrice = (p) =>
+  isValidOffer(p) ? Number(p.offerPrice) : Number(p.price) || 0;
+
+export const getDiscountPercent = (p) => {
+  if (!isValidOffer(p)) return 0;
+  const price = Number(p.price) || 0;
+  const offer = Number(p.offerPrice) || 0;
   return Math.round(((price - offer) / price) * 100);
 };
 

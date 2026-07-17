@@ -1,6 +1,7 @@
 /**
  * SellerDashboard — overview with stats, recent orders, stock alerts, quick actions.
  * Route: /seller/dashboard. Aggregates existing order/product APIs only.
+ * Respects lowStock preference from localStorage (yna_seller_prefs).
  */
 import { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
@@ -14,21 +15,43 @@ import {
   ArrowRight,
 } from "lucide-react";
 import { useAppContext } from "../../context/AppContext";
-import { Card, Badge, Button, SectionHeader, Skeleton } from "../../components/ui";
+import { Card, Badge, Button, SectionHeader, Skeleton, EmptyState } from "../../components/ui";
+import toast from "react-hot-toast";
+
+const PREFS_KEY = "yna_seller_prefs";
 
 const SellerDashboard = () => {
   const { axios, currency, products, fetchProducts } = useAppContext();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [ordersError, setOrdersError] = useState(null);
+  const [showLowStock, setShowLowStock] = useState(true);
+
+  useEffect(() => {
+    try {
+      const prefs = JSON.parse(localStorage.getItem(PREFS_KEY) || "{}");
+      setShowLowStock(prefs.lowStock !== false);
+    } catch {
+      setShowLowStock(true);
+    }
+  }, []);
 
   useEffect(() => {
     const load = async () => {
+      setOrdersError(null);
       try {
         await fetchProducts?.();
         const { data } = await axios.get("/api/order/seller");
-        if (data.success) setOrders(data.orders || []);
+        if (data.success) {
+          setOrders(data.orders || []);
+        } else {
+          setOrdersError(data.message || "Failed to load orders");
+          toast.error(data.message || "Failed to load orders");
+        }
       } catch (e) {
         console.error(e);
+        setOrdersError("Failed to load orders");
+        toast.error("Failed to load orders");
       } finally {
         setLoading(false);
       }
@@ -39,8 +62,10 @@ const SellerDashboard = () => {
   const delivered = orders.filter((o) => o.status === "Delivered");
   const active = orders.filter((o) => o.status !== "Delivered" && o.status !== "Cancelled");
   const revenue = delivered.reduce((sum, o) => sum + (o.amount || 0), 0);
-  const lowStock = (products || []).filter((p) => p.inStock && (p.quantity ?? 99) <= 5);
-  const outOfStock = (products || []).filter((p) => !p.inStock);
+  const lowStock = showLowStock
+    ? (products || []).filter((p) => p.inStock && (p.quantity ?? 99) <= 5)
+    : [];
+  const outOfStock = showLowStock ? (products || []).filter((p) => !p.inStock) : [];
   const recent = [...orders].slice(0, 5);
 
   const stats = [
@@ -57,11 +82,11 @@ const SellerDashboard = () => {
         title="Dashboard"
         subtitle="A clear snapshot of your store performance."
         action={
-          <Link to="/seller">
-            <Button size="sm">
+          <Button asChild size="sm">
+            <Link to="/seller">
               <PlusCircle className="w-4 h-4" /> Add product
-            </Button>
-          </Link>
+            </Link>
+          </Button>
         }
       />
 
@@ -71,7 +96,7 @@ const SellerDashboard = () => {
               <Skeleton key={i} className="h-28 rounded-[24px]" />
             ))
           : stats.map((s) => (
-              <Card key={s.label} className="!p-5" hover>
+              <Card key={s.label} className="p-5!" hover>
                 <div className="flex items-start justify-between">
                   <div>
                     <p className="text-xs font-medium text-text-tertiary">{s.label}</p>
@@ -87,7 +112,7 @@ const SellerDashboard = () => {
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
-        <Card className="lg:col-span-2 !p-0 overflow-hidden">
+        <Card className="lg:col-span-2 p-0! overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-border">
             <h3 className="font-heading font-semibold">Recent orders</h3>
             <Link to="/seller/orders" className="text-xs font-semibold text-primary flex items-center gap-1">
@@ -95,7 +120,15 @@ const SellerDashboard = () => {
             </Link>
           </div>
           <div className="divide-y divide-border">
-            {recent.length === 0 ? (
+            {!loading && ordersError ? (
+              <div className="p-6">
+                <EmptyState
+                  icon={ShoppingBag}
+                  title="Couldn’t load orders"
+                  description={ordersError}
+                />
+              </div>
+            ) : recent.length === 0 ? (
               <p className="p-8 text-sm text-text-tertiary text-center">No orders yet</p>
             ) : (
               recent.map((o) => (
@@ -117,7 +150,7 @@ const SellerDashboard = () => {
         </Card>
 
         <div className="space-y-4">
-          <Card className="!p-5">
+          <Card className="p-5!">
             <h3 className="font-heading font-semibold mb-3">Quick actions</h3>
             <div className="space-y-2">
               {[
@@ -137,11 +170,13 @@ const SellerDashboard = () => {
             </div>
           </Card>
 
-          <Card className="!p-5">
+          <Card className="p-5!">
             <h3 className="font-heading font-semibold mb-3 flex items-center gap-2">
               <AlertTriangle className="w-4 h-4 text-warning" /> Stock alerts
             </h3>
-            {outOfStock.length === 0 && lowStock.length === 0 ? (
+            {!showLowStock ? (
+              <p className="text-sm text-text-tertiary">Stock alerts are turned off in Settings</p>
+            ) : outOfStock.length === 0 && lowStock.length === 0 ? (
               <p className="text-sm text-text-tertiary">All good — no alerts</p>
             ) : (
               <ul className="space-y-2 text-sm">

@@ -74,7 +74,7 @@ const ProductsList = () => {
           action={<Button onClick={() => navigate("/seller")}>Add product</Button>}
         />
       ) : (
-        <Card className="!p-0 overflow-hidden">
+        <Card className="p-0! overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>

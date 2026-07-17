@@ -30,9 +30,9 @@ const ProductCategory = () => {
           title="Category not found"
           description="This category doesn’t exist. Browse all products instead."
           action={
-            <Link to="/products">
-              <Button>All products</Button>
-            </Link>
+            <Button asChild>
+              <Link to="/products">All products</Link>
+            </Button>
           }
         />
       </div>
@@ -53,9 +53,9 @@ const ProductCategory = () => {
           title="Nothing in stock here"
           description="Check back soon or explore other categories."
           action={
-            <Link to="/products">
-              <Button variant="outline">Browse all</Button>
-            </Link>
+            <Button asChild variant="outline">
+              <Link to="/products">Browse all</Link>
+            </Button>
           }
         />
       ) : (

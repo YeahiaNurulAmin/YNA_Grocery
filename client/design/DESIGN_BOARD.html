@@ -178,7 +178,7 @@
   <main>
     <div class="hero-intro">
       <h1 class="heading">Apple-inspired grocery UX</h1>
-      <p>Complete visual map for the React + Tailwind redesign. Backend, routes (existing), and APIs unchanged. New customer pages and seller dashboard screens are labeled with routes for implementation.</p>
+      <p>Complete visual map for the React + Tailwind redesign. Existing routes and APIs stay the foundation; seller authorization, CORS configuration, and related integrations must still be wired for production.</p>
       <div class="tokens" id="tokens">
         <div class="swatch"><div class="chip" style="background:#22c55e"></div><div class="meta"><strong>Primary</strong><br /><code>#22c55e</code></div></div>
         <div class="swatch"><div class="chip" style="background:#16a34a"></div><div class="meta"><strong>Primary dark</strong><br /><code>#16a34a</code></div></div>
@@ -482,7 +482,8 @@
 
     <footer class="note">
       <strong>Developer notes:</strong> Open this board beside the app. Tokens live in <code>client/src/index.css</code>.
-      Full token docs: <code>client/design/DESIGN_SYSTEM.md</code>. Zero backend changes required.
+      Full token docs: <code>client/design/DESIGN_SYSTEM.md</code>.
+      Production still requires seller authorization, CORS (<code>ALLOWED_ORIGINS</code>), and related API integrations — not a zero-backend setup.
       Motion: 200–300ms ease-out. Icons: Lucide. Radius: cards 24 · buttons 16 · dialogs 28.
     </footer>
   </main>

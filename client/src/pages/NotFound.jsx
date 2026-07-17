@@ -14,8 +14,12 @@ const NotFound = () => (
       description="That link doesn’t lead anywhere. Head home or keep shopping."
       action={
         <div className="flex gap-3 justify-center">
-          <Link to="/"><Button>Go home</Button></Link>
-          <Link to="/products"><Button variant="outline">Shop</Button></Link>
+          <Button asChild>
+            <Link to="/">Go home</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/products">Shop</Link>
+          </Button>
         </div>
       }
     />

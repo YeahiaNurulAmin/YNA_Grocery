@@ -73,7 +73,7 @@ const MyOrder = () => {
       ) : (
         <div className="space-y-4">
           {myOrders.map((order) => (
-            <Card key={order._id} className="!p-5 md:!p-6">
+            <Card key={order._id} className="p-5! md:p-6!">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-border">
                 <div>
                   <p className="text-xs text-text-tertiary">Order ID</p>

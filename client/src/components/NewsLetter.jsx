@@ -1,5 +1,6 @@
 /**
- * NewsLetter — email capture UI on Home (UI-only subscribe; no backend change).
+ * NewsLetter — email capture UI on Home.
+ * No newsletter API exists; reports unavailable instead of fake success.
  */
 import { useState } from "react";
 import { Mail } from "lucide-react";
@@ -12,13 +13,12 @@ const NewsLetter = () => {
   const onSubmit = (e) => {
     e.preventDefault();
     if (!email.trim()) return;
-    toast.success("Thanks for subscribing!");
-    setEmail("");
+    toast.error("Newsletter signup is not available yet.");
   };
 
   return (
     <section className="mt-16 md:mt-24 mb-8">
-      <Card className="!p-0 overflow-hidden gradient-fresh border-primary/10">
+      <Card className="p-0! overflow-hidden gradient-fresh border-primary/10">
         <div className="px-6 py-12 md:px-12 md:py-16 text-center max-w-2xl mx-auto">
           <div className="w-14 h-14 rounded-[18px] bg-primary/15 text-primary flex items-center justify-center mx-auto mb-5">
             <Mail className="w-6 h-6" strokeWidth={1.75} />

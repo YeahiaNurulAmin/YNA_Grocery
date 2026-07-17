@@ -12,7 +12,7 @@ const About = () => (
       title="Fresh groceries, delivered with care"
       subtitle="YNA Grocery brings Apple-like clarity to everyday shopping for families across Saudi Arabia and the Middle East."
     />
-    <Card className="!p-8 mb-8 gradient-fresh border-primary/10">
+    <Card className="p-8! mb-8 gradient-fresh border-primary/10">
       <p className="text-text-secondary leading-relaxed">
         We believe grocery shopping should feel calm, fast, and trustworthy. From farm-fresh produce
         to pantry staples, every product is curated for quality — and every screen is designed for
@@ -25,7 +25,7 @@ const About = () => (
         { icon: Heart, title: "Family-focused", text: "Built for busy households and young professionals." },
         { icon: Truck, title: "Reliable delivery", text: "Fast fulfillment when it matters most." },
       ].map(({ icon: Icon, title, text }) => (
-        <Card key={title} className="!p-5" hover>
+        <Card key={title} className="p-5!" hover>
           <div className="w-10 h-10 rounded-[14px] bg-bg-light-mint text-primary flex items-center justify-center mb-3">
             <Icon className="w-5 h-5" />
           </div>

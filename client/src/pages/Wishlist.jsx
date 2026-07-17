@@ -18,9 +18,9 @@ const Wishlist = () => (
       title="Your wishlist is empty"
       description="Tap the heart on products (coming soon) to build a list of favorites."
       action={
-        <Link to="/products">
-          <Button>Browse products</Button>
-        </Link>
+        <Button asChild>
+          <Link to="/products">Browse products</Link>
+        </Button>
       }
     />
   </div>

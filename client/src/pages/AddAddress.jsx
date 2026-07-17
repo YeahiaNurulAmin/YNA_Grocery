@@ -61,7 +61,7 @@ const AddAddress = () => {
             subtitle="We’ll deliver your fresh groceries right to your door."
             className="mb-6"
           />
-          <Card className="!p-6">
+          <Card className="p-6!">
             <form onSubmit={handleSubmit} className="space-y-4">
               <div className="grid grid-cols-2 gap-3">
                 <Input name="firstName" label="First name" value={formData.firstName} onChange={handleChange} required />

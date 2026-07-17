@@ -7,8 +7,6 @@ import { Bell, ShoppingBag } from "lucide-react";
 import { useAppContext } from "../../context/AppContext";
 import { Card, SectionHeader, EmptyState, Button } from "../../components/ui";
 
-const SEEN_KEY = "yna_admin_seen_orders";
-
 const SellerNotifications = () => {
   const { axios, currency } = useAppContext();
   const [items, setItems] = useState([]);
@@ -48,10 +46,7 @@ const SellerNotifications = () => {
           <Button
             variant="outline"
             size="sm"
-            onClick={() => {
-              localStorage.setItem(SEEN_KEY, "[]");
-              load();
-            }}
+            onClick={() => load()}
           >
             Refresh
           </Button>
@@ -65,7 +60,7 @@ const SellerNotifications = () => {
           description="New placed orders will appear here automatically."
         />
       ) : (
-        <Card className="!p-0 overflow-hidden divide-y divide-border">
+        <Card className="p-0! overflow-hidden divide-y divide-border">
           {items.map((n) => (
             <div key={n.id} className="flex items-start gap-3 px-5 py-4">
               <div className="w-10 h-10 rounded-[14px] bg-primary/10 text-primary flex items-center justify-center shrink-0">

@@ -1,7 +1,7 @@
-/**
- * DESIGN_SYSTEM.md — YNA Grocery design tokens, components, and screen map for developers.
- * Companion to DESIGN_BOARD.html. Source of truth for colors remains client/src/index.css.
- */
+<!--
+  DESIGN_SYSTEM.md — YNA Grocery design tokens, components, and screen map for developers.
+  Companion to DESIGN_BOARD.html. Source of truth for colors remains client/src/index.css.
+-->
 
 # YNA Grocery Design System
 
@@ -88,4 +88,4 @@ Toggle on `html.dark`. OLED-friendly surfaces (`#030712` / `#111827`), not inver
 
 ## Backend constraint
 
-No API, schema, or business-logic changes. Frontend-only redesign.
+UI redesign is frontend-led. Seller auth, CORS (`ALLOWED_ORIGINS`), and related API integrations remain required for production.

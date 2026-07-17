@@ -47,14 +47,15 @@ const Footer = () => {
             </p>
             <div className="flex items-center gap-3 mt-6">
               {["Instagram", "Twitter", "Facebook", "YouTube"].map((label) => (
-                <a
+                <span
                   key={label}
-                  href="#"
-                  aria-label={label}
-                  className="w-10 h-10 rounded-[14px] border border-border flex items-center justify-center text-text-tertiary hover:text-accent hover:border-accent/40 transition-colors"
+                  role="img"
+                  aria-label={`${label} (coming soon)`}
+                  title={`${label} — coming soon`}
+                  className="w-10 h-10 rounded-[14px] border border-border flex items-center justify-center text-text-tertiary opacity-70"
                 >
                   <Share2 className="w-4 h-4" strokeWidth={1.75} />
-                </a>
+                </span>
               ))}
             </div>
           </div>

@@ -38,7 +38,7 @@ const BottomBanner = () => {
           />
           <div className="grid sm:grid-cols-2 gap-3">
             {trustItems.map((item) => (
-              <Card key={item.title} className="!p-4" hover>
+              <Card key={item.title} className="p-4!" hover>
                 <div className="w-10 h-10 rounded-[14px] bg-bg-light-mint text-primary flex items-center justify-center mb-3">
                   <item.icon className="w-5 h-5" strokeWidth={1.75} />
                 </div>

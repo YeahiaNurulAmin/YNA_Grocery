@@ -7,13 +7,18 @@ import { useLocation } from "react-router-dom";
 import { useAppContext } from "../../context/AppContext";
 import { YNALogo } from "../../assets/YNALogo";
 
+const normalizeNextUrl = (value) => {
+  if (!value || value === "/") return "/";
+  return value.startsWith("/") ? value : `/${value}`;
+};
+
 const LoadingPage = () => {
   const { navigate } = useAppContext();
   const { search } = useLocation();
-  const nextUrl = new URLSearchParams(search).get("next") || "/";
+  const nextUrl = normalizeNextUrl(new URLSearchParams(search).get("next") || "/");
 
   useEffect(() => {
-    const t = setTimeout(() => navigate(`/${nextUrl}`), 5000);
+    const t = setTimeout(() => navigate(nextUrl), 5000);
     return () => clearTimeout(t);
   }, [nextUrl, navigate]);
 

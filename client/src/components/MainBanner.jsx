@@ -28,18 +28,18 @@ const MainBanner = () => {
             Premium produce and everyday essentials, curated for busy households across the Middle East.
           </p>
           <div className="flex flex-wrap items-center gap-3 mt-8">
-            <Link to="/products">
-              <Button size="lg">
+            <Button asChild size="lg">
+              <Link to="/products">
                 Shop Now
                 <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
-            <Link to="/products">
-              <Button variant="ghost" size="lg" className="text-accent hover:text-accent-dark">
+              </Link>
+            </Button>
+            <Button asChild variant="ghost" size="lg" className="text-accent hover:text-accent-dark">
+              <Link to="/products">
                 Explore deals
                 <ArrowRight className="w-4 h-4" />
-              </Button>
-            </Link>
+              </Link>
+            </Button>
           </div>
         </div>
 

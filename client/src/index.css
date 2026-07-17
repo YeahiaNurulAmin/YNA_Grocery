@@ -3,7 +3,7 @@
  * Source of truth for the premium design system (Tailwind v4 @theme).
  * Used by every page and component in the client SPA.
  */
-@import url("https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..700;1,14..32,300..700&family=Manrope:wght@400..800&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap");
+@import "https://fonts.googleapis.com/css2?family=Inter:ital,opsz,wght@0,14..32,300..700;1,14..32,300..700&family=Manrope:wght@400..800&family=Open+Sans:ital,wght@0,300..800;1,300..800&display=swap";
 @import "tailwindcss";
 
 @variant dark (&:where(.dark, .dark *));
@@ -150,24 +150,24 @@ h1, h2, h3, h4, h5, h6,
 }
 
 .animate-fade-in {
-  animation: fadeIn var(--duration-base) var(--ease-out) both;
+  animation: fade-in var(--duration-base) var(--ease-out) both;
 }
 .animate-slide-up {
-  animation: slideUp var(--duration-slow) var(--ease-out) both;
+  animation: slide-up var(--duration-slow) var(--ease-out) both;
 }
 .animate-scale-in {
-  animation: scaleIn var(--duration-base) var(--ease-out) both;
+  animation: scale-in var(--duration-base) var(--ease-out) both;
 }
 
-@keyframes fadeIn {
+@keyframes fade-in {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-@keyframes slideUp {
+@keyframes slide-up {
   from { opacity: 0; transform: translateY(12px); }
   to { opacity: 1; transform: translateY(0); }
 }
-@keyframes scaleIn {
+@keyframes scale-in {
   from { opacity: 0; transform: scale(0.96); }
   to { opacity: 1; transform: scale(1); }
 }
@@ -184,6 +184,17 @@ h1, h2, h3, h4, h5, h6,
 .dark .skeleton {
   background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
   background-size: 200% 100%;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-fade-in,
+  .animate-slide-up,
+  .animate-scale-in {
+    animation: none;
+  }
+  .skeleton {
+    animation: none;
+  }
 }
 
 /* Dark mode — OLED-friendly, not inverted */

@@ -2,6 +2,7 @@
  * UI primitives — reusable Button, Input, Card, Badge, EmptyState, Skeleton.
  * Used across storefront and seller dashboard for consistent premium styling.
  */
+import { cloneElement, isValidElement } from "react";
 import { Loader2 } from "lucide-react";
 
 const cx = (...parts) => parts.filter(Boolean).join(" ");
@@ -15,6 +16,7 @@ export const Button = ({
   loading = false,
   disabled,
   type = "button",
+  asChild = false,
   ...props
 }) => {
   const base =
@@ -43,11 +45,23 @@ export const Button = ({
     icon: "h-11 w-11 rounded-[16px]",
   };
 
+  const classes = cx(base, variants[variant], sizes[size], className);
+  const isDisabled = disabled || loading;
+
+  if (asChild && isValidElement(children)) {
+    return cloneElement(children, {
+      className: cx(classes, children.props.className),
+      "aria-disabled": isDisabled || undefined,
+      tabIndex: isDisabled ? -1 : children.props.tabIndex,
+      ...props,
+    });
+  }
+
   return (
     <button
       type={type}
-      disabled={disabled || loading}
-      className={cx(base, variants[variant], sizes[size], className)}
+      disabled={isDisabled}
+      className={classes}
       {...props}
     >
       {loading && <Loader2 className="w-4 h-4 animate-spin" />}
@@ -66,6 +80,10 @@ export const Input = ({
   ...props
 }) => {
   const inputId = id || props.name;
+  const errorId = inputId ? `${inputId}-error` : undefined;
+  const hintId = inputId ? `${inputId}-hint` : undefined;
+  const describedBy = error ? errorId : hint ? hintId : undefined;
+
   return (
     <div className="w-full space-y-1.5">
       {label && (
@@ -78,6 +96,8 @@ export const Input = ({
       )}
       <input
         id={inputId}
+        aria-invalid={error ? true : undefined}
+        aria-describedby={describedBy}
         className={cx(
           "w-full h-12 px-4 rounded-[16px] bg-bg-white border border-border text-text-primary placeholder:text-text-placeholder",
           "transition-all duration-200 focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10",
@@ -86,8 +106,16 @@ export const Input = ({
         )}
         {...props}
       />
-      {error && <p className="text-xs text-error">{error}</p>}
-      {hint && !error && <p className="text-xs text-text-tertiary">{hint}</p>}
+      {error && (
+        <p id={errorId} className="text-xs text-error">
+          {error}
+        </p>
+      )}
+      {hint && !error && (
+        <p id={hintId} className="text-xs text-text-tertiary">
+          {hint}
+        </p>
+      )}
     </div>
   );
 };

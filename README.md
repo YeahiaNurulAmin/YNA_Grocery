@@ -2,7 +2,7 @@
 
 **Fresh groceries, delivered with care.**
 
-Full-stack grocery e-commerce for customers and sellers. Premium React storefront + Express REST API, MongoDB, Stripe, and Cloudinary.
+Full-stack grocery e-commerce for customers and sellers. Premium React storefront + Express REST API, MongoDB, Stripe, Cloudinary, and Resend.
 
 ---
 
@@ -13,6 +13,7 @@ Full-stack grocery e-commerce for customers and sellers. Premium React storefron
 - Product details, cart, addresses, COD and **Stripe** checkout
 - Order history and responsive mobile bottom navigation
 - Auth (login / register) via JWT HTTP-only cookies
+- **Forgot / reset password** via Resend email link
 - Dark mode, Contact, FAQ, About, Privacy, Terms, Wishlist & Recently Viewed (UI)
 - **AI chatbot** (Groq `openai/gpt-oss-20b`) for shopping help and support
 
@@ -41,6 +42,7 @@ Full-stack grocery e-commerce for customers and sellers. Premium React storefron
 | **Server** | Node.js, Express 5, Mongoose, JWT, bcryptjs, Multer |
 | **Data / services** | MongoDB, Cloudinary, Stripe, Groq AI |
 
+
 ---
 
 ## Project structure
@@ -53,13 +55,15 @@ YNA_Grocery/
 │       ├── assets/         # Images, logo
 │       ├── components/     # UI, storefront, seller chrome
 │       ├── context/        # AppContext
-│       └── pages/          # Customer + seller routes
+│       ├── pages/          # Customer + seller routes
+│       └── utils/          # Shared client helpers (e.g. password validation)
 └── server/                 # Express API
     ├── configs/
     ├── controllers/
     ├── middlewares/
     ├── models/
-    └── routes/
+    ├── routes/
+    └── utils/              # Email (Resend), password validation
 ```
 
 ---
@@ -105,11 +109,13 @@ STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 ALLOWED_ORIGINS=http://localhost:5173
 NODE_ENV=development
+
 GROQ_API_KEY=your_groq_api_key
 GROQ_MODEL=openai/gpt-oss-20b
 ```
 
 Get a Groq API key from [console.groq.com](https://console.groq.com/). The chatbot uses `openai/gpt-oss-20b` by default.
+
 ```bash
 npm run server    # nodemon (dev)
 # npm start       # production
@@ -159,6 +165,7 @@ npm run preview   # preview build
 | `/search` | Search results |
 | `/contact` `/faq` `/about` `/privacy` `/terms` | Info pages |
 | `/loader` | Post-Stripe redirect |
+| `/reset-password` | Reset password (token from email link) |
 
 ### Seller
 | Path | Page |
@@ -179,7 +186,7 @@ npm run preview   # preview build
 
 | Base | Purpose |
 |------|---------|
-| `/api/users` | Register, login, logout, auth check |
+| `/api/users` | Register, login, logout, auth check, forgot/reset password |
 | `/api/seller` | Seller login, logout, auth check |
 | `/api/products` | List, add, update, delete, stock, by id |
 | `/api/cart` | Update cart |
@@ -189,15 +196,25 @@ npm run preview   # preview build
 | `/api/chat` | Customer chatbot (Groq; message + history); seller prompt GET/PUT/reset |
 | `/verify-payment` | Stripe webhook (`checkout.session.completed`) |
 
+### Password reset
+
+| Method | Path | Notes |
+|--------|------|--------|
+| `POST` | `/api/users/forgot-password` | Body: `{ email }`. Always returns a generic success message. Rate-limited. |
+| `POST` | `/api/users/reset-password` | Body: `{ token, password }`. One-time token, 1h expiry. Rate-limited. |
+
+Password rules (client + server): min 8 characters, at least one letter and one number.
+
 ---
 
 ## Notes
 
 - JWT sessions use **HTTP-only cookies** (not `localStorage`).
 - Stripe webhook uses **raw body** parsing on `/verify-payment` before JSON middleware.
-- Seller access is gated by `SELLER_EMAIL` / `SELLER_PASSWORD` in env.
+- Seller access is gated by `SELLER_EMAIL` / `SELLER_PASSWORD` in env (no email-based seller password reset).
 - Tax on cart checkout is **15%** (client-side display; order amounts follow API logic).
 - Design tokens live in `client/src/index.css` (`@theme`); keep brand greens/oranges consistent.
+- Password reset uses **Resend**. Forgot/reset endpoints are rate-limited (**5 requests / IP / 15 min**, in-memory — suitable for single-instance MVP; use a shared store when scaling).
 
 ---
 

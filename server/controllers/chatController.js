@@ -1,11 +1,19 @@
 /**
- * Chat controller — validates messages, injects product catalog, calls Groq.
- * Used by chatRoute at POST /api/chat.
+ * Chat controller — customer chat + seller system-prompt management.
+ * Used by chatRoute at POST /api/chat and GET/PUT/POST /api/chat/prompt.
  */
 import Product from "../models/Product.js";
 import { getGroqClient } from "../configs/groq.js";
 import { buildCatalogText, MAX_CATALOG_ITEMS } from "../utils/chatCatalog.js";
-import { buildSystemPrompt } from "../utils/chatSystemPrompt.js";
+import {
+  buildSystemPrompt,
+  DEFAULT_SYSTEM_PROMPT,
+} from "../utils/chatSystemPrompt.js";
+import {
+  getSystemPromptBase,
+  saveSystemPromptBase,
+  MAX_PROMPT_LENGTH,
+} from "../utils/chatSettings.js";
 
 const MAX_MESSAGE_LENGTH = 500;
 const MAX_HISTORY_TURNS = 12;
@@ -49,13 +57,16 @@ export const chat = async (req, res) => {
     const message = rawMessage.trim().slice(0, MAX_MESSAGE_LENGTH);
     const history = sanitizeHistory(req.body?.history);
 
-    const products = await Product.find({ inStock: true })
-      .select("name category price offerPrice weight")
-      .limit(MAX_CATALOG_ITEMS)
-      .lean();
+    const [products, promptBase] = await Promise.all([
+      Product.find({ inStock: true })
+        .select("name category price offerPrice weight")
+        .limit(MAX_CATALOG_ITEMS)
+        .lean(),
+      getSystemPromptBase(),
+    ]);
 
     const catalogText = buildCatalogText(products);
-    const systemPrompt = buildSystemPrompt(catalogText);
+    const systemPrompt = buildSystemPrompt(catalogText, promptBase);
 
     const messages = [
       { role: "system", content: systemPrompt },
@@ -92,6 +103,73 @@ export const chat = async (req, res) => {
         status === 429
           ? "Too many requests. Please wait a moment and try again."
           : "Failed to get a reply. Please try again.",
+    });
+  }
+};
+
+/** GET /api/chat/prompt — seller only */
+export const getChatPrompt = async (req, res) => {
+  try {
+    const systemPrompt = await getSystemPromptBase();
+    return res.status(200).json({
+      success: true,
+      systemPrompt,
+      defaultPrompt: DEFAULT_SYSTEM_PROMPT,
+      maxLength: MAX_PROMPT_LENGTH,
+    });
+  } catch (error) {
+    console.error("Get chat prompt error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to load chat prompt.",
+    });
+  }
+};
+
+/** PUT /api/chat/prompt — seller only */
+export const updateChatPrompt = async (req, res) => {
+  try {
+    const raw = req.body?.systemPrompt;
+    if (typeof raw !== "string" || !raw.trim()) {
+      return res.status(400).json({
+        success: false,
+        message: "systemPrompt is required.",
+      });
+    }
+
+    const systemPrompt = raw.trim().slice(0, MAX_PROMPT_LENGTH);
+    const saved = await saveSystemPromptBase(systemPrompt);
+
+    return res.status(200).json({
+      success: true,
+      message: "Chat prompt updated successfully.",
+      systemPrompt: saved.systemPrompt,
+      updatedAt: saved.updatedAt,
+    });
+  } catch (error) {
+    console.error("Update chat prompt error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to update chat prompt.",
+    });
+  }
+};
+
+/** POST /api/chat/prompt/reset — seller only */
+export const resetChatPrompt = async (req, res) => {
+  try {
+    const saved = await saveSystemPromptBase(DEFAULT_SYSTEM_PROMPT);
+    return res.status(200).json({
+      success: true,
+      message: "Chat prompt reset to default.",
+      systemPrompt: saved.systemPrompt,
+      updatedAt: saved.updatedAt,
+    });
+  } catch (error) {
+    console.error("Reset chat prompt error:", error);
+    return res.status(500).json({
+      success: false,
+      message: "Failed to reset chat prompt.",
     });
   }
 };

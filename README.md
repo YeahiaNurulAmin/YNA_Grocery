@@ -186,7 +186,7 @@ npm run preview   # preview build
 | `/api/address` | Add / get addresses |
 | `/api/order` | COD, online (Stripe), user & seller orders, status |
 | `/api/coupons` | List, add, delete, toggle |
-| `/api/chat` | Customer chatbot (Groq; message + history) |
+| `/api/chat` | Customer chatbot (Groq; message + history); seller prompt GET/PUT/reset |
 | `/verify-payment` | Stripe webhook (`checkout.session.completed`) |
 
 ---

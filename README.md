@@ -1,106 +1,200 @@
 # YNA Grocery
 
-YNA Grocery is a modern, fully-featured, full-stack e-commerce web application designed for a seamless grocery shopping experience. It offers a robust user interface for customers to browse products, manage their shopping carts, and securely checkout using online payments or cash on delivery. It also includes seller capabilities to manage the catalog.
+**Fresh groceries, delivered with care.**
 
-## 🚀 Features
-
-- **User Authentication**: Secure registration and login using JWT (JSON Web Tokens) stored in HTTP-only cookies, with password hashing via `bcryptjs`.
-- **Product Catalog**: Browse fresh produce, dairy, bakery items, instant food, and more. Features dynamic categories and search functionality.
-- **Shopping Cart**: Add, remove, and update quantities of items. Cart state is synchronized with the backend database.
-- **Secure Checkout & Payments**: 
-  - Integrated with **Stripe** for secure online payments.
-  - Implements Stripe Webhooks for asynchronous payment verification.
-  - Supports **Cash on Delivery (COD)**.
-- **Order Management**: Users can view their order history and track order statuses.
-- **Seller/Admin Dashboard**: Secure endpoints for managing the product catalog and tracking all orders.
-- **Cloud Media Storage**: Product images are uploaded and served securely via **Cloudinary**.
-- **Responsive UI**: Fully responsive and modern design optimized for both mobile and desktop screens using **Tailwind CSS**.
+Full-stack grocery e-commerce for customers and sellers. Premium React storefront + Express REST API, MongoDB, Stripe, and Cloudinary.
 
 ---
 
-## 🛠 Technology Stack
+## Features
 
-### Frontend (Client)
-- **Framework**: [React 19](https://react.dev/) powered by [Vite](https://vitejs.dev/) for lightning-fast development and optimized builds.
-- **Styling**: [Tailwind CSS v4](https://tailwindcss.com/) for utility-first styling and [styled-components](https://styled-components.com/) for component-scoped CSS.
-- **Routing**: `react-router-dom` for seamless Single Page Application (SPA) navigation.
-- **State Management**: React Context API (`AppContext`).
-- **HTTP Client**: `axios` (configured to send credentials for secure sessions).
-- **Notifications**: `react-hot-toast` for elegant, non-blocking user alerts.
+### Customer storefront
+- Browse categories, search, and **advanced filter / sort** on the products page
+- Product details, cart, addresses, COD and **Stripe** checkout
+- Order history and responsive mobile bottom navigation
+- Auth (login / register) via JWT HTTP-only cookies
+- Dark mode, Contact, FAQ, About, Privacy, Terms, Wishlist & Recently Viewed (UI)
 
-### Backend (Server)
-- **Runtime**: [Node.js](https://nodejs.org/)
-- **Framework**: [Express.js](https://expressjs.com/) (RESTful API architecture).
-- **Database**: [MongoDB](https://www.mongodb.com/) object modeling via [Mongoose](https://mongoosejs.com/).
-- **Authentication & Security**: `jsonwebtoken` (JWT), `bcryptjs`, and `cookie-parser`.
-- **Payment Processing**: `stripe` SDK for creating checkout sessions and handling webhooks.
-- **File Uploads**: `multer` for multipart form data and `cloudinary` for cloud-based image storage.
-- **Middleware**: `cors` for Cross-Origin Resource Sharing.
+### Seller / admin dashboard
+- Login with env credentials
+- Dashboard overview (stats, recent orders, stock alerts)
+- Product CRUD with Cloudinary images
+- Active orders + status updates, order history
+- Coupons, notifications (live polling), settings & profile UI
+- Dark mode
+
+### Design system
+- Brand: Primary green `#22c55e`, accent orange `#ff6b35`
+- Typography: Manrope (headings) + Inter (body)
+- Tokens & components in `client/src/index.css` and `client/src/components/ui`
+- Design board: [`client/design/DESIGN_BOARD.html`](client/design/DESIGN_BOARD.html)
+- Specs: [`client/design/DESIGN_SYSTEM.md`](client/design/DESIGN_SYSTEM.md)
 
 ---
 
-## 💻 Installation & Setup
+## Tech stack
 
-### Prerequisites
-Make sure you have the following installed on your machine:
-- Node.js (v18+)
-- MongoDB (Local instance or MongoDB Atlas)
-- Stripe Account (for payment processing)
-- Cloudinary Account (for image hosting)
+| Layer | Stack |
+|--------|--------|
+| **Client** | React 19, Vite, Tailwind CSS v4, React Router, Axios, Lucide, react-hot-toast |
+| **Server** | Node.js, Express 5, Mongoose, JWT, bcryptjs, Multer |
+| **Data / services** | MongoDB, Cloudinary, Stripe |
 
-### 1. Clone the Repository
+---
+
+## Project structure
+
+```
+YNA_Grocery/
+├── client/                 # React SPA (Vite)
+│   ├── design/             # Design board & system docs
+│   └── src/
+│       ├── assets/         # Images, logo
+│       ├── components/     # UI, storefront, seller chrome
+│       ├── context/        # AppContext
+│       └── pages/          # Customer + seller routes
+└── server/                 # Express API
+    ├── configs/
+    ├── controllers/
+    ├── middlewares/
+    ├── models/
+    └── routes/
+```
+
+---
+
+## Prerequisites
+
+- Node.js 18+
+- MongoDB (local or Atlas)
+- Stripe account (online payments)
+- Cloudinary account (product images)
+
+---
+
+## Setup
+
+### 1. Clone
+
 ```bash
 git clone <repository-url>
 cd YNA_Grocery
 ```
 
-### 2. Setup the Backend
-Navigate to the server directory and install dependencies:
+### 2. Backend
+
 ```bash
 cd server
 npm install
 ```
 
-Create a `.env` file in the `server` directory. You will need to configure variables for your Port, Database URI, JWT Secret, Cloudinary keys, and Stripe keys.
+Create `server/.env`:
 
-Start the backend server (runs on `http://localhost:4000` by default):
-```bash
-# For development with auto-restart
-npm run server 
-
-# For production
-npm run start
+```env
+PORT=4000
+MONGODB_URI=mongodb://127.0.0.1:27017
+JWT_SECRET=your_jwt_secret
+SELLER_EMAIL=admin@example.com
+SELLER_PASSWORD=your_seller_password
+CLOUDINARY_CLOUD_NAME=
+CLOUDINARY_API_KEY=
+CLOUDINARY_API_SECRET=
+STRIPE_SECRET_KEY=
+STRIPE_WEBHOOK_SECRET=
+ALLOWED_ORIGINS=http://localhost:5173
+NODE_ENV=development
 ```
 
-### 3. Setup the Frontend
-Open a new terminal, navigate to the client directory, and install dependencies:
+```bash
+npm run server    # nodemon (dev)
+# npm start       # production
+```
+
+API default: `http://localhost:4000`
+
+### 3. Frontend
+
 ```bash
 cd client
 npm install
 ```
 
-Create a `.env` file in the `client` directory and configure your backend URL (e.g., `VITE_BACKEND_URL`).
+Create `client/.env`:
 
-Start the Vite development server:
+```env
+VITE_BACKEND_URL=http://localhost:4000
+VITE_CURRENCY=$
+```
+
 ```bash
 npm run dev
 ```
 
-The frontend will be available at `http://localhost:5173`.
+App default: `http://localhost:5173`
+
+```bash
+npm run build     # production build
+npm run preview   # preview build
+```
 
 ---
 
-## 🌐 API Architecture (Highlights)
+## Main routes
 
-- **`/api/users`**: Handles user authentication (`/register`, `/login`, `/logout`, `/is-auth`).
-- **`/api/products`**: Product management (`/list`, `/add`, `/update`, `/delete`, `/id`).
-- **`/api/cart`**: Manages the user's shopping cart state (`/update`).
-- **`/api/order`**: Checkout and order history (`/cod`, `/online`, `/user`, `/seller`).
-- **`/verify-payment`**: Stripe webhook endpoint for processing `checkout.session.completed` events securely.
+### Customer
+| Path | Page |
+|------|------|
+| `/` | Home |
+| `/products` | Catalog (filters & sort) |
+| `/products/:category` | Category |
+| `/products/:category/:id` | Product details |
+| `/cart` | Cart & checkout |
+| `/add-address` | Add address |
+| `/my-orders` | Orders |
+| `/search` | Search results |
+| `/contact` `/faq` `/about` `/privacy` `/terms` | Info pages |
+| `/loader` | Post-Stripe redirect |
+
+### Seller
+| Path | Page |
+|------|------|
+| `/seller` | Login (guest) / Add product (auth) |
+| `/seller/dashboard` | Overview |
+| `/seller/products` | Product list |
+| `/seller/update-product/:id` | Edit product |
+| `/seller/orders` | Active orders |
+| `/seller/history` | Order history |
+| `/seller/coupons` | Coupons |
+| `/seller/notifications` | Notifications |
+| `/seller/settings` `/seller/profile` | Account UI |
 
 ---
 
-## 💡 Key Development Highlights
-- **Stripe Webhook Integration**: Implemented raw body parsing specifically for the `/verify-payment` route to ensure Stripe signature verification operates correctly before standard JSON parsing is applied to other routes.
-- **Secure Sessions**: Transitioned away from client-side token storage (like localStorage) to secure, HTTP-only cookies to mitigate XSS attacks.
-- **Protected Routes**: Custom authentication middleware protects sensitive routes like viewing user orders and placing checkouts, preventing Insecure Direct Object References (IDOR).
+## API overview
+
+| Base | Purpose |
+|------|---------|
+| `/api/users` | Register, login, logout, auth check |
+| `/api/seller` | Seller login, logout, auth check |
+| `/api/products` | List, add, update, delete, stock, by id |
+| `/api/cart` | Update cart |
+| `/api/address` | Add / get addresses |
+| `/api/order` | COD, online (Stripe), user & seller orders, status |
+| `/api/coupons` | List, add, delete, toggle |
+| `/verify-payment` | Stripe webhook (`checkout.session.completed`) |
+
+---
+
+## Notes
+
+- JWT sessions use **HTTP-only cookies** (not `localStorage`).
+- Stripe webhook uses **raw body** parsing on `/verify-payment` before JSON middleware.
+- Seller access is gated by `SELLER_EMAIL` / `SELLER_PASSWORD` in env.
+- Tax on cart checkout is **15%** (client-side display; order amounts follow API logic).
+- Design tokens live in `client/src/index.css` (`@theme`); keep brand greens/oranges consistent.
+
+---
+
+## License
+
+ISC — see package metadata in `server/package.json`.

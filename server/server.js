@@ -27,12 +27,11 @@ await connectCloudinary();
 // Variables
 const port = process.env.PORT || 4000;
 
-// Allow multiple origins
-const allowedOrigins = [
-    "https://yna-grocery.vercel.app",
-    "http://localhost:5173",
-    "http://localhost:5174",
-];
+// Allow multiple origins from a comma-separated environment variable
+const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:5173")
+    .split(",")
+    .map((origin) => origin.trim())
+    .filter(Boolean);
 
 // Middlewares - Apply CORS first
 app.use(cors({

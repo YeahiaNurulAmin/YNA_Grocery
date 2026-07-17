@@ -105,17 +105,17 @@ const Coupons = () => {
     const minDateStr = minDate.toISOString().split("T")[0];
 
     return (
-        <div className="md:p-10 p-4 no-scrollbar flex-1 h-[95vh] overflow-y-scroll bg-slate-50/50 dark:bg-slate-950/20 space-y-8 text-gray-900 dark:text-slate-100">
+        <div className="space-y-8 animate-fade-in max-w-4xl text-text-primary">
             {/* ── Header ──────────────────────────────────────────────────────── */}
-            <div className="max-w-4xl">
-                <h2 className="text-xl font-semibold text-primary">Coupon & Promo Manager</h2>
-                <p className="text-xs text-gray-500 dark:text-slate-400 mt-0.5">Create and manage discount codes for your customers.</p>
+            <div>
+                <h2 className="font-heading text-2xl font-bold text-text-primary">Coupons</h2>
+                <p className="text-sm text-text-secondary mt-1">Create and manage discount codes for your customers.</p>
             </div>
 
             {/* ── Create Coupon Form ───────────────────────────────────────────── */}
-            <div className="max-w-4xl bg-white dark:bg-slate-800 rounded-xl border border-gray-200 dark:border-slate-700 shadow-sm overflow-hidden">
-                <div className="px-6 py-4 bg-gradient-to-r from-primary/10 to-transparent border-b border-gray-100 dark:border-slate-700">
-                    <h3 className="font-semibold text-gray-900 dark:text-white flex items-center gap-2">
+            <div className="bg-bg-white rounded-[24px] border border-border shadow-sm overflow-hidden">
+                <div className="px-6 py-4 bg-bg-light-mint/50 border-b border-border">
+                    <h3 className="font-heading font-semibold text-text-primary flex items-center gap-2">
                         <svg className="w-4 h-4 text-primary" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                         </svg>

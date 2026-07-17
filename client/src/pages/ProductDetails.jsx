@@ -1,119 +1,216 @@
-import React, { useEffect } from 'react';
-import { Link, useParams } from 'react-router-dom';
-import { useAppContext } from '../context/AppContext';
-import ProductCard from '../components/ProductCard';
+/**
+ * ProductDetails — Apple Store–inspired PDP with gallery, sticky purchase panel, related items.
+ * Route: /products/:category/:id
+ */
+import React, { useEffect } from "react";
+import { Link, useParams } from "react-router-dom";
+import { Star, ShoppingBag, Zap, Package } from "lucide-react";
+import { useAppContext } from "../context/AppContext";
+import ProductCard from "../components/ProductCard";
+import { isValidOffer, getUnitPrice } from "../components/ProductFilters";
+import { Button, Badge, Card, SectionHeader, EmptyState, Skeleton } from "../components/ui";
+
+const firstProductImage = (p) => p?.images?.[0] || p?.image?.[0] || null;
 
 const ProductDetails = () => {
+  const { products, productsLoading, navigate, addToCart, currency } = useAppContext();
+  const { id } = useParams();
+  const [product, setProduct] = React.useState(() => products.find((p) => p._id === id));
+  const [relatedProducts, setRelatedProducts] = React.useState([]);
+  const [thumbnail, setThumbnail] = React.useState(() => firstProductImage(product));
 
-    const { products, navigate, addToCart, currency } = useAppContext();
-    const { id } = useParams();
-    const [relatedProducts, setRelatedProducts] = React.useState(products.filter(product => product.category === products.find(product => product._id === id)?.category));
-    const [product, setProduct] = React.useState(products.find(product => product._id === id));
-    const [thumbnail, setThumbnail] = React.useState(product?.images[0]);
+  useEffect(() => {
+    const found = products.find((p) => p._id === id);
+    setProduct(found);
+  }, [id, products]);
 
-    // I may need to use useEffect
-    useEffect(() => {
-        let filteredProduct = products.slice();
-        filteredProduct = filteredProduct.filter(item => item.category === product?.category);
-        setRelatedProducts(filteredProduct.slice(0, 5));
-
-    }, [products])
-
-    useEffect(() => {
-        setThumbnail(product?.images[0] ? product.images[0] : null);
-    }, [product])
-
-    useEffect(() => {
-        setProduct(products.find(product => product._id === id));
-    }, [id])
-
-
-    return product && (
-        <div className="mt-12 min-h-dvh">
-            <p>
-                <Link className='hover:text-accent' to="/">Home</Link> /
-                <Link className='hover:text-accent' to="/products"> Products</Link> /
-                <Link className='hover:text-accent' to={`/products/${product.category.toLowerCase()}`}> {product.category}</Link> /
-                <span className="text-text-secondary"> {product.name}</span>
-            </p>
-
-            <div className="flex flex-col md:flex-row gap-16 mt-4">
-                <div className="flex gap-3">
-                    <div className="flex flex-col gap-3">
-                        {product.images.map((image, index) => (
-                            <div key={index} onClick={() => setThumbnail(image)} className="border max-w-24 border-gray-500/30 rounded overflow-hidden cursor-pointer" >
-                                <img src={image} alt={`Thumbnail ${index + 1}`} />
-                            </div>
-                        ))}
-                    </div>
-
-                    <div className="border border-gray-500/30 max-w-100 rounded overflow-hidden">
-                        <img src={thumbnail} alt="Selected product" className="w-full h-full object-cover" />
-                    </div>
-                </div>
-
-                <div className="text-sm w-full md:w-1/2">
-                    <h1 className="text-3xl font-medium">{product.name}</h1>
-
-                    <div className="flex items-center gap-0.5 mt-1">
-                        {Array(5).fill('').map((_, i) => (
-                            product.rating > i ? (
-                                <svg key={i} width="14" height="13" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M8.049.927c.3-.921 1.603-.921 1.902 0l1.294 3.983a1 1 0 0 0 .951.69h4.188c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 0 0-.364 1.118l1.295 3.983c.299.921-.756 1.688-1.54 1.118L9.589 13.63a1 1 0 0 0-1.176 0l-3.389 2.46c-.783.57-1.838-.197-1.539-1.118L4.78 10.99a1 1 0 0 0-.363-1.118L1.028 7.41c-.783-.57-.38-1.81.588-1.81h4.188a1 1 0 0 0 .95-.69z" fill="#615fff" />
-                                </svg>
-                            ) : (
-                                <svg width="14" height="13" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M8.04894 0.927049C8.3483 0.00573802 9.6517 0.00574017 9.95106 0.927051L11.2451 4.90983C11.379 5.32185 11.763 5.60081 12.1962 5.60081H16.3839C17.3527 5.60081 17.7554 6.84043 16.9717 7.40983L13.5838 9.87132C13.2333 10.126 13.0866 10.5773 13.2205 10.9894L14.5146 14.9721C14.8139 15.8934 13.7595 16.6596 12.9757 16.0902L9.58778 13.6287C9.2373 13.374 8.7627 13.374 8.41221 13.6287L5.02426 16.0902C4.24054 16.6596 3.18607 15.8934 3.48542 14.9721L4.7795 10.9894C4.91338 10.5773 4.76672 10.126 4.41623 9.87132L1.02827 7.40983C0.244561 6.84043 0.647338 5.60081 1.61606 5.60081H5.8038C6.23703 5.60081 6.62099 5.32185 6.75486 4.90983L8.04894 0.927049Z" fill="#615fff" fill-opacity="0.35" />
-                                </svg>
-                            )
-                        ))}
-                        <p className="text-base ml-2">({product.rating})</p>
-                    </div>
-
-                    <div className="mt-6">
-                        <p className="text-gray-500/70 line-through">MRP: {currency}{!product.offerPrice || product.price}</p>
-                        <p className="text-2xl font-medium">MRP: {currency}{product.offerPrice || product.price}</p>
-                        <span className="text-gray-500/70">(inclusive of all taxes)</span>
-                    </div>
-
-                    <p className="text-base font-medium mt-6">About Product</p>
-                    <ul className="list-disc ml-4 text-gray-500/70">
-                        {product.description.map((desc, index) => (
-                            <li key={index}>{desc}</li>
-                        ))}
-                    </ul>
-
-                    <div className="flex items-center mt-10 gap-4 text-base">
-                        <button className="w-full py-3.5 cursor-pointer font-medium bg-gray-100 text-accent hover:bg-text-tertiary/30 transition rounded-md"
-                            onClick={() => addToCart(product._id)}>
-                            Add to Cart
-                        </button>
-                        <button className="w-full py-3.5 cursor-pointer font-medium bg-primary text-white hover:bg-primary-dark transition rounded-md"
-                            onClick={
-                                () => {
-                                    addToCart(product._id);
-                                    navigate(`/cart`);
-                                }}>
-                            Buy now
-                        </button>
-                    </div>
-                </div>
-            </div>
-            {/* Related Products */}
-            <div className="flex flex-col items-center mt-20">
-                <div className='flex flex-col items-center w-max'>
-                    <h2 className='text-3x1 font-medium'>Related Products</h2>
-                    <div className="w-20 h-0.5 bg-primary rounded-full mt-2"></div>
-                    <div className='grid grid-cols-2 sm:grid-cols-3  lg:grid-cols-4 xl:grid-cols-5 gap-4 mt-6 content-center justify-items-center'>
-                        {relatedProducts.filter((item) => item.inStock).map((product, index) => (
-                            <ProductCard key={index} product={product} />
-                        ))}
-                    </div>
-                    <button onClick={() => {navigate("/products"); scrollTo(0, 0);}} className='mx-auto cursor-pointer px-12 my-16 py-2.5 border rounded-md text-primary hover:bg-primary/10 transition'>See More</button>
-                </div>
-            </div>
-        </div>
+  useEffect(() => {
+    if (!product) return;
+    setThumbnail(firstProductImage(product));
+    setRelatedProducts(
+      products.filter((item) => item.category === product.category && item._id !== product._id).slice(0, 5)
     );
+  }, [product, products]);
+
+  if (productsLoading) {
+    return (
+      <div className="py-8 md:py-12 mb-nav animate-fade-in">
+        <div className="grid lg:grid-cols-2 gap-10">
+          <Skeleton className="aspect-square rounded-[24px]" />
+          <div className="space-y-4">
+            <Skeleton className="h-8 w-2/3" />
+            <Skeleton className="h-6 w-1/3" />
+            <Skeleton className="h-24 w-full" />
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (!product) {
+    return (
+      <div className="py-16 mb-nav">
+        <EmptyState
+          icon={Package}
+          title="Product not found"
+          description="This product doesn’t exist or is no longer available."
+          action={
+            <Button asChild>
+              <Link to="/products">Browse products</Link>
+            </Button>
+          }
+        />
+      </div>
+    );
+  }
+
+  const hasOffer = isValidOffer(product);
+  const unitPrice = getUnitPrice(product);
+  const images = product.images || [];
+
+  return (
+    <div className="py-8 md:py-12 mb-nav animate-fade-in">
+      <nav className="text-sm text-text-tertiary mb-6 flex flex-wrap gap-1">
+        <Link className="hover:text-primary" to="/">Home</Link>
+        <span>/</span>
+        <Link className="hover:text-primary" to="/products">Products</Link>
+        <span>/</span>
+        <Link className="hover:text-primary" to={`/products/${product.category.toLowerCase()}`}>
+          {product.category}
+        </Link>
+        <span>/</span>
+        <span className="text-text-primary">{product.name}</span>
+      </nav>
+
+      <div className="grid lg:grid-cols-2 gap-10 lg:gap-14">
+        {/* Gallery */}
+        <div className="flex flex-col-reverse sm:flex-row gap-3">
+          <div className="flex sm:flex-col gap-2 overflow-x-auto no-scrollbar">
+            {images.map((image, index) => (
+              <button
+                key={index}
+                type="button"
+                onClick={() => setThumbnail(image)}
+                className={`w-16 h-16 sm:w-20 sm:h-20 rounded-[16px] border overflow-hidden shrink-0 cursor-pointer transition-all ${
+                  thumbnail === image
+                    ? "border-primary ring-2 ring-primary/20"
+                    : "border-border hover:border-primary/40"
+                }`}
+              >
+                <img src={image} alt="" className="w-full h-full object-contain p-1" />
+              </button>
+            ))}
+          </div>
+          <div className="flex-1 aspect-square rounded-[24px] bg-surface-muted border border-border/50 overflow-hidden flex items-center justify-center group">
+            <img
+              src={thumbnail}
+              alt={product.name}
+              className="max-w-[85%] max-h-[85%] object-contain transition-transform duration-300 group-hover:scale-105"
+            />
+          </div>
+        </div>
+
+        {/* Purchase panel */}
+        <div className="lg:sticky lg:top-28 self-start space-y-6">
+          <div>
+            <p className="text-xs font-semibold uppercase tracking-wider text-accent mb-2">
+              {product.category}
+            </p>
+            <h1 className="font-heading text-3xl md:text-4xl font-bold text-text-primary tracking-tight">
+              {product.name}
+            </h1>
+            <div className="flex items-center gap-1.5 mt-3">
+              {Array.from({ length: 5 }).map((_, i) => (
+                <Star
+                  key={i}
+                  className={`w-4 h-4 ${i < (product.rating || 0) ? "fill-primary text-primary" : "fill-primary/20 text-primary/20"}`}
+                  strokeWidth={0}
+                />
+              ))}
+              <span className="text-sm text-text-tertiary ml-1">({product.rating || 0})</span>
+              {product.inStock ? (
+                <Badge variant="success" className="ml-2">In stock</Badge>
+              ) : (
+                <Badge variant="error" className="ml-2">Out of stock</Badge>
+              )}
+            </div>
+          </div>
+
+          <div>
+            <div className="flex items-baseline gap-3">
+              <span className="font-heading text-3xl font-bold text-text-primary">
+                {currency}{unitPrice}
+              </span>
+              {hasOffer && (
+                <span className="text-text-tertiary line-through text-lg">
+                  {currency}{product.price}
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-text-tertiary mt-1">Inclusive of all taxes</p>
+          </div>
+
+          <Card className="p-5!" padding={false}>
+            <h3 className="font-heading font-semibold text-text-primary mb-3">About this product</h3>
+            <ul className="space-y-2">
+              {(product.description || []).map((desc, index) => (
+                <li key={index} className="text-sm text-text-secondary flex gap-2">
+                  <span className="text-primary mt-1.5 w-1.5 h-1.5 rounded-full bg-primary shrink-0" />
+                  {desc}
+                </li>
+              ))}
+            </ul>
+          </Card>
+
+          <div className="flex flex-col sm:flex-row gap-3">
+            <Button
+              variant="secondary"
+              size="lg"
+              className="flex-1"
+              disabled={!product.inStock}
+              onClick={() => addToCart(product._id)}
+            >
+              <ShoppingBag className="w-4 h-4" /> Add to Cart
+            </Button>
+            <Button
+              size="lg"
+              className="flex-1"
+              disabled={!product.inStock}
+              onClick={() => {
+                addToCart(product._id);
+                navigate("/cart");
+              }}
+            >
+              <Zap className="w-4 h-4" /> Buy Now
+            </Button>
+          </div>
+
+          <Card className="p-5! bg-surface-muted/50">
+            <h3 className="font-heading font-semibold text-sm text-text-primary mb-2">Reviews</h3>
+            <p className="text-sm text-text-tertiary">
+              Customer reviews coming soon. Rated {product.rating || 0}/5 by early shoppers.
+            </p>
+          </Card>
+        </div>
+      </div>
+
+      {relatedProducts.filter((p) => p.inStock).length > 0 && (
+        <section className="mt-16 md:mt-20">
+          <SectionHeader title="Related products" subtitle="More from this category" />
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-5">
+            {relatedProducts.filter((p) => p.inStock).map((p) => (
+              <ProductCard key={p._id} product={p} />
+            ))}
+          </div>
+          <div className="flex justify-center mt-10">
+            <Button variant="outline" onClick={() => { navigate("/products"); scrollTo(0, 0); }}>
+              See more
+            </Button>
+          </div>
+        </section>
+      )}
+    </div>
+  );
 };
 
 export default ProductDetails;

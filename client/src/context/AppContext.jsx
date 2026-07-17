@@ -16,9 +16,12 @@ export const AppContextProvider = ({ children }) => {
     const navigate = useNavigate();
     // States
     const [user, setUser] = useState(null);
+    // Seller Status
     const [isSeller, setIsSeller] = useState(false);
     const [showUserLogin, setShowUserLogin] = useState(false);
     const [products, setProducts] = useState([]);
+    const [productsLoading, setProductsLoading] = useState(true);
+    const [productsError, setProductsError] = useState(null);
     const [cartItems, setCartItems] = useState({});
     const [searchQuery, setSearchQuery] = useState("");
 
@@ -42,8 +45,6 @@ export const AppContextProvider = ({ children }) => {
         try {
             const { data } = await axios.get("/api/users/is-auth");
 
-            console.log("User auth response:", data);
-
             if (data.success) {
                 setUser(data.user);
                 setCartItems(data.cartItems || {});
@@ -61,18 +62,25 @@ export const AppContextProvider = ({ children }) => {
     // Helper Functions
     // Fetch all products
     const fetchProducts = async () => {
+        setProductsLoading(true);
+        setProductsError(null);
         try {
             const { data } = await axios.get("/api/products/list");
             if (data.success) {
                 setProducts(data.products);
             } else {
                 setProducts([]);
+                setProductsError(data.message || "Error fetching products");
                 console.log("Error fetching products:", data.message);
                 toast.error(data.message);
             }
         } catch (error) {
+            setProducts([]);
+            setProductsError("Error fetching products");
             console.log("Error fetching products:", error);
             toast.error("Error fetching products");
+        } finally {
+            setProductsLoading(false);
         }
     };
 
@@ -104,7 +112,7 @@ export const AppContextProvider = ({ children }) => {
         toast.success("Cart Updated");
     };
 
-    // Remove products from cart
+    // Remove one unit from cart
     const removeFromCart = (itemID) => {
         let cartData = structuredClone(cartItems);
 
@@ -119,6 +127,14 @@ export const AppContextProvider = ({ children }) => {
         toast.success("Item removed from cart");
     };
 
+    // Remove entire product entry from cart
+    const clearFromCart = (itemID) => {
+        let cartData = structuredClone(cartItems);
+        delete cartData[itemID];
+        setCartItems(cartData);
+        toast.success("Item removed from cart");
+    };
+
     // Get total abound
     const getCartAmount = () => {
         let total = 0;
@@ -126,9 +142,10 @@ export const AppContextProvider = ({ children }) => {
         for (let itemID in cartItems) {
             let product = products.find((product) => product._id === itemID);
             if (product) {
-                if (product.offerPrice > 0)
-                    total += product.offerPrice * cartItems[itemID];
-                else total += product.price * cartItems[itemID];
+                const offer = Number(product.offerPrice) || 0;
+                const price = Number(product.price) || 0;
+                const unit = offer > 0 && offer < price ? offer : price;
+                total += unit * cartItems[itemID];
             }
         }
         return (total * 100) / 100;
@@ -170,10 +187,13 @@ export const AppContextProvider = ({ children }) => {
         showUserLogin,
         setShowUserLogin,
         products,
+        productsLoading,
+        productsError,
         currency,
         addToCart,
         updateCartItem,
         removeFromCart,
+        clearFromCart,
         cartItems,
         setCartItems,
         searchQuery,

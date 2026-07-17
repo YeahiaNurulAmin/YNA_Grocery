@@ -195,16 +195,16 @@ const OrdersList = () => {
     );
 
     return (
-        <div className="md:p-10 p-4 space-y-6 no-scrollbar flex-1 h-[95vh] overflow-y-scroll bg-surface/10">
+        <div className="space-y-6 animate-fade-in max-w-5xl">
             {/* Active Orders Header */}
-            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 max-w-4xl pb-4 border-b border-gray-200">
+            <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-border">
                 <div>
-                    <h2 className="text-xl font-semibold text-primary">Active Orders ({activeOrders.length})</h2>
-                    <p className="text-xs text-gray-500 font-medium mt-0.5">Manage and update active incoming orders</p>
+                    <h2 className="font-heading text-2xl font-bold text-text-primary">Active Orders ({activeOrders.length})</h2>
+                    <p className="text-sm text-text-secondary mt-1">Manage and update active incoming orders</p>
                 </div>
                 <button
                     onClick={addDemoOrderHandler}
-                    className="cursor-pointer bg-primary hover:bg-primary-dark text-white font-medium py-2 px-4 rounded-md transition text-sm flex items-center gap-1.5 shadow-sm self-start sm:self-auto"
+                    className="cursor-pointer bg-primary hover:bg-primary-dark text-white font-semibold py-2.5 px-4 rounded-[16px] transition text-sm flex items-center gap-1.5 shadow-sm self-start sm:self-auto"
                 >
                     <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
@@ -214,7 +214,7 @@ const OrdersList = () => {
             </div>
 
             {/* Filter Tabs */}
-            <div className="flex flex-wrap gap-2 max-w-4xl bg-gray-100/70 p-1.5 rounded-lg border border-gray-200">
+            <div className="flex flex-wrap gap-2 bg-surface-muted p-1.5 rounded-[16px] border border-border">
                 {[
                     { id: "All", label: "All Active", count: activeOrders.length },
                     { id: "Order Placed", label: "Placed", count: activeOrders.filter(o => o.status === "Order Placed" || !o.status).length },

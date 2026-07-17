@@ -1,66 +1,126 @@
-import React from "react";
+/**
+ * ProductCard — premium product tile with image, price, rating, stock, quick-add.
+ * Used on Home (BestSeller), All Products, Category, Search, Related products.
+ */
+import { Star, Plus, Minus, ShoppingBag } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
+import { Badge } from "./ui";
 
-const ProductCard = ({product}) => {
-    const {currency, cartItems, addToCart, removeFromCart, navigate} = useAppContext();
-    
-    return product && (
-        <div
-        onClick={() => {
-            navigate(`/products/${product.category.toLowerCase()}/${product._id}`);
-            scrollTo(0, 0);
-            console.log("Product Card Clicked", product);
-        }}
-        className="border border-gray-500/20 rounded-md md:px-4 px-3 py-2 bg-white min-w-46 max-w-56 w-full">
-            <div className="group cursor-pointer flex items-center justify-center px-2">
-                <img className="group-hover:scale-105 transition max-w-26 md:max-w-36" src={product.images[0]} alt={product.name} />
-            </div>
-            <div className="text-gray-500/60 text-sm">
-                <p>{product.category}</p>
-                <p className="text-gray-700 font-medium text-lg truncate w-full">{product.name}</p>
-                <div className="flex items-center gap-0.5">
+const ProductCard = ({ product }) => {
+  const { currency, cartItems, addToCart, removeFromCart, navigate } = useAppContext();
 
-                    {Array(5).fill('').map((_, i) => (
-                        product.rating > i ? (
-                            <svg className="text-primary md:w-3.5 w3" key={i} width="14" height="13" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M8.049.927c.3-.921 1.603-.921 1.902 0l1.294 3.983a1 1 0 0 0 .951.69h4.188c.969 0 1.371 1.24.588 1.81l-3.388 2.46a1 1 0 0 0-.364 1.118l1.295 3.983c.299.921-.756 1.688-1.54 1.118L9.589 13.63a1 1 0 0 0-1.176 0l-3.389 2.46c-.783.57-1.838-.197-1.539-1.118L4.78 10.99a1 1 0 0 0-.363-1.118L1.028 7.41c-.783-.57-.38-1.81.588-1.81h4.188a1 1 0 0 0 .95-.69z" fill="currentColor"  />
-                            </svg>
-                        ) : (
-                            <svg className="text-primary/30 md:w-3.5 w3" width="14" height="13" viewBox="0 0 18 17" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                <path d="M8.04894 0.927049C8.3483 0.00573802 9.6517 0.00574017 9.95106 0.927051L11.2451 4.90983C11.379 5.32185 11.763 5.60081 12.1962 5.60081H16.3839C17.3527 5.60081 17.7554 6.84043 16.9717 7.40983L13.5838 9.87132C13.2333 10.126 13.0866 10.5773 13.2205 10.9894L14.5146 14.9721C14.8139 15.8934 13.7595 16.6596 12.9757 16.0902L9.58778 13.6287C9.2373 13.374 8.7627 13.374 8.41221 13.6287L5.02426 16.0902C4.24054 16.6596 3.18607 15.8934 3.48542 14.9721L4.7795 10.9894C4.91338 10.5773 4.76672 10.126 4.41623 9.87132L1.02827 7.40983C0.244561 6.84043 0.647338 5.60081 1.61606 5.60081H5.8038C6.23703 5.60081 6.62099 5.32185 6.75486 4.90983L8.04894 0.927049Z" fill="currentColor" />
-                            </svg>
-                        )
-                    ))}
-                    <p>({product.rating})</p>
-                </div>
-                <div className="flex items-end justify-between mt-3 ">
-                    <p className="md:text-xl text-base font-medium text-text-secondary">
-                        {currency}{product.offerPrice || product.price} <span className="text-text-tertiary md:text-sm text-xs line-through">{currency}{!product.offerPrice || product.price}</span>
-                    </p>
-                    <div onClick={(e) => e.stopPropagation()} className="text-text-primary ">
-                        {!cartItems?.[product._id] ? (
-                            <button className="cursor-pointer flex items-center justify-center gap-1 bg-primary/30 border border-primary/30 md:w-[80px] w-[64px] h-[34px] rounded text-accent-dark hover:text-accent-light font-medium" onClick={() => {addToCart(product._id)}} >
-                                <svg width="14" height="14" viewBox="0 0 14 14" fill="none" xmlns="http://www.w3.org/2000/svg">
-                                    <path d="M.583.583h2.333l1.564 7.81a1.17 1.17 0 0 0 1.166.94h5.67a1.17 1.17 0 0 0 1.167-.94l.933-4.893H3.5m2.333 8.75a.583.583 0 1 1-1.167 0 .583.583 0 0 1 1.167 0m6.417 0a.583.583 0 1 1-1.167 0 .583.583 0 0 1 1.167 0" stroke="#ff6b35" stroke-linecap="round" stroke-linejoin="round" />
-                                </svg>
-                                Add
-                            </button>
-                        ) : (
-                            <div className="flex items-center justify-center gap-2 md:w-25 w-20 h-[34px] bg-primary/30 rounded select-none">
-                                <button onClick={() => {removeFromCart(product._id)}} className="cursor-pointer text-md px-2 h-full text-accent" >
-                                    -
-                                </button>
-                                <span className="w-5 text-center">{cartItems?.[product._id]}</span>
-                                <button onClick={() => {addToCart(product._id)}} className="cursor-pointer text-md px-2 h-full text-accent" >
-                                    +
-                                </button>
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </div>
+  if (!product) return null;
+
+  const image = product.images?.[0] || product.image?.[0];
+  const hasOffer = product.offerPrice && product.offerPrice < product.price;
+  const discount = hasOffer
+    ? Math.round(((product.price - product.offerPrice) / product.price) * 100)
+    : 0;
+  const qty = cartItems?.[product._id] || 0;
+
+  return (
+    <article
+      onClick={() => {
+        navigate(`/products/${product.category.toLowerCase()}/${product._id}`);
+        scrollTo(0, 0);
+      }}
+      className="group relative flex flex-col bg-bg-white rounded-[24px] border border-border/50 shadow-sm overflow-hidden cursor-pointer transition-all duration-250 hover:-translate-y-1 hover:shadow-lg hover:border-primary/20"
+    >
+      <div className="relative aspect-square bg-gradient-to-b from-surface-muted to-bg-white p-5 flex items-center justify-center overflow-hidden">
+        {hasOffer && (
+          <Badge variant="accent" className="absolute top-3 left-3 z-10">
+            −{discount}%
+          </Badge>
+        )}
+        {!product.inStock && (
+          <Badge variant="error" className="absolute top-3 right-3 z-10">
+            Out of stock
+          </Badge>
+        )}
+        {product.inStock && product.quantity != null && product.quantity <= 5 && (
+          <Badge variant="warning" className="absolute top-3 right-3 z-10">
+            Low stock
+          </Badge>
+        )}
+        <img
+          src={image}
+          alt={product.name}
+          className="max-h-[85%] max-w-[85%] object-contain transition-transform duration-300 group-hover:scale-110"
+          loading="lazy"
+        />
+      </div>
+
+      <div className="flex flex-col flex-1 p-4 pt-3 gap-1.5">
+        <p className="text-[11px] font-semibold uppercase tracking-wider text-text-tertiary">
+          {product.category}
+        </p>
+        <h3 className="font-heading font-semibold text-text-primary text-[15px] leading-snug line-clamp-2 min-h-[2.5rem]">
+          {product.name}
+        </h3>
+
+        <div className="flex items-center gap-1 text-primary">
+          {Array.from({ length: 5 }).map((_, i) => (
+            <Star
+              key={i}
+              className={`w-3 h-3 ${i < (product.rating || 0) ? "fill-primary" : "fill-primary/20 text-primary/20"}`}
+              strokeWidth={0}
+            />
+          ))}
+          <span className="text-xs text-text-tertiary ml-0.5">({product.rating || 0})</span>
         </div>
-    );
+
+        <div className="mt-auto pt-3 flex items-end justify-between gap-2">
+          <div>
+            <p className="font-heading text-lg font-bold text-text-primary leading-none">
+              {currency}
+              {product.offerPrice || product.price}
+            </p>
+            {hasOffer && (
+              <p className="text-xs text-text-tertiary line-through mt-0.5">
+                {currency}{product.price}
+              </p>
+            )}
+          </div>
+
+          <div onClick={(e) => e.stopPropagation()}>
+            {!product.inStock ? (
+              <span className="text-xs text-text-tertiary px-2">Unavailable</span>
+            ) : qty === 0 ? (
+              <button
+                type="button"
+                onClick={() => addToCart(product._id)}
+                className="h-10 px-3.5 rounded-[14px] bg-bg-light-mint text-primary border border-primary/20 font-semibold text-sm flex items-center gap-1.5 hover:bg-primary hover:text-white transition-all duration-200 cursor-pointer"
+                aria-label={`Add ${product.name} to cart`}
+              >
+                <ShoppingBag className="w-4 h-4" strokeWidth={2} />
+                Add
+              </button>
+            ) : (
+              <div className="h-10 flex items-center rounded-[14px] bg-bg-light-mint border border-primary/20 select-none">
+                <button
+                  type="button"
+                  onClick={() => removeFromCart(product._id)}
+                  className="w-9 h-full flex items-center justify-center text-primary hover:bg-primary/10 rounded-l-[14px] cursor-pointer"
+                  aria-label="Decrease quantity"
+                >
+                  <Minus className="w-3.5 h-3.5" />
+                </button>
+                <span className="w-7 text-center text-sm font-bold text-text-primary">{qty}</span>
+                <button
+                  type="button"
+                  onClick={() => addToCart(product._id)}
+                  className="w-9 h-full flex items-center justify-center text-primary hover:bg-primary/10 rounded-r-[14px] cursor-pointer"
+                  aria-label="Increase quantity"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+    </article>
+  );
 };
 
-export default ProductCard
+export default ProductCard;

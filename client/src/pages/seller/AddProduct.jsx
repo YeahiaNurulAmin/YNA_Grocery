@@ -1,84 +1,177 @@
-import React, { useState } from 'react'
-import { categories } from '../../assets/assets'
+/**
+ * AddProduct — seller form to create a product (images + details).
+ * Route: /seller (index). Posts multipart to /api/products/add.
+ */
+import { useState } from "react";
+import { Plus, ImagePlus } from "lucide-react";
+import { categories } from "../../assets/assets";
+import { useAppContext } from "../../context/AppContext";
+import { Button, Input, Textarea, Card, SectionHeader } from "../../components/ui";
+import toast from "react-hot-toast";
 
 const AddProduct = () => {
+  const { axios, navigate, fetchProducts } = useAppContext();
+  const [loading, setLoading] = useState(false);
+  const [productData, setProductData] = useState({
+    name: "",
+    description: "",
+    category: "",
+    price: "",
+    offerPrice: "",
+    images: [],
+  });
 
-    const [productData, setProductData] = useState({
-        name: "",
-        description: "",
-        category: "",
-        price: "",
-        offerPrice: "",
-        images: []
-    });
+  const submitHandler = async (e) => {
+    e.preventDefault();
+    try {
+      if (!productData.name || !productData.category || !productData.price) {
+        toast.error("Please fill all required fields");
+        return;
+      }
+      const files = productData.images.filter(Boolean);
+      if (files.length === 0) {
+        toast.error("At least one image is required");
+        return;
+      }
+      setLoading(true);
+      const formData = new FormData();
+      formData.append(
+        "productDate",
+        JSON.stringify({
+          name: productData.name,
+          description: productData.description,
+          category: productData.category,
+          price: productData.price,
+          offerPrice: productData.offerPrice,
+        })
+      );
+      files.forEach((image) => formData.append("images", image));
 
-    // Handle form submission
-    const submitHandler = async (e) => {
-        e.preventDefault();
-        console.log(productData);
-
+      const { data } = await axios.post("/api/products/add", formData, {
+        headers: { "Content-Type": "multipart/form-data" },
+      });
+      if (data.success) {
+        toast.success(data.message || "Product added successfully");
+        setProductData({
+          name: "",
+          description: "",
+          category: "",
+          price: "",
+          offerPrice: "",
+          images: [],
+        });
+        fetchProducts?.();
+        navigate("/seller/products");
+      } else {
+        toast.error(data.message || "Error adding product");
+      }
+    } catch (error) {
+      toast.error("Error adding product");
+      console.error(error);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    return (
-        <div className="no-scrollbar overflow-y-scroll py-10 flex flex-col justify-between bg-white dark:bg-slate-900 text-gray-900 dark:text-slate-100">
-            <form onSubmit={submitHandler} className="md:p-10 p-4 space-y-5 max-w-lg">
-                <div>
-                    <p className="text-base font-medium">Product Image</p>
-                    <div className="flex flex-wrap items-center gap-3 mt-2">
-                        {Array(4).fill('').map((_, index) => (
-                            <label key={index} htmlFor={`image${index}`}>
-                                <input onChange={(e) => {
-                                    const file = e.target.files[0];
-                                    if (file) {
-                                        const newImages = [...productData.images];
-                                        newImages[index] = file;
-                                        setProductData({ ...productData, images: newImages });
-                                    }
-                                }} accept="image/*" type="file" id={`image${index}`} hidden />
-                                <div className="w-24 h-24 flex items-center justify-center">
-                                    {productData.images[index] ? <img src={URL.createObjectURL(productData.images[index])} alt="" className="rounded w-full h-full object-cover border dark:border-slate-700" /> :
-                                        <div className="w-24 h-24 flex items-center justify-center border-2 border-dashed border-primary/50 rounded-lg bg-primary/5 cursor-pointer hover:bg-primary/10 hover:border-primary transition-all text-primary/60">
-                                            <svg xmlns="http://www.w3.org/2000/svg" className="w-8 h-8" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M12 4v16m8-8H4" />
-                                            </svg>
-                                        </div>
-                                    }
-                                </div>
-                            </label>
-                        ))}
+  return (
+    <div className="animate-fade-in max-w-xl">
+      <SectionHeader
+        eyebrow="Catalog"
+        title="Add product"
+        subtitle="Upload images and set pricing for a new grocery item."
+      />
+      <Card className="!p-6">
+        <form onSubmit={submitHandler} className="space-y-5">
+          <div>
+            <p className="text-sm font-medium text-text-secondary mb-2">Product images</p>
+            <div className="flex flex-wrap gap-3">
+              {Array(4)
+                .fill("")
+                .map((_, index) => (
+                  <label key={index} htmlFor={`image${index}`} className="cursor-pointer">
+                    <input
+                      accept="image/*"
+                      type="file"
+                      id={`image${index}`}
+                      hidden
+                      onChange={(e) => {
+                        const file = e.target.files[0];
+                        if (file) {
+                          const newImages = [...productData.images];
+                          newImages[index] = file;
+                          setProductData({ ...productData, images: newImages });
+                        }
+                      }}
+                    />
+                    <div className="w-20 h-20 rounded-[16px] border-2 border-dashed border-primary/30 bg-bg-light-mint/50 flex items-center justify-center overflow-hidden hover:border-primary transition-colors">
+                      {productData.images[index] ? (
+                        <img
+                          src={URL.createObjectURL(productData.images[index])}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
+                      ) : (
+                        <ImagePlus className="w-6 h-6 text-primary/50" />
+                      )}
                     </div>
-                </div>
-                <div className="flex flex-col gap-1 max-w-md">
-                    <label className="text-base font-medium" htmlFor="product-name">Product Name</label>
-                    <input id="product-name" type="text" value={productData.name} onChange={(e) => setProductData({ ...productData, name: e.target.value })} placeholder="Type here" className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:border-primary transition-colors" required />
-                </div>
-                <div className="flex flex-col gap-1 max-w-md">
-                    <label className="text-base font-medium" htmlFor="product-description">Product Description</label>
-                    <textarea id="product-description" rows={4} value={productData.description} onChange={(e) => setProductData({ ...productData, description: e.target.value })} className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:border-primary transition-colors resize-none" placeholder="Type here"></textarea>
-                </div>
-                <div className="w-full flex flex-col gap-1">
-                    <label className="text-base font-medium" htmlFor="category">Category</label>
-                    <select id="category" value={productData.category} onChange={(e) => setProductData({ ...productData, category: e.target.value })} className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:border-primary transition-colors">
-                        <option value="">Select Category</option>
-                        {categories.map((item, index) => (
-                            <option key={index} value={item.text} className="bg-white dark:bg-slate-800">{item.text}</option>
-                        ))}
-                    </select>
-                </div>
-                <div className="flex items-center gap-5 flex-wrap">
-                    <div className="flex-1 flex flex-col gap-1 w-32">
-                        <label className="text-base font-medium" htmlFor="product-price">Product Price</label>
-                        <input id="product-price" type="number" value={productData.price} onChange={(e) => setProductData({ ...productData, price: e.target.value })} placeholder="0" className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:border-primary transition-colors" required />
-                    </div>
-                    <div className="flex-1 flex flex-col gap-1 w-32">
-                        <label className="text-base font-medium" htmlFor="offer-price">Offer Price</label>
-                        <input id="offer-price" type="number" value={productData.offerPrice} onChange={(e) => setProductData({ ...productData, offerPrice: e.target.value })} placeholder="0" className="outline-none md:py-2.5 py-2 px-3 rounded border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:border-primary transition-colors" required />
-                    </div>
-                </div>
-                <button type='submit' className="px-8 py-2.5 bg-primary hover:bg-primary-dark cursor-pointer text-white font-medium rounded transition-colors">ADD</button>
-            </form>
-        </div>
-    )
-}
+                  </label>
+                ))}
+            </div>
+          </div>
 
-export default AddProduct
+          <Input
+            label="Product name"
+            value={productData.name}
+            onChange={(e) => setProductData({ ...productData, name: e.target.value })}
+            required
+          />
+          <Textarea
+            label="Description"
+            value={productData.description}
+            onChange={(e) => setProductData({ ...productData, description: e.target.value })}
+            placeholder="One benefit per line or short copy"
+          />
+          <div className="space-y-1.5">
+            <label className="block text-sm font-medium text-text-secondary" htmlFor="category">
+              Category
+            </label>
+            <select
+              id="category"
+              value={productData.category}
+              onChange={(e) => setProductData({ ...productData, category: e.target.value })}
+              className="w-full h-12 px-4 rounded-[16px] bg-bg-white border border-border text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
+              required
+            >
+              <option value="">Select category</option>
+              {categories.map((item, index) => (
+                <option key={index} value={item.path}>
+                  {item.text}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <Input
+              label="Price"
+              type="number"
+              value={productData.price}
+              onChange={(e) => setProductData({ ...productData, price: e.target.value })}
+              required
+            />
+            <Input
+              label="Offer price"
+              type="number"
+              value={productData.offerPrice}
+              onChange={(e) => setProductData({ ...productData, offerPrice: e.target.value })}
+            />
+          </div>
+          <Button type="submit" loading={loading} className="w-full sm:w-auto">
+            <Plus className="w-4 h-4" /> Add product
+          </Button>
+        </form>
+      </Card>
+    </div>
+  );
+};
+
+export default AddProduct;

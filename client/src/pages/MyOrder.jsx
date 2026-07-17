@@ -1,82 +1,136 @@
-import React, { useEffect } from 'react';
-import { useAppContext } from '../context/AppContext';
+/**
+ * MyOrder — customer order history list.
+ * Route: /my-orders. Fetches from /api/order/user.
+ */
+import React, { useEffect } from "react";
+import { Package, ShoppingBag } from "lucide-react";
+import { useAppContext } from "../context/AppContext";
+import { Card, Badge, SectionHeader, EmptyState, Button } from "../components/ui";
+
+const statusVariant = (status) => {
+  if (status === "Delivered") return "success";
+  if (status === "Cancelled") return "error";
+  if (status === "Out for delivery" || status === "Shipped") return "info";
+  return "accent";
+};
 
 const MyOrder = () => {
-    const [myOrders, setMyOrders] = React.useState([]);
-    const { currency, axios, user } = useAppContext();
+  const [myOrders, setMyOrders] = React.useState([]);
+  const [loading, setLoading] = React.useState(true);
+  const { currency, axios, user, navigate, setShowUserLogin } = useAppContext();
 
-
-    const fetchMyOrders = async () => {
-        try {
-            const { data } = await axios.get("/api/order/user");
-
-            if (data.success) {
-                setMyOrders(data.orders);
-            } else {
-                console.error("Error fetching orders:", data.message);
-            }
-        } catch (error) {
-            console.error("Error fetching my orders:", error);
-        }
+  const fetchMyOrders = async () => {
+    try {
+      const { data } = await axios.get("/api/order/user");
+      if (data.success) setMyOrders(data.orders);
+      else console.error("Error fetching orders:", data.message);
+    } catch (error) {
+      console.error("Error fetching my orders:", error);
+    } finally {
+      setLoading(false);
     }
+  };
 
-    useEffect(() => {
-        if(user) {
-            fetchMyOrders();
-        }
-    }, [user]);
+  useEffect(() => {
+    if (user) fetchMyOrders();
+    else setLoading(false);
+  }, [user]);
 
+  if (!user) {
     return (
-        <div className='mt-16 pb-16'>
-            <div className='flex flex-col items-end w-max mb-8'>
-                <h2 className='text-2xl font-medium text-text-secondary uppercase'>My orders</h2>
-                <div className='w-24 h-0.5 bg-primary rounded-full right-0 mt-1'></div>
-            </div>
+      <div className="py-16 mb-nav">
+        <EmptyState
+          icon={ShoppingBag}
+          title="Sign in to view orders"
+          description="Your order history appears here after you log in."
+          action={<Button onClick={() => setShowUserLogin(true)}>Login</Button>}
+        />
+      </div>
+    );
+  }
 
-            {myOrders.length > 0 ? (
-                <div className="space-y-6">
-                    {myOrders.map((order, idx) => (
-                        <div key={idx} className='border border-black/10 rounded-lg p-6 max-w-4xl text-sm md:text-base text-gray-500 font-medium'>
-                            <div className='flex flex-col sm:flex-row justify-between mb-6'>
-                                <span>OrderId : {order._id}</span>
-                                <span>Payment : {order.paymentType}</span>
-                                <span className='text-accent font-medium'>Total Amount : {currency}{order.amount}</span>
-                            </div>
+  return (
+    <div className="py-10 md:py-14 mb-nav animate-fade-in max-w-4xl mx-auto">
+      <SectionHeader
+        eyebrow="Account"
+        title="My orders"
+        subtitle="Track deliveries and revisit past purchases."
+      />
 
-                            <div className='flex flex-col gap-5'>
-                                {order.items.map((item, itemIdx) => (
-                                    <div key={itemIdx} className={`flex flex-col md:flex-row md:items-center justify-between gap-5 ${itemIdx > 0 ? 'border-t border-black/10 pt-5' : ''}`}>
-                                        <div className="flex items-center gap-4 md:w-5/12">
-                                            <div className="bg-primary/10 p-2 rounded-lg w-24 h-24 flex justify-center items-center">
-                                                <img src={item.product?.images?.[0]} alt={item.product?.name} className="w-full h-full object-cover mix-blend-multiply" />
-                                            </div>
-                                            <div>
-                                                <h3 className="font-semibold text-gray-800 text-[17px]">{item.product?.name}</h3>
-                                                <p className="text-gray-500 text-sm mt-1">Category: {item.product?.category}</p>
-                                            </div>
-                                        </div>
-
-                                        <div className='flex flex-col justify-center md:m1-8 mb-4 md:mb-e'>
-                                            <p>Quantity: {item.quantity}</p>
-                                            <p>Status: {order.status}</p>
-                                            <p>Date: {new Date(order.createdAt).toLocaleDateString('en-US')}</p>
-                                        </div>
-
-                                        <div className='text-[#4CB08A] font-medium md:w-3/12 md:text-right'>
-                                            <p>Amount: {currency}{item.quantity * (item.product?.offerPrice || item.product?.price || 0)}</p>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-            ) : (
-                <p>No orders found</p>
-            )}
-
+      {loading ? (
+        <div className="space-y-4">
+          {[1, 2].map((i) => (
+            <div key={i} className="skeleton h-40 rounded-[24px]" />
+          ))}
         </div>
-    )
-}
+      ) : myOrders.length === 0 ? (
+        <EmptyState
+          icon={Package}
+          title="No orders yet"
+          description="When you place an order, it will show up here."
+          action={<Button onClick={() => navigate("/products")}>Start shopping</Button>}
+        />
+      ) : (
+        <div className="space-y-4">
+          {myOrders.map((order) => (
+            <Card key={order._id} className="!p-5 md:!p-6">
+              <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-border">
+                <div>
+                  <p className="text-xs text-text-tertiary">Order ID</p>
+                  <p className="font-mono text-sm text-text-primary mt-0.5 truncate max-w-[220px]">
+                    {order._id}
+                  </p>
+                </div>
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="outline">{order.paymentType}</Badge>
+                  <Badge variant={statusVariant(order.status)}>{order.status}</Badge>
+                  <span className="font-heading font-bold text-primary">
+                    {currency}{order.amount}
+                  </span>
+                </div>
+              </div>
 
-export default MyOrder
+              <div className="space-y-4">
+                {order.items.map((item, itemIdx) => (
+                  <div
+                    key={itemIdx}
+                    className={`flex flex-col md:flex-row md:items-center justify-between gap-4 ${
+                      itemIdx > 0 ? "pt-4 border-t border-border" : ""
+                    }`}
+                  >
+                    <div className="flex items-center gap-4 min-w-0">
+                      <div className="w-16 h-16 rounded-[14px] bg-bg-light-mint flex items-center justify-center shrink-0">
+                        <img
+                          src={item.product?.images?.[0]}
+                          alt={item.product?.name}
+                          className="max-w-[80%] max-h-[80%] object-contain"
+                        />
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="font-heading font-semibold text-text-primary truncate">
+                          {item.product?.name}
+                        </h3>
+                        <p className="text-xs text-text-tertiary mt-0.5">
+                          {item.product?.category} · Qty {item.quantity}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="text-sm text-text-secondary md:text-right space-y-0.5">
+                      <p>{new Date(order.createdAt).toLocaleDateString()}</p>
+                      <p className="font-semibold text-text-primary">
+                        {currency}
+                        {item.quantity * (item.product?.offerPrice || item.product?.price || 0)}
+                      </p>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </Card>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default MyOrder;

@@ -1,15 +1,33 @@
+/**
+ * Seller shell — sidebar navigation, top bar, dark mode, and order notification polling.
+ * Used as the layout wrapper for all /seller/* routes via React Router Outlet in App.jsx.
+ */
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { YNALogo } from "../../assets/YNALogo.jsx";
-import { assets } from "../../assets/assets.js";
 import { useAppContext } from "../../context/AppContext";
 import toast from "react-hot-toast";
 import React, { useState, useEffect, useRef, useCallback } from "react";
+import {
+    LayoutDashboard,
+    PlusCircle,
+    Package,
+    ShoppingBag,
+    History,
+    Ticket,
+    Bell,
+    Settings,
+    User,
+    Sun,
+    Moon,
+    LogOut,
+    ChevronRight,
+} from "lucide-react";
+import { Badge, Button } from "../../components/ui";
 
-// ── Web Audio helper: synthesise a soft chime without any external file ───────
 const playNotificationChime = () => {
     try {
         const ctx = new (window.AudioContext || window.webkitAudioContext)();
-        const notes = [880, 1108, 1318];          // A5 – C#6 – E6  (major chord)
+        const notes = [880, 1108, 1318];
         notes.forEach((freq, i) => {
             const osc = ctx.createOscillator();
             const gain = ctx.createGain();
@@ -26,7 +44,6 @@ const playNotificationChime = () => {
     } catch (_) { /* audio not supported */ }
 };
 
-// ── Seen-orders localStorage helper ──────────────────────────────────────────
 const SEEN_KEY = "yna_admin_seen_orders";
 const getSeenIds = () => {
     try { return new Set(JSON.parse(localStorage.getItem(SEEN_KEY) || "[]")); }
@@ -38,11 +55,16 @@ const addSeenIds = (ids) => {
     localStorage.setItem(SEEN_KEY, JSON.stringify([...current]));
 };
 
-const Seller = () => {
+const navLinkClass = ({ isActive }) =>
+    `group flex items-center gap-3 px-3 py-2.5 rounded-[14px] text-sm font-medium transition-all duration-200 ${
+        isActive
+            ? "bg-primary/10 text-primary shadow-sm"
+            : "text-text-secondary hover:text-text-primary hover:bg-surface-muted"
+    }`;
 
+const Seller = () => {
     const { navigate, axios } = useAppContext();
 
-    // ── Dark Mode ───────────────────────────────────────────────────────────
     const [isDark, setIsDark] = useState(() => {
         return localStorage.getItem("yna_theme") === "dark";
     });
@@ -58,7 +80,6 @@ const Seller = () => {
         }
     }, [isDark]);
 
-    // ── Notifications ───────────────────────────────────────────────────────
     const [notifications, setNotifications] = useState([]);
     const [showNotifPanel, setShowNotifPanel] = useState(false);
     const notifPanelRef = useRef(null);
@@ -83,11 +104,13 @@ const Seller = () => {
                 addSeenIds(newOrders.map(o => o._id));
                 newOrders.forEach(o => {
                     toast.custom((t) => (
-                        <div className={`flex items-start gap-3 bg-white dark:bg-slate-800 border border-green-200 rounded-xl shadow-xl px-4 py-3 max-w-sm ${t.visible ? "animate-enter" : "animate-leave"}`}>
-                            <span className="text-2xl">🛍️</span>
+                        <div className={`flex items-start gap-3 bg-bg-white border border-primary/20 rounded-[16px] shadow-lg px-4 py-3 max-w-sm ${t.visible ? "animate-enter" : "animate-leave"}`}>
+                            <div className="w-9 h-9 rounded-[12px] bg-primary/10 flex items-center justify-center shrink-0">
+                                <ShoppingBag className="w-4 h-4 text-primary" strokeWidth={2} />
+                            </div>
                             <div>
-                                <p className="font-bold text-gray-900 text-sm">New Order!</p>
-                                <p className="text-xs text-gray-600">
+                                <p className="font-heading font-bold text-text-primary text-sm">New Order!</p>
+                                <p className="text-xs text-text-secondary">
                                     {`${o.address?.firstName || ""} ${o.address?.lastName || ""}`.trim()} — ${o.amount}
                                 </p>
                             </div>
@@ -98,9 +121,7 @@ const Seller = () => {
         } catch (_) { /* silent fail on polling */ }
     }, [axios]);
 
-    // Initialise seen IDs on first mount and start polling
     useEffect(() => {
-        // Seed existing orders as "seen" on first load so we only notify about NEW ones
         axios.get("/api/order/seller").then(({ data }) => {
             if (data.success) addSeenIds(data.orders.map(o => o._id));
         }).catch(() => { });
@@ -109,7 +130,6 @@ const Seller = () => {
         return () => clearInterval(pollingRef.current);
     }, [checkForNewOrders, axios]);
 
-    // Close notification panel when clicking outside
     useEffect(() => {
         const handler = (e) => {
             if (notifPanelRef.current && !notifPanelRef.current.contains(e.target)) {
@@ -122,29 +142,19 @@ const Seller = () => {
 
     const unreadCount = notifications.length;
 
-    // ── Sidebar links ───────────────────────────────────────────────────────
-    const sidebarLinks = [
-        { name: "Add Product", path: "/seller", icon: <img src={assets.add_icon} alt="add_icon" className="w-6 h-6 dark:invert" /> },
-        { name: "Products", path: "/seller/products", icon: <img src={assets.product_list_icon} alt="product_list_icon" className="w-6 h-6 dark:invert" /> },
-        { name: "Orders", path: "/seller/orders", icon: <img src={assets.order_icon} alt="order_icon" className="w-6 h-6 dark:invert" /> },
-        {
-            name: "History",
-            path: "/seller/history",
-            icon: (
-                <svg className="w-6 h-6 text-current" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
-                </svg>
-            )
-        },
-        {
-            name: "Coupons",
-            path: "/seller/coupons",
-            icon: (
-                <svg className="w-6 h-6 text-current" fill="none" stroke="currentColor" strokeWidth="2.2" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M9 14.25l1.5-1.5m3-3l1.5-1.5M9.75 9.75h.008v.008H9.75V9.75zm4.5 4.5h.008v.008h-.008v-.008zM12 3c-4.97 0-9 4.03-9 9s4.03 9 9 9 9-4.03 9-9-4.03-9-9-9z" />
-                </svg>
-            )
-        },
+    const mainLinks = [
+        { name: "Dashboard", path: "/seller/dashboard", icon: LayoutDashboard, end: false },
+        { name: "Add Product", path: "/seller", icon: PlusCircle, end: true },
+        { name: "Products", path: "/seller/products", icon: Package, end: false },
+        { name: "Orders", path: "/seller/orders", icon: ShoppingBag, end: false },
+        { name: "History", path: "/seller/history", icon: History, end: false },
+        { name: "Coupons", path: "/seller/coupons", icon: Ticket, end: false },
+    ];
+
+    const accountLinks = [
+        { name: "Notifications", path: "/seller/notifications", icon: Bell },
+        { name: "Settings", path: "/seller/settings", icon: Settings },
+        { name: "Profile", path: "/seller/profile", icon: User },
     ];
 
     const logoutHandler = async () => {
@@ -163,72 +173,72 @@ const Seller = () => {
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 dark:bg-slate-950 text-gray-900 dark:text-slate-100 transition-all duration-300">
-            {/* ── Top Navigation Bar ─────────────────────────────────────────── */}
-            <div className="flex items-center justify-between px-4 md:px-8 border-b border-gray-300 dark:border-slate-800 py-3 bg-white dark:bg-slate-900 transition-all duration-300">
-                <Link to="/">
-                    <YNALogo size="small"></YNALogo>
+        <div className="min-h-screen bg-bg-cream text-text-primary transition-colors duration-300">
+            {/* Top bar */}
+            <header className="sticky top-0 z-40 flex items-center justify-between px-4 md:px-8 border-b border-border/60 py-3 bg-bg-white/80 backdrop-blur-xl">
+                <Link to="/" className="shrink-0">
+                    <YNALogo size="small" />
                 </Link>
 
-                <div className="flex items-center gap-3 text-gray-500 dark:text-slate-400">
-                    <span className="text-sm hidden md:inline text-gray-600 dark:text-slate-300">Hi! Admin</span>
+                <div className="flex items-center gap-2 md:gap-4">
+                    <span className="text-sm hidden md:inline text-text-secondary font-medium">Hi! Admin</span>
 
-                    {/* ── Dark Mode Toggle ───────────────────────────────────── */}
                     <button
                         id="dark-mode-toggle"
                         onClick={() => setIsDark(d => !d)}
-                        className="relative w-10 h-5 rounded-full border border-gray-300 dark:border-slate-700 bg-gray-100 dark:bg-slate-800 hover:border-primary transition-colors flex items-center cursor-pointer overflow-hidden"
+                        className="relative w-11 h-6 rounded-full border border-border bg-surface-muted hover:border-primary/40 transition-colors flex items-center cursor-pointer"
                         title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
                     >
-                        <span className={`absolute left-0.5 w-4 h-4 rounded-full transition-transform duration-300 flex items-center justify-center text-[9px] ${isDark ? "translate-x-5 bg-slate-700" : "translate-x-0 bg-yellow-400"}`}>
-                            {isDark ? "🌙" : "☀️"}
+                        <span className={`absolute flex items-center justify-center w-5 h-5 rounded-full transition-transform duration-300 ${isDark ? "translate-x-[22px] bg-surface-elevated text-accent" : "translate-x-0.5 bg-primary text-white"}`}>
+                            {isDark ? <Moon className="w-3 h-3" /> : <Sun className="w-3 h-3" />}
                         </span>
                     </button>
 
-                    {/* ── Notification Bell ──────────────────────────────────── */}
                     <div className="relative" ref={notifPanelRef}>
                         <button
                             id="notification-bell"
                             onClick={() => { setShowNotifPanel(p => !p); }}
-                            className="relative p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-slate-800 transition-colors cursor-pointer text-gray-600 dark:text-slate-300"
+                            className="relative p-2 rounded-[12px] hover:bg-surface-muted transition-colors cursor-pointer text-text-secondary hover:text-text-primary"
                             title="Notifications"
                         >
-                            <svg className="w-5 h-5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-                            </svg>
+                            <Bell className="w-5 h-5" strokeWidth={1.75} />
                             {unreadCount > 0 && (
-                                <span className="absolute -top-1 -right-1 w-4 h-4 bg-red-500 text-white text-[9px] font-bold rounded-full flex items-center justify-center animate-pulse">
+                                <span className="absolute -top-0.5 -right-0.5 min-w-[18px] h-[18px] bg-error text-white text-[10px] font-bold rounded-full flex items-center justify-center px-1 animate-pulse">
                                     {unreadCount > 9 ? "9+" : unreadCount}
                                 </span>
                             )}
                         </button>
 
-                        {/* Notification Dropdown */}
                         {showNotifPanel && (
-                            <div className="absolute right-0 top-10 w-80 bg-white dark:bg-slate-800 border border-gray-200 dark:border-slate-700 rounded-xl shadow-2xl z-50 overflow-hidden text-gray-900 dark:text-slate-100">
-                                <div className="flex items-center justify-between px-4 py-3 border-b border-gray-100 dark:border-slate-700 bg-gray-50 dark:bg-slate-900">
-                                    <p className="font-bold text-sm">Notifications</p>
-                                    {notifications.length > 0 && (
-                                        <button onClick={() => setNotifications([])} className="text-xs text-gray-400 hover:text-red-500 transition-colors cursor-pointer">
-                                            Clear all
-                                        </button>
-                                    )}
+                            <div className="absolute right-0 top-12 w-80 bg-bg-white border border-border/60 rounded-[20px] shadow-xl z-50 overflow-hidden">
+                                <div className="flex items-center justify-between px-4 py-3 border-b border-border/60 bg-surface-muted/50">
+                                    <p className="font-heading font-bold text-sm">Notifications</p>
+                                    <div className="flex items-center gap-2">
+                                        {notifications.length > 0 && (
+                                            <button onClick={() => setNotifications([])} className="text-xs text-text-tertiary hover:text-error transition-colors cursor-pointer">
+                                                Clear all
+                                            </button>
+                                        )}
+                                        <Link to="/seller/notifications" onClick={() => setShowNotifPanel(false)} className="text-xs text-primary hover:underline font-medium">
+                                            View all
+                                        </Link>
+                                    </div>
                                 </div>
-                                <div className="max-h-72 overflow-y-auto divide-y divide-gray-100 dark:divide-slate-700">
+                                <div className="max-h-72 overflow-y-auto divide-y divide-border/40">
                                     {notifications.length === 0 ? (
-                                        <div className="py-8 text-center text-gray-400 dark:text-slate-500 text-sm">
-                                            <svg className="w-8 h-8 mx-auto mb-2 text-gray-300 dark:text-slate-600" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" d="M14.857 17.082a23.848 23.848 0 0 0 5.454-1.31A8.967 8.967 0 0 1 18 9.75V9A6 6 0 0 0 6 9v.75a8.967 8.967 0 0 1-2.312 6.022c1.733.64 3.56 1.085 5.455 1.31m5.714 0a24.255 24.255 0 0 1-5.714 0m5.714 0a3 3 0 1 1-5.714 0" />
-                                            </svg>
+                                        <div className="py-10 text-center text-text-tertiary text-sm">
+                                            <Bell className="w-8 h-8 mx-auto mb-2 text-text-placeholder" strokeWidth={1.5} />
                                             No new notifications
                                         </div>
                                     ) : (
                                         notifications.map((n, i) => (
-                                            <div key={i} className="flex items-start gap-3 px-4 py-3 hover:bg-gray-50 dark:hover:bg-slate-700/50 transition-colors">
-                                                <span className="text-xl mt-0.5">🛍️</span>
+                                            <div key={i} className="flex items-start gap-3 px-4 py-3 hover:bg-surface-muted/50 transition-colors">
+                                                <div className="w-8 h-8 rounded-[10px] bg-primary/10 flex items-center justify-center shrink-0 mt-0.5">
+                                                    <ShoppingBag className="w-4 h-4 text-primary" />
+                                                </div>
                                                 <div className="flex-1 min-w-0">
                                                     <p className="text-sm font-semibold truncate">New Order — {n.name}</p>
-                                                    <p className="text-xs text-gray-500 dark:text-slate-400">Amount: ${n.amount} · {n.time}</p>
+                                                    <p className="text-xs text-text-tertiary">Amount: ${n.amount} · {n.time}</p>
                                                 </div>
                                             </div>
                                         ))
@@ -238,29 +248,63 @@ const Seller = () => {
                         )}
                     </div>
 
-                    <button className="cursor-pointer hover:bg-primary-light dark:hover:bg-primary/20 border border-primary rounded-full text-sm px-4 py-1 text-accent dark:text-accent-light" onClick={logoutHandler}>Logout</button>
+                    <Button variant="outline" size="sm" onClick={logoutHandler} className="hidden sm:inline-flex">
+                        <LogOut className="w-4 h-4" />
+                        Logout
+                    </Button>
+                    <button onClick={logoutHandler} className="sm:hidden p-2 rounded-[12px] hover:bg-surface-muted text-text-secondary" title="Logout">
+                        <LogOut className="w-5 h-5" />
+                    </button>
                 </div>
-            </div>
+            </header>
 
-            {/* ── Sidebar + Content ───────────────────────────────────────────── */}
-            <div className="flex bg-slate-50 dark:bg-slate-950">
-                <div className="md:w-44 w-16 border-r h-[95vh] text-base border-gray-300 dark:border-slate-800 pt-4 flex flex-col transition-all duration-300 bg-white dark:bg-slate-900">
-                    {sidebarLinks.map((item, index) => (
-                        <NavLink to={item.path} key={index} end={item.path === "/seller"}
-                            className={({ isActive }) => `flex items-center py-3 px-4 gap-3 transition-colors 
-                            ${isActive ? "border-r-4 md:border-r-[6px] bg-primary/10 border-primary text-primary"
-                                    : "hover:bg-gray-100/90 dark:hover:bg-slate-800 border-white dark:border-transparent text-gray-700 dark:text-slate-300"
+            <div className="flex">
+                {/* Sidebar */}
+                <aside className="hidden md:flex w-60 shrink-0 border-r border-border/60 min-h-[calc(100vh-57px)] flex-col bg-bg-white">
+                    <nav className="flex-1 p-4 space-y-1">
+                        <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-text-tertiary">Store</p>
+                        {mainLinks.map((item) => (
+                            <NavLink to={item.path} key={item.path} end={item.end} className={navLinkClass}>
+                                <item.icon className="w-[18px] h-[18px] shrink-0" strokeWidth={1.75} />
+                                <span className="flex-1">{item.name}</span>
+                                <ChevronRight className="w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-40 group-hover:translate-x-0 transition-all" />
+                            </NavLink>
+                        ))}
+                    </nav>
+
+                    <div className="p-4 border-t border-border/60 space-y-1">
+                        <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-text-tertiary">Account</p>
+                        {accountLinks.map((item) => (
+                            <NavLink to={item.path} key={item.path} className={navLinkClass}>
+                                <item.icon className="w-[18px] h-[18px] shrink-0" strokeWidth={1.75} />
+                                <span>{item.name}</span>
+                            </NavLink>
+                        ))}
+                    </div>
+                </aside>
+
+                {/* Mobile bottom nav */}
+                <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 flex items-center justify-around px-2 py-2 bg-bg-white/90 backdrop-blur-xl border-t border-border/60 pb-safe">
+                    {mainLinks.slice(0, 5).map((item) => (
+                        <NavLink to={item.path} key={item.path} end={item.end}
+                            className={({ isActive }) =>
+                                `flex flex-col items-center gap-0.5 p-2 rounded-[12px] text-[10px] font-medium transition-colors ${
+                                    isActive ? "text-primary" : "text-text-tertiary"
                                 }`
                             }
                         >
-                            {item.icon}
-                            <p className="md:block hidden text-center">{item.name}</p>
+                            <item.icon className="w-5 h-5" strokeWidth={1.75} />
+                            <span>{item.name.split(" ")[0]}</span>
                         </NavLink>
                     ))}
-                </div>
-                <div className="flex-1 h-[95vh] overflow-y-auto">
-                    <Outlet></Outlet>
-                </div>
+                </nav>
+
+                {/* Main content */}
+                <main className="flex-1 min-h-[calc(100vh-57px)] overflow-y-auto no-scrollbar mb-nav md:mb-0">
+                    <div className="p-4 md:p-8 lg:p-10">
+                        <Outlet />
+                    </div>
+                </main>
             </div>
         </div>
     );

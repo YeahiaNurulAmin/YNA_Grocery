@@ -15,6 +15,7 @@ Full-stack grocery e-commerce for customers and sellers. Premium React storefron
 - Auth (login / register) via JWT HTTP-only cookies
 - **Forgot / reset password** via Resend email link
 - Dark mode, Contact, FAQ, About, Privacy, Terms, Wishlist & Recently Viewed (UI)
+- **AI chatbot** (Groq `openai/gpt-oss-20b`) for shopping help and support
 
 ### Seller / admin dashboard
 - Login with env credentials
@@ -38,8 +39,9 @@ Full-stack grocery e-commerce for customers and sellers. Premium React storefron
 | Layer | Stack |
 |--------|--------|
 | **Client** | React 19, Vite, Tailwind CSS v4, React Router, Axios, Lucide, react-hot-toast |
-| **Server** | Node.js, Express 5, Mongoose, JWT, bcryptjs, Multer, express-rate-limit |
-| **Data / services** | MongoDB, Cloudinary, Stripe, Resend |
+| **Server** | Node.js, Express 5, Mongoose, JWT, bcryptjs, Multer |
+| **Data / services** | MongoDB, Cloudinary, Stripe, Groq AI |
+
 
 ---
 
@@ -72,7 +74,7 @@ YNA_Grocery/
 - MongoDB (local or Atlas)
 - Stripe account (online payments)
 - Cloudinary account (product images)
-- [Resend](https://resend.com/) account (password-reset emails) — create an API key and verify a domain at [resend.com/domains](https://resend.com/domains)
+- [GroqCloud](https://console.groq.com/) API key (customer chatbot)
 
 ---
 
@@ -107,13 +109,12 @@ STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 ALLOWED_ORIGINS=http://localhost:5173
 NODE_ENV=development
-RESEND_API_KEY=re_xxxx
-RESEND_FROM=YNA Grocery <noreply@your-verified-domain.com>
-CLIENT_URL=http://localhost:5173
+
+GROQ_API_KEY=your_groq_api_key
+GROQ_MODEL=openai/gpt-oss-20b
 ```
 
-- `RESEND_FROM` must use a domain verified in Resend (not the placeholder).
-- `CLIENT_URL` is the storefront origin used in password-reset email links (e.g. `http://localhost:5173` in dev).
+Get a Groq API key from [console.groq.com](https://console.groq.com/). The chatbot uses `openai/gpt-oss-20b` by default.
 
 ```bash
 npm run server    # nodemon (dev)
@@ -192,6 +193,7 @@ npm run preview   # preview build
 | `/api/address` | Add / get addresses |
 | `/api/order` | COD, online (Stripe), user & seller orders, status |
 | `/api/coupons` | List, add, delete, toggle |
+| `/api/chat` | Customer chatbot (Groq; message + history); seller prompt GET/PUT/reset |
 | `/verify-payment` | Stripe webhook (`checkout.session.completed`) |
 
 ### Password reset

@@ -8,6 +8,7 @@ import Navbar from "./components/Navbar";
 import Footer from "./components/Footer";
 import Login from "./components/Login";
 import MobileBottomNav from "./components/MobileBottomNav";
+import ChatBot from "./components/ChatBot";
 import { useAppContext } from "./context/AppContext";
 import Home from "./pages/Home";
 import AllProducts from "./pages/AllProducts";
@@ -103,6 +104,7 @@ const App = () => {
         <>
           <Footer />
           <MobileBottomNav />
+          <ChatBot />
         </>
       )}
     </div>

@@ -9,21 +9,18 @@ const SETTINGS_KEY = "default";
 export const MAX_PROMPT_LENGTH = 8000;
 
 /**
- * Returns the stored prompt base, creating a default document if missing.
+ * Returns the stored prompt base via an atomic upsert (singleton-safe).
+ * Sets DEFAULT_SYSTEM_PROMPT only on insert.
  * @returns {Promise<string>}
  */
 export const getSystemPromptBase = async () => {
-  let settings = await ChatSettings.findOne({ key: SETTINGS_KEY }).lean();
+  const settings = await ChatSettings.findOneAndUpdate(
+    { key: SETTINGS_KEY },
+    { $setOnInsert: { systemPrompt: DEFAULT_SYSTEM_PROMPT } },
+    { upsert: true, returnDocument: "after", setDefaultsOnInsert: true }
+  ).lean();
 
-  if (!settings) {
-    settings = await ChatSettings.create({
-      key: SETTINGS_KEY,
-      systemPrompt: DEFAULT_SYSTEM_PROMPT,
-    });
-    return settings.systemPrompt;
-  }
-
-  return settings.systemPrompt || DEFAULT_SYSTEM_PROMPT;
+  return settings?.systemPrompt || DEFAULT_SYSTEM_PROMPT;
 };
 
 /**

@@ -80,7 +80,7 @@ const SellerSettings = () => {
         systemPrompt: trimmed,
       });
       if (data.success) {
-        setPrompt(data.systemPrompt);
+        setPrompt(data.systemPrompt ?? prompt);
         toast.success(data.message || "Chat prompt saved");
       } else {
         toast.error(data.message || "Failed to save prompt");
@@ -97,7 +97,7 @@ const SellerSettings = () => {
     try {
       const { data } = await axios.post("/api/chat/prompt/reset");
       if (data.success) {
-        setPrompt(data.systemPrompt);
+        setPrompt(data.systemPrompt ?? defaultPrompt ?? "");
         toast.success(data.message || "Prompt reset to default");
       } else {
         toast.error(data.message || "Failed to reset prompt");
@@ -163,6 +163,7 @@ const SellerSettings = () => {
         ) : (
           <>
             <textarea
+              aria-label="Chatbot system prompt"
               value={prompt}
               onChange={(e) => setPrompt(e.target.value.slice(0, maxLength))}
               rows={14}

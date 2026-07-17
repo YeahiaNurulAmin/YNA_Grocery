@@ -10,11 +10,12 @@ import {
   resetChatPrompt,
 } from "../controllers/chatController.js";
 import authSeller from "../middlewares/authSeller.js";
+import { chatAbuseGuard } from "../middlewares/chatAbuseGuard.js";
 
 const chatRouter = express.Router();
 
-// POST /api/chat — public customer chat
-chatRouter.post("/", chat);
+// POST /api/chat — public customer chat (rate limit + concurrency cap)
+chatRouter.post("/", chatAbuseGuard, chat);
 
 // Seller: manage system prompt base
 chatRouter.get("/prompt", authSeller, getChatPrompt);

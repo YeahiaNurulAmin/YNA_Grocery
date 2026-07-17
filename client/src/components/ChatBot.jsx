@@ -28,6 +28,7 @@ const ChatBot = () => {
   ]);
   const listRef = useRef(null);
   const inputRef = useRef(null);
+  const inFlightRef = useRef(false);
 
   useEffect(() => {
     if (!open) return;
@@ -45,7 +46,9 @@ const ChatBot = () => {
 
   const sendMessage = async (rawText) => {
     const text = (rawText ?? input).trim();
-    if (!text || loading) return;
+    if (!text || inFlightRef.current || loading) return;
+
+    inFlightRef.current = true;
 
     const userMessage = { role: "user", content: text };
     const nextMessages = [...messages, userMessage];
@@ -89,6 +92,7 @@ const ChatBot = () => {
         { role: "assistant", content: `Sorry — ${msg}` },
       ]);
     } finally {
+      inFlightRef.current = false;
       setLoading(false);
     }
   };

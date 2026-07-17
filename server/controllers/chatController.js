@@ -2,9 +2,8 @@
  * Chat controller — customer chat + seller system-prompt management.
  * Used by chatRoute at POST /api/chat and GET/PUT/POST /api/chat/prompt.
  */
-import Product from "../models/Product.js";
 import { getGroqClient } from "../configs/groq.js";
-import { buildCatalogText, MAX_CATALOG_ITEMS } from "../utils/chatCatalog.js";
+import { loadCatalogForMessage } from "../utils/chatCatalog.js";
 import {
   buildSystemPrompt,
   DEFAULT_SYSTEM_PROMPT,
@@ -57,15 +56,11 @@ export const chat = async (req, res) => {
     const message = rawMessage.trim().slice(0, MAX_MESSAGE_LENGTH);
     const history = sanitizeHistory(req.body?.history);
 
-    const [products, promptBase] = await Promise.all([
-      Product.find({ inStock: true })
-        .select("name category price offerPrice weight")
-        .limit(MAX_CATALOG_ITEMS)
-        .lean(),
+    const [catalogText, promptBase] = await Promise.all([
+      loadCatalogForMessage(message),
       getSystemPromptBase(),
     ]);
 
-    const catalogText = buildCatalogText(products);
     const systemPrompt = buildSystemPrompt(catalogText, promptBase);
 
     const messages = [

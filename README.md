@@ -14,6 +14,7 @@ Full-stack grocery e-commerce for customers and sellers. Premium React storefron
 - Order history and responsive mobile bottom navigation
 - Auth (login / register) via JWT HTTP-only cookies
 - Dark mode, Contact, FAQ, About, Privacy, Terms, Wishlist & Recently Viewed (UI)
+- **AI chatbot** (Groq `openai/gpt-oss-20b`) for shopping help and support
 
 ### Seller / admin dashboard
 - Login with env credentials
@@ -38,7 +39,7 @@ Full-stack grocery e-commerce for customers and sellers. Premium React storefron
 |--------|--------|
 | **Client** | React 19, Vite, Tailwind CSS v4, React Router, Axios, Lucide, react-hot-toast |
 | **Server** | Node.js, Express 5, Mongoose, JWT, bcryptjs, Multer |
-| **Data / services** | MongoDB, Cloudinary, Stripe |
+| **Data / services** | MongoDB, Cloudinary, Stripe, Groq AI |
 
 ---
 
@@ -69,6 +70,7 @@ YNA_Grocery/
 - MongoDB (local or Atlas)
 - Stripe account (online payments)
 - Cloudinary account (product images)
+- [GroqCloud](https://console.groq.com/) API key (customer chatbot)
 
 ---
 
@@ -103,8 +105,11 @@ STRIPE_SECRET_KEY=
 STRIPE_WEBHOOK_SECRET=
 ALLOWED_ORIGINS=http://localhost:5173
 NODE_ENV=development
+GROQ_API_KEY=your_groq_api_key
+GROQ_MODEL=openai/gpt-oss-20b
 ```
 
+Get a Groq API key from [console.groq.com](https://console.groq.com/). The chatbot uses `openai/gpt-oss-20b` by default.
 ```bash
 npm run server    # nodemon (dev)
 # npm start       # production
@@ -181,6 +186,7 @@ npm run preview   # preview build
 | `/api/address` | Add / get addresses |
 | `/api/order` | COD, online (Stripe), user & seller orders, status |
 | `/api/coupons` | List, add, delete, toggle |
+| `/api/chat` | Customer chatbot (Groq; message + history) |
 | `/verify-payment` | Stripe webhook (`checkout.session.completed`) |
 
 ---

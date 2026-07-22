@@ -124,105 +124,19 @@ export const placeOrderOnline = async (req, res) => {
     }
 };
 
-// webhook to verify payments action: /api/order/verify-payment
-// export const verifyPayment = async (req, res) => {
-
-//     console.log("Received Stripe webhook:", req.body); // Debug log to check incoming webhook data
-//     // Stripe gateway integration
-//     const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
-//     const sig = req.headers["stripe-signature"];
-//     let event;
-
-//     try {
-//         event = stripeInstance.webhooks.constructEvent(
-//             req.body, // raw body is required to verify the webhook
-//             sig,
-//             process.env.STRIPE_WEBHOOK_SECRET,
-//         );
-//     } catch (err) {
-//         console.error("Error verifying Stripe webhook:", err);
-//         return res.status(400).json({ message: "Webhook verification failed" });
-//     }
-
-//     // Handle the event
-//     switch (event.type) {
-//         case "checkout.session.completed": {
-//             // Handle successful checkout session
-//             const session = event.data.object;
-//             const { orderId, userId } = session.metadata;
-
-//             console.log(`Processing successful payment for order: ${orderId}`);
-
-//             try {
-//                 // Mark payment as paid
-//                 await Order.findByIdAndUpdate(orderId, {
-//                     isPaid: true,
-//                     status: "Order Placed",
-//                 });
-//                 // Clear user cart after successful payment
-//                 await User.findByIdAndUpdate(userId, { cartItems: {} });
-
-//                 console.log(`Order ${orderId} marked as paid and cart cleared`);
-//             } catch (error) {
-//                 console.error("Error processing payment:", error);
-//             }
-//             break;
-//         }
-//         case "checkout.session.async_payment_succeeded": {
-//             // Handle async payment success (e.g., bank transfers)
-//             const session = event.data.object;
-//             const { orderId, userId } = session.metadata;
-
-//             console.log(`Processing async payment success for order: ${orderId}`);
-
-//             try {
-//                 await Order.findByIdAndUpdate(orderId, {
-//                     isPaid: true,
-//                     status: "Order Placed",
-//                 });
-
-//                 await User.findByIdAndUpdate(userId, { cartItems: {} });
-//                 console.log(`Order ${orderId} async payment succeeded`);
-//             } catch (error) {
-//                 console.error("Error processing async payment:", error);
-//             }
-//             break;
-//         }
-//         case "checkout.session.async_payment_failed": {
-//             // Handle async payment failure
-//             const session = event.data.object;
-//             const { orderId } = session.metadata;
-
-//             console.log(`Payment failed for order: ${orderId}`);
-
-//             try {
-//                 await Order.findByIdAndDelete(orderId);
-//                 console.log(`Order ${orderId} deleted due to failed payment`);
-//             } catch (error) {
-//                 console.error("Error deleting order:", error);
-//             }
-//             break;
-//         }
-//         default:
-//             console.log("Unhandled event type:", event.type);
-//             break;
-//     }
-//     res.status(200).json({ received: true });
-// };
-
 // Stripe instance & in-memory idempotency guard at module scope
 const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
 const processedEvents = new Set();
 
-export const verifyPayment = async (req, res) => {
-    async function markOrderPaidAndClearCart(orderId, userId) {
-        await Order.findByIdAndUpdate(orderId, {
-            isPaid: true,
-            status: "Order Placed",
-        });
-        await User.findByIdAndUpdate(userId, { cartItems: {} });
-    }
+const markOrderPaidAndClearCart = async (orderId, userId) => {
+    await Order.findByIdAndUpdate(orderId, {
+        isPaid: true,
+        status: "Order Placed",
+    });
+    await User.findByIdAndUpdate(userId, { cartItems: {} });
+};
 
+export const verifyPayment = async (req, res) => {
     const sig = req.headers["stripe-signature"];
     let event;
 
@@ -245,93 +159,88 @@ export const verifyPayment = async (req, res) => {
         console.log(`Skipping already-processed event: ${event.id}`);
         return res.status(200).json({ received: true });
     }
-    processedEvents.add(event.id);
 
-    // Limit set size to prevent memory leaks over time
-    if (processedEvents.size > 10000) {
-        const first = processedEvents.values().next().value;
-        processedEvents.delete(first);
-    }
+    try {
+        switch (event.type) {
+            case "checkout.session.completed": {
+                const session = event.data.object;
+                const { orderId, userId } = session.metadata || {};
 
-    switch (event.type) {
-        case "checkout.session.completed": {
-            const session = event.data.object;
-            const { orderId, userId } = session.metadata || {};
+                if (!orderId || !userId) {
+                    console.error(
+                        "Missing orderId/userId in session metadata",
+                        event.id,
+                    );
+                    break;
+                }
 
-            if (!orderId || !userId) {
-                console.error(
-                    "Missing orderId/userId in session metadata",
-                    event.id,
-                );
-                break;
-            }
+                // For delayed payment methods (bank transfers etc.), "completed" fires
+                // before the money actually arrives. Wait for the async event in that case.
+                if (session.payment_status !== "paid") {
+                    console.log(
+                        `Order ${orderId} awaiting async payment confirmation`,
+                    );
+                    break;
+                }
 
-            // For delayed payment methods (bank transfers etc.), "completed" fires
-            // before the money actually arrives. Wait for the async event in that case.
-            if (session.payment_status !== "paid") {
-                console.log(
-                    `Order ${orderId} awaiting async payment confirmation`,
-                );
-                break;
-            }
-
-            try {
                 await markOrderPaidAndClearCart(orderId, userId);
                 console.log(`Order ${orderId} marked as paid and cart cleared`);
-            } catch (error) {
-                console.error("Error processing payment:", error);
-            }
-            break;
-        }
-
-        case "checkout.session.async_payment_succeeded": {
-            const session = event.data.object;
-            const { orderId, userId } = session.metadata || {};
-
-            if (!orderId || !userId) {
-                console.error(
-                    "Missing orderId/userId in session metadata",
-                    event.id,
-                );
                 break;
             }
 
-            try {
+            case "checkout.session.async_payment_succeeded": {
+                const session = event.data.object;
+                const { orderId, userId } = session.metadata || {};
+
+                if (!orderId || !userId) {
+                    console.error(
+                        "Missing orderId/userId in session metadata",
+                        event.id,
+                    );
+                    break;
+                }
+
                 await markOrderPaidAndClearCart(orderId, userId);
                 console.log(`Order ${orderId} async payment succeeded`);
-            } catch (error) {
-                console.error("Error processing async payment:", error);
-            }
-            break;
-        }
-
-        case "checkout.session.async_payment_failed": {
-            const session = event.data.object;
-            const { orderId } = session.metadata || {};
-
-            if (!orderId) {
-                console.error("Missing orderId in session metadata", event.id);
                 break;
             }
 
-            try {
+            case "checkout.session.async_payment_failed": {
+                const session = event.data.object;
+                const { orderId } = session.metadata || {};
+
+                if (!orderId) {
+                    console.error("Missing orderId in session metadata", event.id);
+                    break;
+                }
+
                 // Keep the record around instead of deleting it, for audit/history
                 await Order.findByIdAndUpdate(orderId, {
                     status: "Payment Failed",
                 });
                 console.log(`Order ${orderId} marked as payment failed`);
-            } catch (error) {
-                console.error("Error updating failed order:", error);
+                break;
             }
-            break;
+
+            default:
+                console.log("Unhandled event type:", event.type);
+                break;
         }
 
-        default:
-            console.log("Unhandled event type:", event.type);
-            break;
-    }
+        // Add event.id only after successful event processing
+        processedEvents.add(event.id);
 
-    res.status(200).json({ received: true });
+        // Limit set size to prevent memory leaks over time
+        if (processedEvents.size > 10000) {
+            const first = processedEvents.values().next().value;
+            processedEvents.delete(first);
+        }
+
+        return res.status(200).json({ received: true });
+    } catch (error) {
+        console.error(`Error processing webhook event ${event.id}:`, error);
+        return res.status(500).json({ message: "Error processing webhook event" });
+    }
 };
 
 // Get Orders by User ID: /api/order/user

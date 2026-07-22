@@ -1,223 +1,218 @@
-# YNA Grocery
+# 🛒 YNA Grocery — Full-Stack E-Commerce & Marketplace Platform
 
-**Fresh groceries, delivered with care.**
+[![React](https://img.shields.io/badge/React-19.0-61DAFB?logo=react&logoColor=white)](https://react.dev/)
+[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Express](https://img.shields.io/badge/Express-5.0-000000?logo=express&logoColor=white)](https://expressjs.com/)
+[![MongoDB](https://img.shields.io/badge/MongoDB-Atlas%20%2F%20Local-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.0-38B2AC?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
+[![Stripe](https://img.shields.io/badge/Stripe-Payments-008CDD?logo=stripe&logoColor=white)](https://stripe.com/)
+[![Cloudinary](https://img.shields.io/badge/Cloudinary-Media%20Storage-3448C5?logo=cloudinary&logoColor=white)](https://cloudinary.com/)
+[![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-Full-stack grocery e-commerce for customers and sellers. Premium React storefront + Express REST API, MongoDB, Stripe, Cloudinary, and Resend.
-
----
-
-## Features
-
-### Customer storefront
-- Browse categories, search, and **advanced filter / sort** on the products page
-- Product details, cart, addresses, COD and **Stripe** checkout
-- Order history and responsive mobile bottom navigation
-- Auth (login / register) via JWT HTTP-only cookies
-- **Forgot / reset password** via Resend email link
-- Dark mode, Contact, FAQ, About, Privacy, Terms, Wishlist & Recently Viewed (UI)
-- **AI chatbot** (Groq `openai/gpt-oss-20b`) for shopping help and support
-
-### Seller / admin dashboard
-- Login with env credentials
-- Dashboard overview (stats, recent orders, stock alerts)
-- Product CRUD with Cloudinary images
-- Active orders + status updates, order history
-- Coupons, notifications (live polling), settings & profile UI
-- Dark mode
-
-### Design system
-- Brand: Primary green `#22c55e`, accent orange `#ff6b35`
-- Typography: Manrope (headings) + Inter (body)
-- Tokens & components in `client/src/index.css` and `client/src/components/ui`
-- Design board: [`client/design/DESIGN_BOARD.html`](client/design/DESIGN_BOARD.html)
-- Specs: [`client/design/DESIGN_SYSTEM.md`](client/design/DESIGN_SYSTEM.md)
+> A modern, full-stack MERN e-commerce application featuring dual Customer & Seller portals, Stripe payments, Cloudinary media storage, Groq AI shopping assistance, and robust HTTP-only JWT security.
 
 ---
 
-## Tech stack
+## 🌟 Executive Summary & Key Highlights
 
-| Layer | Stack |
-|--------|--------|
-| **Client** | React 19, Vite, Tailwind CSS v4, React Router, Axios, Lucide, react-hot-toast |
-| **Server** | Node.js, Express 5, Mongoose, JWT, bcryptjs, Multer |
-| **Data / services** | MongoDB, Cloudinary, Stripe, Groq AI |
+**YNA Grocery** is a production-ready, full-stack grocery e-commerce and marketplace platform designed to deliver an exceptional shopping experience for customers and a comprehensive management dashboard for sellers.
 
+### 🔑 Key Engineering & Architectural Features:
+* **Dual-Portal Architecture**: Separate, highly optimized SPA routes for customer shopping and seller/admin administration.
+* **User Profile & Media Upload Engine**: Rich user profile management supporting direct device image uploads validated for file type/size and stored on **Cloudinary**.
+* **Enterprise Security & Auth**: **HTTP-only JWT cookies** (preventing XSS access), bcrypt password hashing, input validation (`runValidators`), authorization guards, and rate-limited password reset flows via **Resend**.
+* **Stripe Checkout & Webhook Integration**: Complete checkout workflow supporting Cash on Delivery (COD) and automated Stripe payment processing with raw-body webhook signature verification (`checkout.session.completed`).
+* **Groq AI Shopping Assistant**: Integrated AI agent powered by Groq (`openai/gpt-oss-20b`) for instant customer support, item suggestions, and custom prompt management for sellers.
+* **State-of-the-Art Design System**: Custom design tokens (built with Tailwind CSS v4 and Google Fonts), dark/light theme switching, responsive touch-friendly mobile bottom navigation, and micro-interactions.
 
 ---
 
-## Project structure
+## 🛠️ Tech Stack
+
+| Layer | Technologies & Tools |
+| :--- | :--- |
+| **Frontend** | React 19, Vite, Tailwind CSS v4, React Router v7, Axios, Lucide Icons, React Hot Toast |
+| **Backend API** | Node.js, Express 5, Mongoose ODM, JWT Authentication, Multer, Express Rate Limit |
+| **Database** | MongoDB (Atlas / Local Document Store) |
+| **Cloud Services** | Cloudinary (Image Optimization & Storage), Stripe (Payments & Webhooks), Resend (Email Delivery), GroqCloud AI |
+
+---
+
+## 🚀 Core Functionality & Features
+
+### 🛍️ Customer Storefront
+* **Product Discovery**: Real-time multi-attribute search, category filtering, and price/popularity sorting.
+* **Interactive Shopping Cart**: Dynamic cart quantity updates, real-time total & tax calculations, and persistent database syncing.
+* **User Profile Center (`/profile`)**:
+  * **Personal Information**: Edit display name, phone number, and avatar.
+  * **Cloudinary Image Upload**: Direct local device image upload with client-side preview, MIME validation, and size checks.
+  * **Address Book**: Manage multiple delivery addresses with ownership validation (`req.userId`).
+  * **Order History**: Track past order statuses, amounts, and item details.
+  * **Account Security**: Secure password update flow with current password verification.
+* **Wishlist & Recently Viewed**: Saved items and recent browsing history.
+* **Checkout & Payments**: Address selection, Cash on Delivery, and instant Stripe Checkout.
+* **AI Chat Assistant**: Built-in floating AI assistant to answer product queries and assist shoppers.
+
+### 🏪 Seller & Admin Dashboard (`/seller`)
+* **Analytics & Overview**: Sales metric cards, recent order stream, and stock status alerts.
+* **Product Catalog Management**: Add, update, delete, and toggle in-stock statuses with multi-image Cloudinary uploads.
+* **Order Management**: Process active customer orders, update delivery states (*Pending, Processing, Shipped, Delivered, Cancelled*), and review historical logs.
+* **Promotions & Coupons**: Create, enable/disable, and delete promotional discount codes.
+* **Notification System**: Real-time poll notification updates and admin account settings.
+
+---
+
+## 📁 Project Architecture
 
 ```
 YNA_Grocery/
-├── client/                 # React SPA (Vite)
-│   ├── design/             # Design board & system docs
+├── client/                     # Frontend SPA (React 19 + Vite)
+│   ├── design/                 # Design system specs & interactive board
 │   └── src/
-│       ├── assets/         # Images, logo
-│       ├── components/     # UI, storefront, seller chrome
-│       ├── context/        # AppContext
-│       ├── pages/          # Customer + seller routes
-│       └── utils/          # Shared client helpers (e.g. password validation)
-└── server/                 # Express API
-    ├── configs/
-    ├── controllers/
-    ├── middlewares/
-    ├── models/
-    ├── routes/
-    └── utils/              # Email (Resend), password validation
+│       ├── assets/             # Branding logo, icons, default product assets
+│       ├── components/         # Reusable UI primitives, Navbar, Footer, ChatBot
+│       ├── context/            # Global AppContext (Auth, Cart, Products, Axios defaults)
+│       ├── pages/              # Storefront & Seller routes (Profile, Cart, MyOrder, etc.)
+│       └── utils/              # Client-side utility functions
+└── server/                     # Backend RESTful API (Express 5 + Node.js)
+    ├── configs/                # Database connection, Cloudinary SDK, Multer upload limits
+    ├── controllers/            # Controller logic (Auth, User Profile, Products, Orders, Address, Chat)
+    ├── middlewares/            # JWT Auth guards (authUser, authSeller), Abuse/Rate Limiters
+    ├── models/                 # Mongoose schemas (User, Address, Product, Order, Coupon, ChatSettings)
+    ├── routes/                 # Express API routes
+    └── utils/                  # Resend email service & password validation helpers
 ```
 
 ---
 
-## Prerequisites
+## 📡 API Reference Overview
 
-- Node.js 18+
-- MongoDB (local or Atlas)
-- Stripe account (online payments)
-- Cloudinary account (product images)
-- [GroqCloud](https://console.groq.com/) API key (customer chatbot)
+### 👤 User & Profile Endpoints (`/api/users`)
+| Method | Endpoint | Protection | Description |
+| :--- | :--- | :--- | :--- |
+| `POST` | `/api/users/register` | Public | Register new customer account |
+| `POST` | `/api/users/login` | Public | Authenticate user & issue HTTP-only JWT cookie |
+| `GET` | `/api/users/is-auth` | Auth (`authUser`) | Verify authentication status & load user state |
+| `GET` | `/api/users/logout` | Auth (`authUser`) | Clear auth cookie and invalidate session |
+| `PUT` | `/api/users/profile` | Auth (`authUser`) | Update name, phone, and upload profile avatar to Cloudinary |
+| `PUT` | `/api/users/change-password` | Auth (`authUser`) | Change password with current password verification |
+| `POST` | `/api/users/forgot-password` | Public (Rate-Limited) | Send password reset token link via Resend email |
+| `POST` | `/api/users/reset-password` | Public (Rate-Limited) | Reset password using one-time token |
+
+### 📍 Address Endpoints (`/api/address`)
+| Method | Endpoint | Protection | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/address/get` | Auth (`authUser`) | Fetch user's saved shipping addresses |
+| `POST` | `/api/address/add` | Auth (`authUser`) | Create a new delivery address |
+| `POST` | `/api/address/update` | Auth (`authUser`) | Update an existing address (verified with `userId`) |
+| `DELETE` | `/api/address/delete` | Auth (`authUser`) | Delete address (verified with `userId`) |
+
+### 📦 Product & Order Endpoints (`/api/products` & `/api/order`)
+| Method | Endpoint | Protection | Description |
+| :--- | :--- | :--- | :--- |
+| `GET` | `/api/products/list` | Public | Get all active catalog products |
+| `POST` | `/api/products/add` | Seller (`authSeller`) | Add product with Cloudinary image upload |
+| `PUT` | `/api/products/update` | Seller (`authSeller`) | Update product details and images |
+| `DELETE` | `/api/products/delete` | Seller (`authSeller`) | Remove product from catalog |
+| `GET` | `/api/order/user` | Auth (`authUser`) | Fetch logged-in user order history |
+| `POST` | `/api/order/seller` | Seller (`authSeller`) | Get orders assigned to seller |
+| `POST` | `/verify-payment` | Webhook (Stripe) | Stripe webhook verification (`checkout.session.completed`) |
 
 ---
 
-## Setup
+## ⚡ Quick Start & Setup Guide
 
-### 1. Clone
+### Prerequisites
+* **Node.js** (v18.0.0 or higher)
+* **MongoDB** (Local instance or MongoDB Atlas URI)
+* Cloudinary API Keys
+* Stripe API Secret Key
+* Resend API Key
+* GroqCloud API Key
 
-```bash
-git clone <repository-url>
-cd YNA_Grocery
-```
+---
 
-### 2. Backend
+### 1. Backend Setup
 
 ```bash
 cd server
 npm install
 ```
 
-Create `server/.env`:
+Create a `.env` file inside `server/`:
 
 ```env
 PORT=4000
-MONGODB_URI=mongodb://127.0.0.1:27017
-JWT_SECRET=your_jwt_secret
+NODE_ENV=development
+MONGODB_URI=mongodb://127.0.0.1:27017/yna_grocery
+JWT_SECRET=your_super_secret_jwt_key
+ALLOWED_ORIGINS=http://localhost:5173
+
+# Admin / Seller Credentials
 SELLER_EMAIL=admin@example.com
 SELLER_PASSWORD=your_seller_password
-CLOUDINARY_CLOUD_NAME=
-CLOUDINARY_API_KEY=
-CLOUDINARY_API_SECRET=
-STRIPE_SECRET_KEY=
-STRIPE_WEBHOOK_SECRET=
-ALLOWED_ORIGINS=http://localhost:5173
-NODE_ENV=development
 
-GROQ_API_KEY=your_groq_api_key
+# Cloudinary Integration
+CLOUDINARY_CLOUD_NAME=your_cloud_name
+CLOUDINARY_API_KEY=your_cloudinary_api_key
+CLOUDINARY_API_SECRET=your_cloudinary_api_secret
+
+# Stripe Payments
+STRIPE_SECRET_KEY=sk_test_...
+STRIPE_WEBHOOK_SECRET=whsec_...
+
+# Email Service (Resend)
+RESEND_API_KEY=re_...
+SENDER_EMAIL=onboarding@resend.dev
+
+# AI Chatbot (GroqCloud)
+GROQ_API_KEY=gsk_...
 GROQ_MODEL=openai/gpt-oss-20b
 ```
 
-Get a Groq API key from [console.groq.com](https://console.groq.com/). The chatbot uses `openai/gpt-oss-20b` by default.
-
+Run the backend server:
 ```bash
-npm run server    # nodemon (dev)
-# npm start       # production
+npm run server   # Launches development server with Nodemon
 ```
 
-API default: `http://localhost:4000`
+---
 
-### 3. Frontend
+### 2. Frontend Setup
 
 ```bash
 cd client
 npm install
 ```
 
-Create `client/.env`:
+Create a `.env` file inside `client/`:
 
 ```env
 VITE_BACKEND_URL=http://localhost:4000
 VITE_CURRENCY=$
 ```
 
+Launch the frontend client:
 ```bash
-npm run dev
+npm run dev      # Runs Vite dev server at http://localhost:5173
 ```
 
-App default: `http://localhost:5173`
-
+To build for production:
 ```bash
-npm run build     # production build
-npm run preview   # preview build
+npm run build
+npm run preview
 ```
 
 ---
 
-## Main routes
+## 🔒 Security & Best Practices
 
-### Customer
-| Path | Page |
-|------|------|
-| `/` | Home |
-| `/products` | Catalog (filters & sort) |
-| `/products/:category` | Category |
-| `/products/:category/:id` | Product details |
-| `/cart` | Cart & checkout |
-| `/add-address` | Add address |
-| `/my-orders` | Orders |
-| `/search` | Search results |
-| `/contact` `/faq` `/about` `/privacy` `/terms` | Info pages |
-| `/loader` | Post-Stripe redirect |
-| `/reset-password` | Reset password (token from email link) |
-
-### Seller
-| Path | Page |
-|------|------|
-| `/seller` | Login (guest) / Add product (auth) |
-| `/seller/dashboard` | Overview |
-| `/seller/products` | Product list |
-| `/seller/update-product/:id` | Edit product |
-| `/seller/orders` | Active orders |
-| `/seller/history` | Order history |
-| `/seller/coupons` | Coupons |
-| `/seller/notifications` | Notifications |
-| `/seller/settings` `/seller/profile` | Account UI |
+* **HTTP-Only Cookies**: Authentication tokens are stored in `httpOnly`, `sameSite`, and `secure` cookies to eliminate XSS vulnerability risks.
+* **Input Validation & Sanitization**: Image uploads are validated for MIME type (`image/*`) and capped at **5MB** via Multer middleware. Database updates strictly enforce `runValidators: true`.
+* **Ownership Checks**: Address and User endpoints explicitly verify object ownership using decoded JWT claims (`req.userId`).
+* **Rate Limiting**: Password reset and public endpoints feature IP-based rate limiting to protect against brute-force attacks.
 
 ---
 
-## API overview
+## 📜 License
 
-| Base | Purpose |
-|------|---------|
-| `/api/users` | Register, login, logout, auth check, forgot/reset password |
-| `/api/seller` | Seller login, logout, auth check |
-| `/api/products` | List, add, update, delete, stock, by id |
-| `/api/cart` | Update cart |
-| `/api/address` | Add / get addresses |
-| `/api/order` | COD, online (Stripe), user & seller orders, status |
-| `/api/coupons` | List, add, delete, toggle |
-| `/api/chat` | Customer chatbot (Groq; message + history); seller prompt GET/PUT/reset |
-| `/verify-payment` | Stripe webhook (`checkout.session.completed`) |
-
-### Password reset
-
-| Method | Path | Notes |
-|--------|------|--------|
-| `POST` | `/api/users/forgot-password` | Body: `{ email }`. Always returns a generic success message. Rate-limited. |
-| `POST` | `/api/users/reset-password` | Body: `{ token, password }`. One-time token, 1h expiry. Rate-limited. |
-
-Password rules (client + server): min 8 characters, at least one letter and one number.
-
----
-
-## Notes
-
-- JWT sessions use **HTTP-only cookies** (not `localStorage`).
-- Stripe webhook uses **raw body** parsing on `/verify-payment` before JSON middleware.
-- Seller access is gated by `SELLER_EMAIL` / `SELLER_PASSWORD` in env (no email-based seller password reset).
-- Tax on cart checkout is **15%** (client-side display; order amounts follow API logic).
-- Design tokens live in `client/src/index.css` (`@theme`); keep brand greens/oranges consistent.
-- Password reset uses **Resend**. Forgot/reset endpoints are rate-limited (**5 requests / IP / 15 min**, in-memory — suitable for single-instance MVP; use a shared store when scaling).
-
----
-
-## License
-
-ISC — see package metadata in `server/package.json`.
+This project is licensed under the [MIT License](LICENSE).

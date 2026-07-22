@@ -49,7 +49,7 @@ export const updateAddress = async (req, res) => {
             return res.status(404).json({ message: "User not found" });
         }
 
-        const address = await Address.findById(addressId);
+        const address = await Address.findById(_id);
 
         if (!address) {
             return res.status(404).json({ message: "Address not found" });

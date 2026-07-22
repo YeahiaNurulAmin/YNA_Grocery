@@ -182,6 +182,7 @@ export const AppContextProvider = ({ children }) => {
         navigate,
         user,
         setUser,
+        fetchUser,
         isSeller,
         setIsSeller,
         showUserLogin,

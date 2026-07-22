@@ -2,11 +2,12 @@
  * MobileBottomNav — touch-friendly bottom navigation for key customer routes.
  * Shown on sm and below; paired with .mb-nav padding on page content.
  */
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation } from "react-router-dom";
 import { Home, LayoutGrid, Search, ShoppingCart, User } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 
 const MobileBottomNav = () => {
+  const location = useLocation();
   const { cartItems, user, setShowUserLogin, navigate } = useAppContext();
 
   const cartCount = Object.values(cartItems || {}).reduce((a, b) => a + b, 0);
@@ -47,9 +48,11 @@ const MobileBottomNav = () => {
         </NavLink>
         <button
           type="button"
-          className="flex flex-col items-center justify-center gap-0.5 flex-1 h-full text-text-tertiary cursor-pointer"
+          className={`flex flex-col items-center justify-center gap-0.5 flex-1 h-full min-w-0 transition-colors duration-200 cursor-pointer ${
+            location.pathname === "/profile" ? "text-primary" : "text-text-tertiary"
+          }`}
           onClick={() => {
-            if (user) navigate("/my-orders");
+            if (user) navigate("/profile");
             else setShowUserLogin(true);
           }}
         >

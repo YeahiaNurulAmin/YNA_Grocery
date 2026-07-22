@@ -138,31 +138,46 @@ const Navbar = () => {
                 onClick={() => setUserMenuOpen((v) => !v)}
                 className="flex items-center gap-2 h-10 pl-1.5 pr-3 rounded-[16px] border border-border hover:border-primary/30 transition-colors cursor-pointer"
               >
-                <span className="w-7 h-7 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center">
-                  {(user.name || "U").charAt(0).toUpperCase()}
-                </span>
+                {user.avatar ? (
+                  <img
+                    src={user.avatar}
+                    alt={user.name}
+                    className="w-7 h-7 rounded-full object-cover shrink-0"
+                  />
+                ) : (
+                  <span className="w-7 h-7 rounded-full bg-primary/15 text-primary text-xs font-bold flex items-center justify-center shrink-0">
+                    {(user.name || "U").charAt(0).toUpperCase()}
+                  </span>
+                )}
                 <ChevronDown className="w-3.5 h-3.5 text-text-tertiary" />
               </button>
               {userMenuOpen && (
                 <div className="absolute right-0 top-12 w-48 bg-bg-white border border-border rounded-[20px] shadow-lg p-2 z-50 animate-scale-in">
                   <button
                     type="button"
+                    onClick={() => { navigate("/profile"); setUserMenuOpen(false); }}
+                    className="w-full text-left px-3 py-2.5 rounded-[14px] text-sm text-text-secondary hover:bg-bg-light-mint hover:text-primary cursor-pointer font-medium"
+                  >
+                    My Profile
+                  </button>
+                  <button
+                    type="button"
                     onClick={() => { navigate("/my-orders"); setUserMenuOpen(false); }}
-                    className="w-full text-left px-3 py-2.5 rounded-[14px] text-sm text-text-secondary hover:bg-bg-light-mint hover:text-primary cursor-pointer"
+                    className="w-full text-left px-3 py-2.5 rounded-[14px] text-sm text-text-secondary hover:bg-bg-light-mint hover:text-primary cursor-pointer font-medium"
                   >
                     My Orders
                   </button>
                   <button
                     type="button"
                     onClick={() => { navigate("/wishlist"); setUserMenuOpen(false); }}
-                    className="w-full text-left px-3 py-2.5 rounded-[14px] text-sm text-text-secondary hover:bg-bg-light-mint hover:text-primary cursor-pointer"
+                    className="w-full text-left px-3 py-2.5 rounded-[14px] text-sm text-text-secondary hover:bg-bg-light-mint hover:text-primary cursor-pointer font-medium"
                   >
                     Wishlist
                   </button>
                   <button
                     type="button"
                     onClick={() => { logoutHandler(); setUserMenuOpen(false); }}
-                    className="w-full text-left px-3 py-2.5 rounded-[14px] text-sm text-error hover:bg-error/10 cursor-pointer"
+                    className="w-full text-left px-3 py-2.5 rounded-[14px] text-sm text-error hover:bg-error/10 cursor-pointer font-medium"
                   >
                     Logout
                   </button>
@@ -213,7 +228,12 @@ const Navbar = () => {
             { to: "/products", label: "All Products" },
             { to: "/contact", label: "Contact" },
             { to: "/faq", label: "FAQ" },
-            ...(user ? [{ to: "/my-orders", label: "My Orders" }] : []),
+            ...(user
+              ? [
+                  { to: "/profile", label: "My Profile" },
+                  { to: "/my-orders", label: "My Orders" },
+                ]
+              : []),
           ].map((item) => (
             <NavLink
               key={item.to}

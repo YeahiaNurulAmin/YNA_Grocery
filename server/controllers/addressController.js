@@ -42,7 +42,8 @@ export const getAddress = async (req, res) => {
 // Update Address: api/address/update
 export const updateAddress = async (req, res) => {
     try {
-        const { userId, _id, updatedAddress } = req.body;
+        const userId = req.userId || req.body.userId;
+        const { _id, updatedAddress } = req.body;
         const user = await User.findById(userId);
 
         if (!user) {
@@ -53,6 +54,10 @@ export const updateAddress = async (req, res) => {
 
         if (!address) {
             return res.status(404).json({ message: "Address not found" });
+        }
+
+        if (String(address.userId) !== String(userId)) {
+            return res.status(401).json({ message: "Unauthorized" });
         }
 
         await Address.findByIdAndUpdate(_id, updatedAddress);
@@ -66,7 +71,8 @@ export const updateAddress = async (req, res) => {
 // Delete Address: api/address/delete
 export const deleteAddress = async (req, res) => {
     try {
-        const { userId, _id } = req.body;
+        const userId = req.userId || req.body.userId;
+        const { _id } = req.body;
         const user = await User.findById(userId);
 
         if (!user) {
@@ -77,6 +83,10 @@ export const deleteAddress = async (req, res) => {
 
         if (!address) {
             return res.status(404).json({ message: "Address not found" });
+        }
+
+        if (String(address.userId) !== String(userId)) {
+            return res.status(401).json({ message: "Unauthorized" });
         }
 
         await Address.findByIdAndDelete(_id);

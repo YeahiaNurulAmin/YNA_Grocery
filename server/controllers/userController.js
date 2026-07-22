@@ -163,7 +163,8 @@ export const logout = async (req, res) => {
 // Update Profile: /api/users/profile
 export const updateProfile = async (req, res) => {
     try {
-        const { userId, name, phone } = req.body;
+        const userId = req.userId || req.body.userId;
+        const { name, phone } = req.body;
         let avatar = req.body.avatar;
 
         if (!userId) {
@@ -187,7 +188,7 @@ export const updateProfile = async (req, res) => {
         const updatedUser = await User.findByIdAndUpdate(
             userId,
             updateData,
-            { new: true }
+            { new: true, runValidators: true }
         ).select("-password");
 
         if (!updatedUser) {

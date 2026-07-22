@@ -1,7 +1,8 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useCallback } from 'react'
 import { useAppContext } from '../../context/AppContext'
 import { assets, dummyOrders } from '../../assets/assets';
 import toast from 'react-hot-toast';
+import { socket } from '../../configs/socket';
 
 const OrderHistory = () => {
     const { currency, axios } = useAppContext();
@@ -10,9 +11,9 @@ const OrderHistory = () => {
     const [sortBy, setSortBy] = React.useState("date-desc");
     const [loading, setLoading] = React.useState(true);
 
-    const fetchOrders = async () => {
+    const fetchOrders = useCallback(async (isSilent = false) => {
         try {
-            setLoading(true);
+            if (!isSilent) setLoading(true);
             const { data } = await axios.get("/api/order/seller");
             if (data.success) {
                 // Filter only Delivered and Cancelled orders
@@ -20,20 +21,39 @@ const OrderHistory = () => {
                     order => order.status === "Delivered" || order.status === "Cancelled"
                 );
                 setOrders(historyOrders);
-            } else {
+            } else if (!isSilent) {
                 toast.error(data.message || "Failed to fetch orders");
             }
         } catch (error) {
-            toast.error("Failed to fetch orders");
+            if (!isSilent) toast.error("Failed to fetch orders");
             console.error("Error fetching orders:", error);
         } finally {
-            setLoading(false);
+            if (!isSilent) setLoading(false);
         }
-    };
+    }, [axios]);
 
     useEffect(() => {
-        fetchOrders();
-    }, []);
+        fetchOrders(false);
+
+        const handleRealtimeUpdate = () => {
+            fetchOrders(true);
+        };
+
+        socket.on("orders_updated", handleRealtimeUpdate);
+        socket.on("new_order", handleRealtimeUpdate);
+        window.addEventListener("yna_orders_updated", handleRealtimeUpdate);
+
+        const interval = setInterval(() => {
+            fetchOrders(true);
+        }, 5000);
+
+        return () => {
+            socket.off("orders_updated", handleRealtimeUpdate);
+            socket.off("new_order", handleRealtimeUpdate);
+            window.removeEventListener("yna_orders_updated", handleRealtimeUpdate);
+            clearInterval(interval);
+        };
+    }, [fetchOrders]);
 
     // Filter by search query (name, email, phone, order ID)
     const filteredOrders = orders.filter(order => {

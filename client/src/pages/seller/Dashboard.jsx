@@ -18,6 +18,8 @@ import { useAppContext } from "../../context/AppContext";
 import { Card, Badge, Button, SectionHeader, Skeleton, EmptyState } from "../../components/ui";
 import toast from "react-hot-toast";
 
+import { socket } from "../../configs/socket";
+
 const PREFS_KEY = "yna_seller_prefs";
 
 const SellerDashboard = () => {
@@ -36,27 +38,49 @@ const SellerDashboard = () => {
     }
   }, []);
 
-  useEffect(() => {
-    const load = async () => {
-      setOrdersError(null);
-      try {
-        await fetchProducts?.();
-        const { data } = await axios.get("/api/order/seller");
-        if (data.success) {
-          setOrders(data.orders || []);
-        } else {
-          setOrdersError(data.message || "Failed to load orders");
-          toast.error(data.message || "Failed to load orders");
-        }
-      } catch (e) {
-        console.error(e);
+  const loadOrders = async (isSilent = false) => {
+    if (!isSilent) setOrdersError(null);
+    try {
+      await fetchProducts?.();
+      const { data } = await axios.get("/api/order/seller");
+      if (data.success) {
+        setOrders(data.orders || []);
+      } else if (!isSilent) {
+        setOrdersError(data.message || "Failed to load orders");
+        toast.error(data.message || "Failed to load orders");
+      }
+    } catch (e) {
+      console.error(e);
+      if (!isSilent) {
         setOrdersError("Failed to load orders");
         toast.error("Failed to load orders");
-      } finally {
-        setLoading(false);
       }
+    } finally {
+      if (!isSilent) setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    loadOrders(false);
+
+    const handleRealtimeUpdate = () => {
+      loadOrders(true);
     };
-    load();
+
+    socket.on("orders_updated", handleRealtimeUpdate);
+    socket.on("new_order", handleRealtimeUpdate);
+    window.addEventListener("yna_orders_updated", handleRealtimeUpdate);
+
+    const interval = setInterval(() => {
+      loadOrders(true);
+    }, 5000);
+
+    return () => {
+      socket.off("orders_updated", handleRealtimeUpdate);
+      socket.off("new_order", handleRealtimeUpdate);
+      window.removeEventListener("yna_orders_updated", handleRealtimeUpdate);
+      clearInterval(interval);
+    };
   }, []);
 
   const delivered = orders.filter((o) => o.status === "Delivered");

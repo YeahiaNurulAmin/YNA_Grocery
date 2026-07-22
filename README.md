@@ -7,9 +7,10 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.0-38B2AC?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
 [![Stripe](https://img.shields.io/badge/Stripe-Payments-008CDD?logo=stripe&logoColor=white)](https://stripe.com/)
 [![Cloudinary](https://img.shields.io/badge/Cloudinary-Media%20Storage-3448C5?logo=cloudinary&logoColor=white)](https://cloudinary.com/)
+[![Socket.io](https://img.shields.io/badge/Socket.io-v4.8-010101?logo=socketdotio&logoColor=white)](https://socket.io/)
 [![License](https://img.shields.io/badge/License-MIT-blue.svg)](LICENSE)
 
-> A modern, full-stack MERN e-commerce application featuring dual Customer & Seller portals, Stripe payments, Cloudinary media storage, Groq AI shopping assistance, and robust HTTP-only JWT security.
+> A modern, full-stack MERN e-commerce application featuring dual Customer & Seller portals, real-time Socket.io order sync, Stripe payments, Cloudinary media storage, Groq AI shopping assistance, and robust HTTP-only JWT security.
 
 ---
 
@@ -19,6 +20,7 @@
 
 ### 🔑 Key Engineering & Architectural Features:
 * **Dual-Portal Architecture**: Separate, highly optimized SPA routes for customer shopping and seller/admin administration.
+* **⚡ Real-Time Socket.io Order Sync**: Instant, zero-reload order updates across the admin dashboard (`/seller/orders`, `/seller/dashboard`, `/seller/history`) and customer order views. Instant audio chimes & toast notifications alert admins immediately when any order is placed (COD or Stripe webhook confirmed).
 * **User Profile & Media Upload Engine**: Rich user profile management supporting direct device image uploads validated for file type/size and stored on **Cloudinary**.
 * **Enterprise Security & Auth**: **HTTP-only JWT cookies** (preventing XSS access), bcrypt password hashing, input validation (`runValidators`), authorization guards, and rate-limited password reset flows via **Resend**.
 * **Stripe Checkout & Webhook Integration**: Complete checkout workflow supporting Cash on Delivery (COD) and automated Stripe payment processing with raw-body webhook signature verification (`checkout.session.completed`).
@@ -31,8 +33,9 @@
 
 | Layer | Technologies & Tools |
 | :--- | :--- |
-| **Frontend** | React 19, Vite, Tailwind CSS v4, React Router v7, Axios, Lucide Icons, React Hot Toast |
-| **Backend API** | Node.js, Express 5, Mongoose ODM, JWT Authentication, Multer, Express Rate Limit |
+| **Frontend** | React 19, Vite, Socket.io Client, Tailwind CSS v4, React Router v7, Axios, Lucide Icons, React Hot Toast |
+| **Backend API** | Node.js, Express 5, Socket.io Server, Mongoose ODM, JWT Authentication, Multer, Express Rate Limit |
+| **Real-Time Messaging** | WebSockets & Socket.io (Bi-directional real-time order events & status push notifications) |
 | **Database** | MongoDB (Atlas / Local Document Store) |
 | **Cloud Services** | Cloudinary (Image Optimization & Storage), Stripe (Payments & Webhooks), Resend (Email Delivery), GroqCloud AI |
 

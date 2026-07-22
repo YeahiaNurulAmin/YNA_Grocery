@@ -124,90 +124,123 @@ export const placeOrderOnline = async (req, res) => {
     }
 };
 
-// webhook to verify payments action: /api/order/verify-payment
-export const verifyPayment = async (req, res) => {
+// Stripe instance & in-memory idempotency guard at module scope
+const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
+const processedEvents = new Set();
 
-    console.log("Received Stripe webhook:", req.body); // Debug log to check incoming webhook data
-    // Stripe gateway integration
-    const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
+const markOrderPaidAndClearCart = async (orderId, userId) => {
+    await Order.findByIdAndUpdate(orderId, {
+        isPaid: true,
+        status: "Order Placed",
+    });
+    await User.findByIdAndUpdate(userId, { cartItems: {} });
+};
+
+export const verifyPayment = async (req, res) => {
     const sig = req.headers["stripe-signature"];
     let event;
 
     try {
+        // req.body MUST be the raw request body here (Buffer), not JSON-parsed.
+        // Mount this route with express.raw({ type: "application/json" })
+        // and make sure it's registered BEFORE any global express.json() middleware.
         event = stripeInstance.webhooks.constructEvent(
-            req.body, // raw body is required to verify the webhook
+            req.body,
             sig,
             process.env.STRIPE_WEBHOOK_SECRET,
         );
     } catch (err) {
-        console.error("Error verifying Stripe webhook:", err);
+        console.error("Error verifying Stripe webhook:", err.message);
         return res.status(400).json({ message: "Webhook verification failed" });
     }
 
-    // Handle the event
-    switch (event.type) {
-        case "checkout.session.completed": {
-            // Handle successful checkout session
-            const session = event.data.object;
-            const { orderId, userId } = session.metadata;
-
-            console.log(`Processing successful payment for order: ${orderId}`);
-
-            try {
-                // Mark payment as paid
-                await Order.findByIdAndUpdate(orderId, {
-                    isPaid: true,
-                    status: "Order Placed",
-                });
-                // Clear user cart after successful payment
-                await User.findByIdAndUpdate(userId, { cartItems: {} });
-
-                console.log(`Order ${orderId} marked as paid and cart cleared`);
-            } catch (error) {
-                console.error("Error processing payment:", error);
-            }
-            break;
-        }
-        case "checkout.session.async_payment_succeeded": {
-            // Handle async payment success (e.g., bank transfers)
-            const session = event.data.object;
-            const { orderId, userId } = session.metadata;
-
-            console.log(`Processing async payment success for order: ${orderId}`);
-
-            try {
-                await Order.findByIdAndUpdate(orderId, {
-                    isPaid: true,
-                    status: "Order Placed",
-                });
-
-                await User.findByIdAndUpdate(userId, { cartItems: {} });
-                console.log(`Order ${orderId} async payment succeeded`);
-            } catch (error) {
-                console.error("Error processing async payment:", error);
-            }
-            break;
-        }
-        case "checkout.session.async_payment_failed": {
-            // Handle async payment failure
-            const session = event.data.object;
-            const { orderId } = session.metadata;
-
-            console.log(`Payment failed for order: ${orderId}`);
-
-            try {
-                await Order.findByIdAndDelete(orderId);
-                console.log(`Order ${orderId} deleted due to failed payment`);
-            } catch (error) {
-                console.error("Error deleting order:", error);
-            }
-            break;
-        }
-        default:
-            console.log("Unhandled event type:", event.type);
-            break;
+    // Idempotency: Stripe may deliver the same event more than once
+    if (processedEvents.has(event.id)) {
+        console.log(`Skipping already-processed event: ${event.id}`);
+        return res.status(200).json({ received: true });
     }
-    res.status(200).json({ received: true });
+
+    try {
+        switch (event.type) {
+            case "checkout.session.completed": {
+                const session = event.data.object;
+                const { orderId, userId } = session.metadata || {};
+
+                if (!orderId || !userId) {
+                    console.error(
+                        "Missing orderId/userId in session metadata",
+                        event.id,
+                    );
+                    break;
+                }
+
+                // For delayed payment methods (bank transfers etc.), "completed" fires
+                // before the money actually arrives. Wait for the async event in that case.
+                if (session.payment_status !== "paid") {
+                    console.log(
+                        `Order ${orderId} awaiting async payment confirmation`,
+                    );
+                    break;
+                }
+
+                await markOrderPaidAndClearCart(orderId, userId);
+                console.log(`Order ${orderId} marked as paid and cart cleared`);
+                break;
+            }
+
+            case "checkout.session.async_payment_succeeded": {
+                const session = event.data.object;
+                const { orderId, userId } = session.metadata || {};
+
+                if (!orderId || !userId) {
+                    console.error(
+                        "Missing orderId/userId in session metadata",
+                        event.id,
+                    );
+                    break;
+                }
+
+                await markOrderPaidAndClearCart(orderId, userId);
+                console.log(`Order ${orderId} async payment succeeded`);
+                break;
+            }
+
+            case "checkout.session.async_payment_failed": {
+                const session = event.data.object;
+                const { orderId } = session.metadata || {};
+
+                if (!orderId) {
+                    console.error("Missing orderId in session metadata", event.id);
+                    break;
+                }
+
+                // Keep the record around instead of deleting it, for audit/history
+                await Order.findByIdAndUpdate(orderId, {
+                    status: "Payment Failed",
+                });
+                console.log(`Order ${orderId} marked as payment failed`);
+                break;
+            }
+
+            default:
+                console.log("Unhandled event type:", event.type);
+                break;
+        }
+
+        // Add event.id only after successful event processing
+        processedEvents.add(event.id);
+
+        // Limit set size to prevent memory leaks over time
+        if (processedEvents.size > 10000) {
+            const first = processedEvents.values().next().value;
+            processedEvents.delete(first);
+        }
+
+        return res.status(200).json({ received: true });
+    } catch (error) {
+        console.error(`Error processing webhook event ${event.id}:`, error);
+        return res.status(500).json({ message: "Error processing webhook event" });
+    }
 };
 
 // Get Orders by User ID: /api/order/user
@@ -216,7 +249,9 @@ export const getOrdersByUserId = async (req, res) => {
         const userId = req.userId;
 
         if (!userId) {
-            return res.status(400).json({ success: false, message: "Missing userId" });
+            return res
+                .status(400)
+                .json({ success: false, message: "Missing userId" });
         }
 
         const orders = await Order.find({
@@ -260,19 +295,33 @@ export const updateOrderStatus = async (req, res) => {
         const { orderId, status } = req.body;
 
         if (!orderId || !status) {
-            return res.status(400).json({ success: false, message: "Missing required fields" });
+            return res
+                .status(400)
+                .json({ success: false, message: "Missing required fields" });
         }
 
-        const updatedOrder = await Order.findByIdAndUpdate(orderId, { status }, { new: true });
+        const updatedOrder = await Order.findByIdAndUpdate(
+            orderId,
+            { status },
+            { new: true },
+        );
 
         if (!updatedOrder) {
-            return res.status(404).json({ success: false, message: "Order not found" });
+            return res
+                .status(404)
+                .json({ success: false, message: "Order not found" });
         }
 
-        res.status(200).json({ success: true, message: "Order status updated successfully", order: updatedOrder });
+        res.status(200).json({
+            success: true,
+            message: "Order status updated successfully",
+            order: updatedOrder,
+        });
     } catch (error) {
         console.error("Error updating order status:", error);
-        res.status(500).json({ success: false, message: "Error updating order status" });
+        res.status(500).json({
+            success: false,
+            message: "Error updating order status",
+        });
     }
 };
-

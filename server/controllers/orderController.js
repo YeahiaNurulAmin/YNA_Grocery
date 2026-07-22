@@ -2,6 +2,7 @@ import Order from "../models/Order.js";
 import Product from "../models/Product.js";
 import stripe from "stripe";
 import User from "../models/User.js";
+import { emitOrderChange } from "../configs/socket.js";
 
 // Place order COD: /api/order/cod
 export const placeOrderCOD = async (req, res) => {
@@ -26,7 +27,7 @@ export const placeOrderCOD = async (req, res) => {
         // Add tax 15%
         amount += Math.floor(amount * 0.15);
 
-        await Order.create({
+        const newOrder = await Order.create({
             userId,
             items,
             amount,
@@ -34,6 +35,9 @@ export const placeOrderCOD = async (req, res) => {
             paymentType: "COD",
             status: "Order Placed",
         });
+
+        const populatedOrder = await Order.findById(newOrder._id).populate("items.product address");
+        emitOrderChange({ type: "NEW_ORDER", order: populatedOrder });
 
         res.status(200).json({
             success: true,
@@ -129,11 +133,17 @@ const stripeInstance = new stripe(process.env.STRIPE_SECRET_KEY);
 const processedEvents = new Set();
 
 const markOrderPaidAndClearCart = async (orderId, userId) => {
-    await Order.findByIdAndUpdate(orderId, {
-        isPaid: true,
-        status: "Order Placed",
-    });
+    const updatedOrder = await Order.findByIdAndUpdate(
+        orderId,
+        {
+            isPaid: true,
+            status: "Order Placed",
+        },
+        { new: true }
+    ).populate("items.product address");
     await User.findByIdAndUpdate(userId, { cartItems: {} });
+
+    emitOrderChange({ type: "NEW_ORDER", order: updatedOrder });
 };
 
 export const verifyPayment = async (req, res) => {
@@ -304,13 +314,15 @@ export const updateOrderStatus = async (req, res) => {
             orderId,
             { status },
             { new: true },
-        );
+        ).populate("items.product address");
 
         if (!updatedOrder) {
             return res
                 .status(404)
                 .json({ success: false, message: "Order not found" });
         }
+
+        emitOrderChange({ type: "STATUS_UPDATED", order: updatedOrder });
 
         res.status(200).json({
             success: true,

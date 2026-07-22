@@ -25,6 +25,7 @@ import {
     MoreHorizontal,
 } from "lucide-react";
 import { Button } from "../../components/ui";
+import { socket } from "../../configs/socket";
 
 const PREFS_KEY = "yna_seller_prefs";
 const DEFAULT_PREFS = { chime: true, emailDigest: false, lowStock: true };
@@ -141,8 +142,22 @@ const Seller = () => {
             if (data.success) addSeenIds(data.orders.map(o => o._id));
         }).catch(() => { });
 
-        pollingRef.current = setInterval(checkForNewOrders, 15000);
-        return () => clearInterval(pollingRef.current);
+        socket.emit("join_seller");
+
+        const handleSocketOrderUpdate = (data) => {
+            checkForNewOrders();
+            window.dispatchEvent(new CustomEvent("yna_orders_updated", { detail: data }));
+        };
+
+        socket.on("orders_updated", handleSocketOrderUpdate);
+        socket.on("new_order", handleSocketOrderUpdate);
+
+        pollingRef.current = setInterval(checkForNewOrders, 5000);
+        return () => {
+            clearInterval(pollingRef.current);
+            socket.off("orders_updated", handleSocketOrderUpdate);
+            socket.off("new_order", handleSocketOrderUpdate);
+        };
     }, [checkForNewOrders, axios]);
 
     useEffect(() => {

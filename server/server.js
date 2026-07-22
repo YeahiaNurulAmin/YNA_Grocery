@@ -17,7 +17,11 @@ import { verifyPayment } from "./controllers/orderController.js";
 
 dns.setServers(["1.1.1.1", "8.8.8.8"]);
 
+import { createServer } from "http";
+import { initSocket } from "./configs/socket.js";
+
 const app = express();
+const httpServer = createServer(app);
 
 // Configurations
 // Connect to DB
@@ -33,6 +37,9 @@ const allowedOrigins = (process.env.ALLOWED_ORIGINS || "http://localhost:5173")
     .split(",")
     .map((origin) => origin.trim())
     .filter(Boolean);
+
+// Initialize Socket.io
+initSocket(httpServer, allowedOrigins);
 
 // Middlewares - Apply CORS first
 app.use(cors({
@@ -81,9 +88,8 @@ app.use("/api/coupons", couponRouter);
 // Chat Routes (customer storefront chatbot)
 app.use("/api/chat", chatRouter);
 
-// Trigger restart 5 - restore srv URI
-app.listen(port, () => {
+// Server listen
+httpServer.listen(port, () => {
     console.log(`Server running on port ${port}`);
-    
 });
 

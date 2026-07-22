@@ -1,27 +1,30 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useCallback } from 'react'
 import { useAppContext } from '../../context/AppContext'
 import { assets, dummyOrders } from '../../assets/assets';
 import toast from 'react-hot-toast';
+import { socket } from '../../configs/socket';
 
 const OrdersList = () => {
     const { currency, axios } = useAppContext();
     const [orders, setOrders] = React.useState([]);
     const [statusFilter, setStatusFilter] = React.useState("All");
 
-    const fetchOrders = async () => {
+    const fetchOrders = useCallback(async (isSilent = false) => {
         try {
             const { data } = await axios.get("/api/order/seller");
             if (data.success) {
                 setOrders(data.orders);
-            } else {
+            } else if (!isSilent) {
                 toast.error(data.message || "Failed to fetch orders");
                 console.error("Error fetching orders:", data.message);
             }
         } catch (error) {
-            toast.error("Failed to fetch orders");
+            if (!isSilent) {
+                toast.error("Failed to fetch orders");
+            }
             console.error("Error fetching orders:", error);
         }
-    }
+    }, [axios]);
 
     const addDemoOrderHandler = () => {
         if (!dummyOrders || dummyOrders.length === 0) {
@@ -71,7 +74,26 @@ const OrdersList = () => {
 
     useEffect(() => {
         fetchOrders();
-    }, [])
+
+        const handleRealtimeUpdate = () => {
+            fetchOrders(true);
+        };
+
+        socket.on("orders_updated", handleRealtimeUpdate);
+        socket.on("new_order", handleRealtimeUpdate);
+        window.addEventListener("yna_orders_updated", handleRealtimeUpdate);
+
+        const interval = setInterval(() => {
+            fetchOrders(true);
+        }, 5000);
+
+        return () => {
+            socket.off("orders_updated", handleRealtimeUpdate);
+            socket.off("new_order", handleRealtimeUpdate);
+            window.removeEventListener("yna_orders_updated", handleRealtimeUpdate);
+            clearInterval(interval);
+        };
+    }, [fetchOrders]);
 
     // Filter only Active orders (not Delivered and not Cancelled)
     const activeOrders = orders.filter(order => order.status !== "Delivered" && order.status !== "Cancelled");

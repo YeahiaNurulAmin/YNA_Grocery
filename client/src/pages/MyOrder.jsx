@@ -7,6 +7,8 @@ import { Package, ShoppingBag } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
 import { Card, Badge, SectionHeader, EmptyState, Button } from "../components/ui";
 
+import { socket } from "../configs/socket";
+
 const statusVariant = (status) => {
   if (status === "Delivered") return "success";
   if (status === "Cancelled") return "error";
@@ -19,22 +21,44 @@ const MyOrder = () => {
   const [loading, setLoading] = React.useState(true);
   const { currency, axios, user, navigate, setShowUserLogin } = useAppContext();
 
-  const fetchMyOrders = async () => {
+  const fetchMyOrders = React.useCallback(async (isSilent = false) => {
     try {
+      if (!isSilent) setLoading(true);
       const { data } = await axios.get("/api/order/user");
       if (data.success) setMyOrders(data.orders);
       else console.error("Error fetching orders:", data.message);
     } catch (error) {
       console.error("Error fetching my orders:", error);
     } finally {
-      setLoading(false);
+      if (!isSilent) setLoading(false);
     }
-  };
+  }, [axios]);
 
   useEffect(() => {
-    if (user) fetchMyOrders();
-    else setLoading(false);
-  }, [user]);
+    if (!user) {
+      setLoading(false);
+      return;
+    }
+
+    fetchMyOrders(false);
+
+    const handleRealtimeUpdate = () => {
+      fetchMyOrders(true);
+    };
+
+    socket.on("orders_updated", handleRealtimeUpdate);
+    socket.on("new_order", handleRealtimeUpdate);
+
+    const interval = setInterval(() => {
+      fetchMyOrders(true);
+    }, 5000);
+
+    return () => {
+      socket.off("orders_updated", handleRealtimeUpdate);
+      socket.off("new_order", handleRealtimeUpdate);
+      clearInterval(interval);
+    };
+  }, [user, fetchMyOrders]);
 
   if (!user) {
     return (

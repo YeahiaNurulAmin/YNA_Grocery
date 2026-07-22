@@ -57,11 +57,11 @@
 * **AI Chat Assistant**: Built-in floating AI assistant to answer product queries and assist shoppers.
 
 ### 🏪 Seller & Admin Dashboard (`/seller`)
-* **Analytics & Overview**: Sales metric cards, recent order stream, and stock status alerts.
+* **Analytics & Overview**: Sales metric cards, recent order stream, and stock status alerts with live order counters.
 * **Product Catalog Management**: Add, update, delete, and toggle in-stock statuses with multi-image Cloudinary uploads.
-* **Order Management**: Process active customer orders, update delivery states (*Pending, Processing, Shipped, Delivered, Cancelled*), and review historical logs.
+* **Real-Time Order Management**: Process incoming orders with zero manual reloads. Orders update automatically live via WebSockets (Socket.io) when customers place COD or online orders. Update order delivery states (*Order Placed, Packing, Shipped, Out for delivery, Delivered, Cancelled*) with instant cross-client synchronization.
 * **Promotions & Coupons**: Create, enable/disable, and delete promotional discount codes.
-* **Notification System**: Real-time poll notification updates and admin account settings.
+* **Notification System**: Real-time push notification sounds (audio chime), toast popups, notification drawer, and admin settings.
 
 ---
 

@@ -110,7 +110,7 @@ export const dummyProducts = [
     price: 25,
     offerPrice: 20,
     rating: 4,
-    image: [],
+    image: [organic_vegitable_image],
     description: [
       "Fresh and organic",
       "Rich in carbohydrates",
@@ -129,7 +129,7 @@ export const dummyProducts = [
     price: 40,
     offerPrice: 35,
     rating: 5,
-    image: [],
+    image: [organic_vegitable_image],
     description: [
       "Juicy and ripe",
       "Rich in Vitamin C",
@@ -149,7 +149,7 @@ export const dummyProducts = [
     price: 18,
     offerPrice: 15,
     rating: 5,
-    image: [],
+    image: [organic_vegitable_image],
     description: [
       "Rich in iron",
       "High in vitamins",
@@ -202,7 +202,7 @@ export const dummyOrders = [
         _id: "67e2589a8f87e63366786401",
       },
     ],
-    amount: 89,
+    amount: 30,
     address: dummyAddress[0],
     status: "Order Placed",
     paymentType: "Online",

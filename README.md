@@ -2,7 +2,7 @@
 
 [![React](https://img.shields.io/badge/React-19.2-61DAFB?logo=react&logoColor=white)](https://react.dev/)
 [![Vite](https://img.shields.io/badge/Vite-7.2-646CFF?logo=vite&logoColor=white)](https://vitejs.dev/)
-[![Node.js](https://img.shields.io/badge/Node.js-18+-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
+[![Node.js](https://img.shields.io/badge/Node.js-20.19+%20or%2022.12+-339933?logo=nodedotjs&logoColor=white)](https://nodejs.org/)
 [![Express](https://img.shields.io/badge/Express-5.2-000000?logo=express&logoColor=white)](https://expressjs.com/)
 [![MongoDB](https://img.shields.io/badge/MongoDB-Mongoose%209.3-47A248?logo=mongodb&logoColor=white)](https://www.mongodb.com/)
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind_CSS-v4.1-38B2AC?logo=tailwindcss&logoColor=white)](https://tailwindcss.com/)
@@ -27,7 +27,7 @@
 * **💳 Stripe Payments & Webhooks**: Integrated payment flow featuring Cash on Delivery (COD) and automated Stripe Checkout with raw-body signature verification for `checkout.session.completed` events.
 * **🎟️ Coupon & Discount Management**: Dynamic coupon engine supporting fixed and percentage-based discounts with minimum order validation, real-time active status toggles, and client cart application.
 * **🖼️ Profile & Cloudinary Media Upload**: Direct user and product image uploads validated for file type/size and saved to Cloudinary.
-* **🔒 Enterprise Security & Auth**: **HTTP-only JWT cookies** (protecting against XSS), bcrypt password hashing, input validation, and ownership validation (`req.userId` check).
+* **🔒 Enterprise Security & Auth**: JWT session cookies configured with `httpOnly` (limiting JavaScript access), `sameSite` (CSRF mitigation), and `secure` (HTTPS-only transmission protection), alongside bcrypt password hashing, input validation, and ownership validation (`req.userId` check).
 * **🎨 Modern Design System**: Responsive design system built with Tailwind CSS v4, Lucide Icons, glassmorphism UI elements, dark/light theme options, and mobile-friendly bottom navigation.
 
 ---
@@ -37,7 +37,7 @@
 | Layer | Technologies & Dependencies |
 | :--- | :--- |
 | **Frontend** | React 19.2, Vite 7.2, Socket.io Client 4.8, Tailwind CSS v4.1 (`@tailwindcss/vite`), React Router v7.1, Axios 1.14, Lucide React 1.24, React Hot Toast 2.6, Styled Components 6.3 |
-| **Backend API** | Node.js (v18+), Express 5.2, Socket.io Server 4.8, Mongoose ODM 9.3, JWT (`jsonwebtoken` 9.0), BcryptJS 3.0, Multer 2.1, Cookie Parser 1.4, Cors 2.8 |
+| **Backend API** | Node.js (v20.19+ or v22.12+), Express 5.2, Socket.io Server 4.8, Mongoose ODM 9.3, JWT (`jsonwebtoken` 9.0), BcryptJS 3.0, Multer 2.1, Cookie Parser 1.4, Cors 2.8 |
 | **Real-Time Engine** | WebSockets & Socket.io (Bi-directional real-time order notifications and status updates) |
 | **Database** | MongoDB Atlas / Local MongoDB Document Database |
 | **Cloud & External APIs**| **Cloudinary** (Image Optimization & Storage)<br> **Stripe** (Payments & Raw Webhooks)<br> **GroqCloud AI** (LLM Shopping Assistance) |
@@ -72,7 +72,7 @@
 
 ## 📁 Project Architecture
 
-```
+```text
 YNA_Grocery/
 ├── client/                         # Frontend SPA (React 19 + Vite + Tailwind CSS v4)
 │   ├── design/                     # Interactive design specs & UI tokens
@@ -138,6 +138,7 @@ YNA_Grocery/
 ## 📡 API Reference Overview
 
 ### 👤 User Authentication & Profile (`/api/users`)
+
 | Method | Endpoint | Authorization | Description |
 | :--- | :--- | :--- | :--- |
 | `POST` | `/api/users/register` | Public | Register a new customer account |
@@ -148,6 +149,7 @@ YNA_Grocery/
 | `PUT` | `/api/users/change-password` | Auth (`authUser`) | Update password with existing password verification |
 
 ### 🏪 Seller Management (`/api/seller`)
+
 | Method | Endpoint | Authorization | Description |
 | :--- | :--- | :--- | :--- |
 | `POST` | `/api/seller/login` | Public | Authenticate seller/admin credentials |
@@ -155,16 +157,18 @@ YNA_Grocery/
 | `GET` | `/api/seller/logout` | Seller (`authSeller`) | Log out seller & clear auth cookies |
 
 ### 📦 Product Catalog (`/api/products`)
+
 | Method | Endpoint | Authorization | Description |
 | :--- | :--- | :--- | :--- |
 | `GET` | `/api/products/list` | Public | Retrieve active product catalog |
-| `GET` | `/api/products/id` | Public | Fetch detailed information for a single product |
+| `GET` | `/api/products/:id` | Public | Fetch detailed information for a single product |
 | `POST` | `/api/products/add` | Seller (`authSeller`) | Create new product with Cloudinary image upload |
 | `PUT` | `/api/products/update` | Seller (`authSeller`) | Modify product information and images |
 | `DELETE` | `/api/products/delete` | Seller (`authSeller`) | Remove product from catalog |
 | `PUT` | `/api/products/stock` | Seller (`authSeller`) | Toggle product in-stock availability |
 
 ### 🛒 Cart & Delivery Address (`/api/cart` & `/api/address`)
+
 | Method | Endpoint | Authorization | Description |
 | :--- | :--- | :--- | :--- |
 | `POST` | `/api/cart/update` | Auth (`authUser`) | Sync shopping cart items with user account |
@@ -174,6 +178,7 @@ YNA_Grocery/
 | `DELETE` | `/api/address/delete` | Auth (`authUser`) | Remove shipping address |
 
 ### 💳 Orders & Payments (`/api/order` & `/verify-payment`)
+
 | Method | Endpoint | Authorization | Description |
 | :--- | :--- | :--- | :--- |
 | `POST` | `/api/order/cod` | Auth (`authUser`) | Place order with Cash on Delivery |
@@ -184,6 +189,7 @@ YNA_Grocery/
 | `POST` | `/verify-payment` | Stripe Webhook | Raw-body webhook verification (`checkout.session.completed`) |
 
 ### 🎟️ Coupons & Discounts (`/api/coupons`)
+
 | Method | Endpoint | Authorization | Description |
 | :--- | :--- | :--- | :--- |
 | `POST` | `/api/coupons/add` | Seller (`authSeller`) | Create a new promotional discount coupon |
@@ -193,6 +199,7 @@ YNA_Grocery/
 | `POST` | `/api/coupons/validate` | Public | Validate coupon code against cart total at checkout |
 
 ### 🤖 AI Storefront Assistant (`/api/chat`)
+
 | Method | Endpoint | Authorization | Description |
 | :--- | :--- | :--- | :--- |
 | `POST` | `/api/chat` | Public (`chatAbuseGuard`) | Customer chat query to Groq AI agent |
@@ -205,7 +212,7 @@ YNA_Grocery/
 ## ⚡ Quick Start & Setup Guide
 
 ### Prerequisites
-* **Node.js** (v18.0.0 or higher)
+* **Node.js** (v20.19+ or v22.12+ for Vite 7 compatibility)
 * **MongoDB** (Local MongoDB server or MongoDB Atlas URI)
 * Cloudinary Account (Cloud Name, API Key, API Secret)
 * Stripe Account (API Secret Key, Webhook Signing Secret)

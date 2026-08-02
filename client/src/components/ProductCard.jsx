@@ -5,11 +5,13 @@
 import { Link } from "react-router-dom";
 import { Star, Plus, Minus, ShoppingBag } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
+import { useLanguage } from "../context/LanguageContext";
 import { Badge } from "./ui";
 import { isValidOffer, getUnitPrice, getDiscountPercent } from "./ProductFilters";
 
 const ProductCard = ({ product }) => {
   const { currency, cartItems, addToCart, removeFromCart } = useAppContext();
+  const { t } = useLanguage();
 
   if (!product) return null;
 
@@ -35,7 +37,7 @@ const ProductCard = ({ product }) => {
           )}
           {!product.inStock && (
             <Badge variant="error" className="absolute top-3 right-3 z-10">
-              Out of stock
+              {t("product.out_of_stock")}
             </Badge>
           )}
           {product.inStock && product.quantity != null && product.quantity <= 5 && (
@@ -86,7 +88,7 @@ const ProductCard = ({ product }) => {
 
       <div className="absolute bottom-4 right-4 z-10">
         {!product.inStock ? (
-          <span className="text-xs text-text-tertiary px-2">Unavailable</span>
+          <span className="text-xs text-text-tertiary px-2">{t("product.out_of_stock")}</span>
         ) : qty === 0 ? (
           <button
             type="button"
@@ -95,7 +97,7 @@ const ProductCard = ({ product }) => {
             aria-label={`Add ${product.name} to cart`}
           >
             <ShoppingBag className="w-4 h-4" strokeWidth={2} />
-            Add
+            {t("product.add_to_cart")}
           </button>
         ) : (
           <div className="h-10 flex items-center rounded-[14px] bg-bg-light-mint border border-primary/20 select-none">

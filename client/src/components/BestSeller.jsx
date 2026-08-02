@@ -5,23 +5,25 @@
 import { Link } from "react-router-dom";
 import ProductCard from "./ProductCard";
 import { useAppContext } from "../context/AppContext";
+import { useLanguage } from "../context/LanguageContext";
 import { SectionHeader, Button, ProductCardSkeleton, EmptyState } from "./ui";
 import { ArrowRight, Package } from "lucide-react";
 
 const BestSeller = () => {
   const { products, productsLoading, productsError } = useAppContext();
+  const { t, isRTL } = useLanguage();
   const featured = products.filter((p) => p.inStock).slice(0, 8);
 
   return (
     <section className="mt-16 md:mt-20">
       <SectionHeader
-        eyebrow="Bestsellers"
-        title="Fresh favorites"
-        subtitle="Hand-picked items customers love this week."
+        eyebrow={t("home.best_sellers")}
+        title={t("home.featured_products")}
+        subtitle=""
         action={
           <Button asChild variant="outline" size="sm" className="hidden sm:inline-flex">
             <Link to="/products">
-              View all <ArrowRight className="w-4 h-4" />
+              {t("home.view_all")} <ArrowRight className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
             </Link>
           </Button>
         }

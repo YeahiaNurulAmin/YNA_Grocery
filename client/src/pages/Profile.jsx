@@ -24,11 +24,13 @@ import {
   X,
 } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
+import { useLanguage } from "../context/LanguageContext";
 import { Card, Button, Input, Badge, EmptyState } from "../components/ui";
 import toast from "react-hot-toast";
 
 const Profile = () => {
   const { user, setUser, fetchUser, axios, navigate, currency, setShowUserLogin, setCartItems } = useAppContext();
+  const { t, formatPrice } = useLanguage();
 
   // Active Tab
   const [activeTab, setActiveTab] = useState("info"); // 'info' | 'addresses' | 'orders' | 'security'

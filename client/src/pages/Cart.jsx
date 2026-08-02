@@ -3,8 +3,9 @@
  * Route: /cart. Preserves existing order APIs and tax calculation.
  */
 import React, { useEffect } from "react";
-import { Minus, Plus, Trash2, ShoppingBag, MapPin, ChevronDown, ArrowLeft } from "lucide-react";
+import { Minus, Plus, Trash2, ShoppingBag, MapPin, ChevronDown, ArrowLeft, ArrowRight } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
+import { useLanguage } from "../context/LanguageContext";
 import { Button, Card, EmptyState, Badge } from "../components/ui";
 import toast from "react-hot-toast";
 
@@ -24,6 +25,10 @@ const Cart = () => {
     axios,
     setShowUserLogin,
   } = useAppContext();
+
+  const { t, isRTL, formatPrice, currencySymbol } = useLanguage();
+
+  const BackIcon = isRTL ? ArrowRight : ArrowLeft;
 
   const [cartArray, setCartArray] = React.useState([]);
   const [address, setAddress] = React.useState([]);
@@ -146,11 +151,11 @@ const Cart = () => {
       <div className="py-16 mb-nav">
         <EmptyState
           icon={ShoppingBag}
-          title="Your cart is empty"
-          description="Looks like you haven’t added anything yet. Browse fresh picks and fill your cart."
+          title={t("cart.empty")}
+          description={t("cart.empty_desc")}
           action={
             <Button onClick={() => navigate("/products")}>
-              <ArrowLeft className="w-4 h-4" /> Continue Shopping
+              <BackIcon className="w-4 h-4" /> {t("cart.start_shopping")}
             </Button>
           }
         />
@@ -161,7 +166,7 @@ const Cart = () => {
   if (productsLoading) {
     return (
       <div className="py-16 mb-nav text-center text-sm text-text-secondary">
-        Loading your cart…
+        Loading…
       </div>
     );
   }
@@ -171,7 +176,7 @@ const Cart = () => {
       <div className="py-16 mb-nav">
         <EmptyState
           icon={ShoppingBag}
-          title="Couldn’t load cart products"
+          title="Error"
           description={productsError}
           action={
             <Button onClick={() => window.location.reload()}>
@@ -189,10 +194,10 @@ const Cart = () => {
         <div className="flex-1 min-w-0">
           <div className="mb-6">
             <h1 className="font-heading text-2xl md:text-3xl font-bold text-text-primary">
-              Shopping Cart
+              {t("cart.title")}
             </h1>
             <p className="text-sm text-text-secondary mt-1">
-              {itemCount} {itemCount === 1 ? "item" : "items"}
+              {itemCount} {t("cart.items")}
             </p>
           </div>
 
@@ -224,7 +229,7 @@ const Cart = () => {
                         {product.weight || product.category}
                       </p>
                       <p className="font-heading font-bold text-primary mt-2">
-                        {currency}{unit * product.quantity}
+                        {formatPrice(unit * product.quantity, currency)}
                       </p>
                     </div>
 
@@ -274,32 +279,32 @@ const Cart = () => {
             onClick={() => navigate("/products")}
             className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-primary hover:text-primary-dark cursor-pointer"
           >
-            <ArrowLeft className="w-4 h-4" /> Continue Shopping
+            <BackIcon className="w-4 h-4" /> {t("cart.start_shopping")}
           </button>
         </div>
 
         {/* Sticky summary */}
         <aside className="lg:w-[380px] shrink-0">
           <Card className="lg:sticky lg:top-24 p-6! space-y-5">
-            <h2 className="font-heading text-lg font-bold text-text-primary">Order Summary</h2>
+            <h2 className="font-heading text-lg font-bold text-text-primary">{t("cart.order_summary")}</h2>
 
             <div>
               <div className="flex items-center justify-between mb-2">
                 <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary flex items-center gap-1.5">
-                  <MapPin className="w-3.5 h-3.5" /> Delivery
+                  <MapPin className="w-3.5 h-3.5" /> {t("address.title")}
                 </p>
                 <button
                   type="button"
                   onClick={() => setShowAddress(!showAddress)}
                   className="text-xs font-semibold text-primary cursor-pointer"
                 >
-                  Change
+                  {t("profile.edit")}
                 </button>
               </div>
               <p className="text-sm text-text-secondary leading-relaxed">
                 {selectedAddress
                   ? `${selectedAddress.street}, ${selectedAddress.city}, ${selectedAddress.state}`
-                  : "No address selected"}
+                  : t("cart.no_address")}
               </p>
               {showAddress && (
                 <div className="mt-2 rounded-[16px] border border-border bg-bg-white shadow-md overflow-hidden animate-scale-in">
@@ -321,7 +326,7 @@ const Cart = () => {
                     onClick={() => navigate("/add-address")}
                     className="w-full text-center px-3 py-2.5 text-sm font-semibold text-primary hover:bg-bg-light-mint cursor-pointer border-t border-border"
                   >
-                    Add address
+                    {t("address.add_new")}
                   </button>
                 </div>
               )}
@@ -329,7 +334,7 @@ const Cart = () => {
 
             <div>
               <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary mb-2">
-                Payment
+                {t("cart.payment_method")}
               </p>
               <div className="relative">
                 <button
@@ -337,7 +342,7 @@ const Cart = () => {
                   onClick={() => setIsDropdownOpen(!isDropdownOpen)}
                   className="w-full h-11 px-4 rounded-[16px] border border-border bg-bg-white flex items-center justify-between text-sm cursor-pointer"
                 >
-                  <span>{paymentMethod === "COD" ? "Cash On Delivery" : "Online Payment"}</span>
+                  <span>{paymentMethod === "COD" ? t("payment.cod") : t("payment.stripe")}</span>
                   <ChevronDown className="w-4 h-4 text-text-tertiary" />
                 </button>
                 {isDropdownOpen && (
@@ -352,7 +357,7 @@ const Cart = () => {
                         }}
                         className="w-full text-left px-4 py-2.5 text-sm hover:bg-bg-light-mint cursor-pointer"
                       >
-                        {m === "COD" ? "Cash On Delivery" : "Online Payment"}
+                        {m === "COD" ? t("payment.cod") : t("payment.stripe")}
                       </button>
                     ))}
                   </div>
@@ -362,25 +367,25 @@ const Cart = () => {
 
             <div className="space-y-2.5 pt-2 border-t border-border text-sm text-text-secondary">
               <div className="flex justify-between">
-                <span>Subtotal</span>
-                <span>{currency}{itemsPrice}</span>
+                <span>{t("cart.subtotal")}</span>
+                <span>{formatPrice(itemsPrice, currency)}</span>
               </div>
               <div className="flex justify-between">
-                <span>Shipping</span>
-                <Badge variant="success">Free</Badge>
+                <span>{t("cart.delivery_fee")}</span>
+                <Badge variant="success">{t("cart.free_delivery")}</Badge>
               </div>
               <div className="flex justify-between">
                 <span>Tax (15%)</span>
-                <span>{currency}{tax}</span>
+                <span>{formatPrice(tax, currency)}</span>
               </div>
               <div className="flex justify-between font-heading text-base font-bold text-text-primary pt-2">
-                <span>Total</span>
-                <span>{currency}{total}</span>
+                <span>{t("cart.total")}</span>
+                <span>{formatPrice(total, currency)}</span>
               </div>
             </div>
 
             <Button className="w-full" size="lg" loading={placing} onClick={handlePlaceOrder}>
-              {paymentMethod === "COD" ? "Place Order" : "Proceed to Payment"}
+              {paymentMethod === "COD" ? t("cart.proceed_checkout") : t("cart.proceed_checkout")}
             </Button>
           </Card>
         </aside>

@@ -1,14 +1,17 @@
 /**
  * MobileBottomNav — touch-friendly bottom navigation for key customer routes.
  * Shown on sm and below; paired with .mb-nav padding on page content.
+ * Translatable via useLanguage hook.
  */
 import { NavLink, useLocation } from "react-router-dom";
 import { Home, LayoutGrid, Search, ShoppingCart, User } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
+import { useLanguage } from "../context/LanguageContext";
 
 const MobileBottomNav = () => {
   const location = useLocation();
   const { cartItems, user, setShowUserLogin, navigate } = useAppContext();
+  const { t } = useLanguage();
 
   const cartCount = Object.values(cartItems || {}).reduce((a, b) => a + b, 0);
 
@@ -25,15 +28,15 @@ const MobileBottomNav = () => {
       <div className="flex items-stretch h-16 px-1">
         <NavLink to="/" end className={linkClass}>
           <Home className="w-5 h-5" strokeWidth={1.75} />
-          <span className="text-[10px] font-medium">Home</span>
+          <span className="text-[10px] font-medium">{t("nav.home")}</span>
         </NavLink>
         <NavLink to="/products" className={linkClass}>
           <LayoutGrid className="w-5 h-5" strokeWidth={1.75} />
-          <span className="text-[10px] font-medium">Shop</span>
+          <span className="text-[10px] font-medium">{t("nav.shop")}</span>
         </NavLink>
         <NavLink to="/search" className={linkClass}>
           <Search className="w-5 h-5" strokeWidth={1.75} />
-          <span className="text-[10px] font-medium">Search</span>
+          <span className="text-[10px] font-medium">{t("nav.search_placeholder").split(" ")[0]}</span>
         </NavLink>
         <NavLink to="/cart" className={linkClass}>
           <span className="relative">
@@ -44,7 +47,7 @@ const MobileBottomNav = () => {
               </span>
             )}
           </span>
-          <span className="text-[10px] font-medium">Cart</span>
+          <span className="text-[10px] font-medium">{t("nav.cart")}</span>
         </NavLink>
         <button
           type="button"
@@ -57,7 +60,7 @@ const MobileBottomNav = () => {
           }}
         >
           <User className="w-5 h-5" strokeWidth={1.75} />
-          <span className="text-[10px] font-medium">Account</span>
+          <span className="text-[10px] font-medium">{t("nav.account")}</span>
         </button>
       </div>
     </nav>

@@ -5,14 +5,15 @@
 import { X, SlidersHorizontal } from "lucide-react";
 import { categories } from "../assets/assets";
 import { Button, Badge } from "./ui";
+import { useLanguage } from "../context/LanguageContext";
 
 export const SORT_OPTIONS = [
-  { value: "featured", label: "Featured" },
-  { value: "price-asc", label: "Price: Low to High" },
-  { value: "price-desc", label: "Price: High to Low" },
-  { value: "name-asc", label: "Name: A–Z" },
+  { value: "featured", labelKey: "filters.sort_featured", defaultLabel: "Featured" },
+  { value: "price-asc", labelKey: "filters.sort_low_high", defaultLabel: "Price: Low to High" },
+  { value: "price-desc", labelKey: "filters.sort_high_low", defaultLabel: "Price: High to Low" },
+  { value: "name-asc", labelKey: "nav.products", defaultLabel: "Name: A–Z" },
   { value: "name-desc", label: "Name: Z–A" },
-  { value: "rating-desc", label: "Top rated" },
+  { value: "rating-desc", labelKey: "product.rating", defaultLabel: "Top rated" },
   { value: "discount-desc", label: "Best discount" },
 ];
 
@@ -58,84 +59,81 @@ export const applyProductFilters = (products, filters, searchQuery, sort) => {
     list = list.filter((p) => selected.includes(p.category?.toLowerCase()));
   }
 
-  const minP = filters.minPrice === "" ? null : Number(filters.minPrice);
-  const maxP = filters.maxPrice === "" ? null : Number(filters.maxPrice);
-  if (minP != null && !Number.isNaN(minP)) {
-    list = list.filter((p) => getUnitPrice(p) >= minP);
+  if (filters.minPrice !== "") {
+    const min = Number(filters.minPrice);
+    if (!Number.isNaN(min)) {
+      list = list.filter((p) => getUnitPrice(p) >= min);
+    }
   }
-  if (maxP != null && !Number.isNaN(maxP)) {
-    list = list.filter((p) => getUnitPrice(p) <= maxP);
+
+  if (filters.maxPrice !== "") {
+    const max = Number(filters.maxPrice);
+    if (!Number.isNaN(max)) {
+      list = list.filter((p) => getUnitPrice(p) <= max);
+    }
   }
 
   if (filters.minRating > 0) {
-    list = list.filter((p) => (p.rating || 0) >= filters.minRating);
+    list = list.filter((p) => (Number(p.rating) || 4.5) >= filters.minRating);
   }
 
   if (filters.stock === "inStock") {
-    list = list.filter((p) => p.inStock);
+    list = list.filter((p) => (p.stock !== undefined ? p.stock > 0 : true));
   } else if (filters.stock === "outOfStock") {
-    list = list.filter((p) => !p.inStock);
+    list = list.filter((p) => p.stock === 0);
   }
 
   if (filters.onSale) {
-    list = list.filter((p) => getDiscountPercent(p) > 0);
+    list = list.filter(isValidOffer);
   }
 
-  switch (sort) {
-    case "price-asc":
-      list.sort((a, b) => getUnitPrice(a) - getUnitPrice(b));
-      break;
-    case "price-desc":
-      list.sort((a, b) => getUnitPrice(b) - getUnitPrice(a));
-      break;
-    case "name-asc":
-      list.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-      break;
-    case "name-desc":
-      list.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
-      break;
-    case "rating-desc":
-      list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-      break;
-    case "discount-desc":
-      list.sort((a, b) => getDiscountPercent(b) - getDiscountPercent(a));
-      break;
-    default:
-      break;
+  if (sort === "price-asc") {
+    list.sort((a, b) => getUnitPrice(a) - getUnitPrice(b));
+  } else if (sort === "price-desc") {
+    list.sort((a, b) => getUnitPrice(b) - getUnitPrice(a));
+  } else if (sort === "name-asc") {
+    list.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  } else if (sort === "name-desc") {
+    list.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
+  } else if (sort === "rating-desc") {
+    list.sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
+  } else if (sort === "discount-desc") {
+    list.sort((a, b) => getDiscountPercent(b) - getDiscountPercent(a));
   }
 
   return list;
 };
 
-export const countActiveFilters = (filters) => {
-  let n = 0;
-  if (filters.categories.length) n += filters.categories.length;
-  if (filters.minPrice !== "") n += 1;
-  if (filters.maxPrice !== "") n += 1;
-  if (filters.minRating > 0) n += 1;
-  if (filters.stock !== "inStock") n += 1;
-  if (filters.onSale) n += 1;
-  return n;
+export const countActiveFilters = (f) => {
+  let c = 0;
+  if (f.categories.length > 0) c += f.categories.length;
+  if (f.minPrice !== "" || f.maxPrice !== "") c += 1;
+  if (f.minRating > 0) c += 1;
+  if (f.stock !== "inStock") c += 1;
+  if (f.onSale) c += 1;
+  return c;
 };
 
 const ProductFilters = ({
   filters,
   setFilters,
+  priceBounds = { min: 0, max: 100 },
   sort,
   setSort,
-  priceBounds,
   onClear,
   onClose,
   className = "",
 }) => {
-  const toggleCategory = (path) => {
+  const { t } = useLanguage();
+
+  const toggleCategory = (catPath) => {
     setFilters((prev) => {
-      const has = prev.categories.includes(path);
+      const exists = prev.categories.includes(catPath);
       return {
         ...prev,
-        categories: has
-          ? prev.categories.filter((c) => c !== path)
-          : [...prev.categories, path],
+        categories: exists
+          ? prev.categories.filter((c) => c !== catPath)
+          : [...prev.categories, catPath],
       };
     });
   };
@@ -147,7 +145,7 @@ const ProductFilters = ({
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="w-4 h-4 text-primary" strokeWidth={1.75} />
-          <h3 className="font-heading font-bold text-text-primary text-sm">Filters</h3>
+          <h3 className="font-heading font-bold text-text-primary text-sm">{t("filters.title")}</h3>
           {countActiveFilters(filters) > 0 && (
             <Badge variant="accent">{countActiveFilters(filters)}</Badge>
           )}
@@ -158,7 +156,7 @@ const ProductFilters = ({
             onClick={onClear}
             className="text-xs font-semibold text-text-tertiary hover:text-primary cursor-pointer px-2 py-1"
           >
-            Clear
+            {t("filters.clear_all")}
           </button>
           {onClose && (
             <button

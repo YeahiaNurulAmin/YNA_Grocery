@@ -5,6 +5,7 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Package, SlidersHorizontal, ArrowUpDown, X } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
+import { useLanguage } from "../context/LanguageContext";
 import ProductCard from "../components/ProductCard";
 import ProductFilters, {
   DEFAULT_FILTERS,
@@ -27,6 +28,7 @@ const FOCUSABLE =
 
 const AllProducts = () => {
   const { products, productsLoading, searchQuery, setSearchQuery, currency } = useAppContext();
+  const { t, isRTL } = useLanguage();
   const [filters, setFilters] = useState({ ...DEFAULT_FILTERS });
   const [sort, setSort] = useState("featured");
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -125,12 +127,12 @@ const AllProducts = () => {
   return (
     <div className="py-10 md:py-14 mb-nav animate-fade-in">
       <SectionHeader
-        eyebrow="Catalog"
-        title="All products"
+        eyebrow={t("nav.shop")}
+        title={t("nav.all_products")}
         subtitle={
           searchQuery
-            ? `Results for “${searchQuery}”`
-            : "Filter by category, price, rating, and more."
+            ? `${t("search.results_for")} “${searchQuery}”`
+            : t("home.banner_subtitle")
         }
       />
 
@@ -155,11 +157,11 @@ const AllProducts = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
             <p className="text-sm text-text-secondary">
               <span className="font-heading font-bold text-text-primary">
-                {loading ? "…" : results.length}
+                {productsLoading ? "…" : results.length}
               </span>{" "}
-              {results.length === 1 ? "product" : "products"}
+              {t("category.available")}
               {activeCount > 0 && (
-                <span className="text-text-tertiary"> · {activeCount} filter{activeCount > 1 ? "s" : ""}</span>
+                <span className="text-text-tertiary"> · {activeCount} {t("filters.active_filters")}</span>
               )}
             </p>
 
@@ -171,7 +173,7 @@ const AllProducts = () => {
                 onClick={() => setMobileOpen(true)}
               >
                 <SlidersHorizontal className="w-4 h-4" />
-                Filters
+                {t("filters.title")}
                 {activeCount > 0 && (
                   <Badge variant="accent" className="ml-0.5">
                     {activeCount}
@@ -189,7 +191,7 @@ const AllProducts = () => {
                 >
                   {SORT_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
-                      {o.label}
+                      {o.labelKey ? t(o.labelKey) : o.defaultLabel}
                     </option>
                   ))}
                 </select>

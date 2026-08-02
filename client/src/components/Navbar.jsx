@@ -1,12 +1,14 @@
 /**
  * Navbar — premium sticky storefront navigation with search, cart, auth.
+ * Includes language toggle (EN / AR) with RTL support.
  * Used on all non-seller customer routes.
  */
 import React, { useEffect, useRef, useState } from "react";
 import { NavLink, Link } from "react-router-dom";
-import { Search, ShoppingCart, Menu, X, Moon, Sun, ChevronDown } from "lucide-react";
+import { Search, ShoppingCart, Menu, X, Moon, Sun, ChevronDown, Languages } from "lucide-react";
 import { YNALogo } from "../assets/YNALogo";
 import { useAppContext } from "../context/AppContext";
+import { useLanguage } from "../context/LanguageContext";
 import { Button } from "./ui";
 import toast from "react-hot-toast";
 
@@ -26,6 +28,8 @@ const Navbar = () => {
     setSearchQuery,
     axios,
   } = useAppContext();
+
+  const { t, language, toggleLanguage, isRTL } = useLanguage();
 
   const cartCount = Object.values(cartItems || {}).reduce((a, b) => a + b, 0);
 
@@ -77,6 +81,20 @@ const Navbar = () => {
       isActive ? "text-primary" : "text-text-secondary hover:text-primary"
     }`;
 
+  /** Language switcher pill button */
+  const LangToggle = ({ className = "" }) => (
+    <button
+      type="button"
+      onClick={toggleLanguage}
+      title={t("nav.switch_lang")}
+      aria-label={t("nav.switch_lang")}
+      className={`flex items-center gap-1.5 h-10 px-3 rounded-[14px] border border-border text-xs font-semibold text-text-secondary hover:text-primary hover:border-primary/30 hover:bg-bg-light-mint transition-all cursor-pointer select-none ${className}`}
+    >
+      <Languages className="w-3.5 h-3.5 shrink-0" />
+      <span>{language === "en" ? "العربية" : "English"}</span>
+    </button>
+  );
+
   return (
     <nav className="sticky top-0 z-50 border-b border-border/80 bg-bg-white/80 backdrop-blur-xl">
       <div className="max-w-[1400px] mx-auto flex items-center justify-between gap-4 px-5 md:px-8 lg:px-12 py-3.5">
@@ -87,22 +105,26 @@ const Navbar = () => {
         {/* Desktop */}
         <div className="hidden md:flex items-center gap-7 flex-1 justify-end">
           <div className="flex items-center gap-6">
-            <NavLink to="/" end className={navLinkClass}>Home</NavLink>
-            <NavLink to="/products" className={navLinkClass}>Products</NavLink>
-            <NavLink to="/contact" className={navLinkClass}>Contact</NavLink>
+            <NavLink to="/" end className={navLinkClass}>{t("nav.home")}</NavLink>
+            <NavLink to="/products" className={navLinkClass}>{t("nav.products")}</NavLink>
+            <NavLink to="/contact" className={navLinkClass}>{t("nav.contact")}</NavLink>
           </div>
 
-          <div className="hidden lg:flex items-center gap-2 h-11 w-64 xl:w-80 px-3.5 rounded-[16px] bg-surface-muted border border-transparent focus-within:border-primary/30 focus-within:ring-4 focus-within:ring-primary/10 transition-all">
+          <div className={`hidden lg:flex items-center gap-2 h-11 w-64 xl:w-80 px-3.5 rounded-[16px] bg-surface-muted border border-transparent focus-within:border-primary/30 focus-within:ring-4 focus-within:ring-primary/10 transition-all ${isRTL ? "flex-row-reverse" : ""}`}>
             <Search className="w-4 h-4 text-text-tertiary shrink-0" strokeWidth={1.75} />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-transparent outline-none text-sm text-text-primary placeholder:text-text-placeholder"
               type="search"
-              placeholder="Search products…"
-              aria-label="Search products"
+              placeholder={t("nav.search_placeholder")}
+              aria-label={t("nav.search_placeholder")}
+              dir={isRTL ? "rtl" : "ltr"}
             />
           </div>
+
+          {/* Language Toggle */}
+          <LangToggle />
 
           <button
             type="button"
@@ -117,7 +139,7 @@ const Navbar = () => {
             type="button"
             onClick={() => navigate("/cart")}
             className="relative h-10 w-10 rounded-[14px] flex items-center justify-center text-text-secondary hover:text-primary hover:bg-bg-light-mint transition-colors cursor-pointer"
-            aria-label={`Cart, ${cartCount} items`}
+            aria-label={`${t("nav.cart")}, ${cartCount} items`}
           >
             <ShoppingCart className="w-5 h-5" strokeWidth={1.75} />
             {cartCount > 0 && (
@@ -129,7 +151,7 @@ const Navbar = () => {
 
           {!user ? (
             <Button size="md" onClick={() => setShowUserLogin(true)}>
-              Login
+              {t("nav.login")}
             </Button>
           ) : (
             <div className="relative" ref={menuRef}>
@@ -152,34 +174,34 @@ const Navbar = () => {
                 <ChevronDown className="w-3.5 h-3.5 text-text-tertiary" />
               </button>
               {userMenuOpen && (
-                <div className="absolute right-0 top-12 w-48 bg-bg-white border border-border rounded-[20px] shadow-lg p-2 z-50 animate-scale-in">
+                <div className={`absolute ${isRTL ? "left-0" : "right-0"} top-12 w-48 bg-bg-white border border-border rounded-[20px] shadow-lg p-2 z-50 animate-scale-in`}>
                   <button
                     type="button"
                     onClick={() => { navigate("/profile"); setUserMenuOpen(false); }}
                     className="w-full text-left px-3 py-2.5 rounded-[14px] text-sm text-text-secondary hover:bg-bg-light-mint hover:text-primary cursor-pointer font-medium"
                   >
-                    My Profile
+                    {t("nav.profile")}
                   </button>
                   <button
                     type="button"
                     onClick={() => { navigate("/my-orders"); setUserMenuOpen(false); }}
                     className="w-full text-left px-3 py-2.5 rounded-[14px] text-sm text-text-secondary hover:bg-bg-light-mint hover:text-primary cursor-pointer font-medium"
                   >
-                    My Orders
+                    {t("nav.orders")}
                   </button>
                   <button
                     type="button"
                     onClick={() => { navigate("/wishlist"); setUserMenuOpen(false); }}
                     className="w-full text-left px-3 py-2.5 rounded-[14px] text-sm text-text-secondary hover:bg-bg-light-mint hover:text-primary cursor-pointer font-medium"
                   >
-                    Wishlist
+                    {t("nav.wishlist")}
                   </button>
                   <button
                     type="button"
                     onClick={() => { logoutHandler(); setUserMenuOpen(false); }}
                     className="w-full text-left px-3 py-2.5 rounded-[14px] text-sm text-error hover:bg-error/10 cursor-pointer font-medium"
                   >
-                    Logout
+                    {t("nav.logout")}
                   </button>
                 </div>
               )}
@@ -189,6 +211,7 @@ const Navbar = () => {
 
         {/* Mobile top actions */}
         <div className="flex md:hidden items-center gap-1">
+          <LangToggle />
           <button
             type="button"
             onClick={toggleTheme}
@@ -211,27 +234,28 @@ const Navbar = () => {
       {/* Mobile drawer */}
       {open && (
         <div className="md:hidden border-t border-border bg-bg-white px-5 py-5 space-y-1 animate-slide-up">
-          <div className="flex items-center gap-2 h-11 px-3.5 rounded-[16px] bg-surface-muted mb-4">
+          <div className={`flex items-center gap-2 h-11 px-3.5 rounded-[16px] bg-surface-muted mb-4 ${isRTL ? "flex-row-reverse" : ""}`}>
             <Search className="w-4 h-4 text-text-tertiary" />
             <input
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
               className="w-full bg-transparent outline-none text-sm"
-              placeholder="Search products…"
+              placeholder={t("nav.search_placeholder")}
+              dir={isRTL ? "rtl" : "ltr"}
               onKeyDown={(e) => {
                 if (e.key === "Enter") { setOpen(false); navigate("/search"); }
               }}
             />
           </div>
           {[
-            { to: "/", label: "Home" },
-            { to: "/products", label: "All Products" },
-            { to: "/contact", label: "Contact" },
-            { to: "/faq", label: "FAQ" },
+            { to: "/", label: t("nav.home") },
+            { to: "/products", label: t("nav.all_products") },
+            { to: "/contact", label: t("nav.contact") },
+            { to: "/faq", label: t("nav.faq") },
             ...(user
               ? [
-                  { to: "/profile", label: "My Profile" },
-                  { to: "/my-orders", label: "My Orders" },
+                  { to: "/profile", label: t("nav.profile") },
+                  { to: "/my-orders", label: t("nav.orders") },
                 ]
               : []),
           ].map((item) => (
@@ -248,11 +272,11 @@ const Navbar = () => {
           <div className="pt-3">
             {!user ? (
               <Button className="w-full" onClick={() => { setOpen(false); setShowUserLogin(true); }}>
-                Login
+                {t("nav.login")}
               </Button>
             ) : (
               <Button variant="outline" className="w-full" onClick={() => { setOpen(false); logoutHandler(); }}>
-                Logout
+                {t("nav.logout")}
               </Button>
             )}
           </div>

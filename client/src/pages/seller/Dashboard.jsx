@@ -13,8 +13,10 @@ import {
   AlertTriangle,
   PlusCircle,
   ArrowRight,
+  ArrowLeft,
 } from "lucide-react";
 import { useAppContext } from "../../context/AppContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { Card, Badge, Button, SectionHeader, Skeleton, EmptyState } from "../../components/ui";
 import toast from "react-hot-toast";
 
@@ -24,6 +26,7 @@ const PREFS_KEY = "yna_seller_prefs";
 
 const SellerDashboard = () => {
   const { axios, currency, products, fetchProducts } = useAppContext();
+  const { t, isRTL, formatPrice } = useLanguage();
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [ordersError, setOrdersError] = useState(null);
@@ -93,22 +96,22 @@ const SellerDashboard = () => {
   const recent = [...orders].slice(0, 5);
 
   const stats = [
-    { label: "Revenue", value: `${currency || "$"}${revenue.toFixed(0)}`, icon: DollarSign, hint: "Delivered orders" },
-    { label: "Active orders", value: active.length, icon: ShoppingBag, hint: "In progress" },
-    { label: "Products", value: products?.length || 0, icon: Package, hint: "In catalog" },
-    { label: "Low stock", value: lowStock.length, icon: AlertTriangle, hint: "Needs attention" },
+    { label: t("seller.total_sales"), value: formatPrice(revenue, currency), icon: DollarSign, hint: t("status.delivered") },
+    { label: t("seller.pending_orders"), value: active.length, icon: ShoppingBag, hint: t("status.processing") },
+    { label: t("seller.active_products"), value: products?.length || 0, icon: Package, hint: t("nav.products") },
+    { label: "Low stock", value: lowStock.length, icon: AlertTriangle, hint: "Attention" },
   ];
 
   return (
     <div className="animate-fade-in max-w-6xl">
       <SectionHeader
         eyebrow="Overview"
-        title="Dashboard"
+        title={t("seller.dashboard")}
         subtitle="A clear snapshot of your store performance."
         action={
           <Button asChild size="sm">
             <Link to="/seller">
-              <PlusCircle className="w-4 h-4" /> Add product
+              <PlusCircle className="w-4 h-4" /> {t("seller.add_product")}
             </Link>
           </Button>
         }
@@ -138,9 +141,9 @@ const SellerDashboard = () => {
       <div className="grid lg:grid-cols-3 gap-6">
         <Card className="lg:col-span-2 p-0! overflow-hidden">
           <div className="flex items-center justify-between px-5 py-4 border-b border-border">
-            <h3 className="font-heading font-semibold">Recent orders</h3>
+            <h3 className="font-heading font-semibold">{t("seller.recent_orders")}</h3>
             <Link to="/seller/orders" className="text-xs font-semibold text-primary flex items-center gap-1">
-              View all <ArrowRight className="w-3.5 h-3.5" />
+              {t("seller.view_all")} <ArrowRight className={`w-3.5 h-3.5 ${isRTL ? "rotate-180" : ""}`} />
             </Link>
           </div>
           <div className="divide-y divide-border">
@@ -153,7 +156,7 @@ const SellerDashboard = () => {
                 />
               </div>
             ) : recent.length === 0 ? (
-              <p className="p-8 text-sm text-text-tertiary text-center">No orders yet</p>
+              <p className="p-8 text-sm text-text-tertiary text-center">{t("myorder.no_orders")}</p>
             ) : (
               recent.map((o) => (
                 <div key={o._id} className="px-5 py-3.5 flex items-center justify-between gap-3">
@@ -164,7 +167,7 @@ const SellerDashboard = () => {
                     <p className="text-xs text-text-tertiary truncate">{o._id}</p>
                   </div>
                   <div className="text-right shrink-0">
-                    <p className="text-sm font-bold">{currency}{o.amount}</p>
+                    <p className="text-sm font-bold">{formatPrice(o.amount, currency)}</p>
                     <Badge variant="outline" className="mt-1">{o.status}</Badge>
                   </div>
                 </div>
@@ -178,9 +181,9 @@ const SellerDashboard = () => {
             <h3 className="font-heading font-semibold mb-3">Quick actions</h3>
             <div className="space-y-2">
               {[
-                { to: "/seller", label: "Add product", icon: PlusCircle },
-                { to: "/seller/orders", label: "Manage orders", icon: ShoppingBag },
-                { to: "/seller/coupons", label: "Coupons", icon: Ticket },
+                { to: "/seller", label: t("seller.add_product"), icon: PlusCircle },
+                { to: "/seller/orders", label: t("seller.orders_list"), icon: ShoppingBag },
+                { to: "/seller/coupons", label: t("seller.coupons"), icon: Ticket },
               ].map((a) => (
                 <Link
                   key={a.to}
@@ -196,7 +199,7 @@ const SellerDashboard = () => {
 
           <Card className="p-5!">
             <h3 className="font-heading font-semibold mb-3 flex items-center gap-2">
-              <AlertTriangle className="w-4 h-4 text-warning" /> Stock alerts
+              <AlertTriangle className="w-4 h-4 text-warning" /> {t("seller.low_stock_alerts")}
             </h3>
             {!showLowStock ? (
               <p className="text-sm text-text-tertiary">Stock alerts are turned off in Settings</p>
@@ -207,7 +210,7 @@ const SellerDashboard = () => {
                 {outOfStock.slice(0, 3).map((p) => (
                   <li key={p._id} className="flex justify-between gap-2">
                     <span className="truncate">{p.name}</span>
-                    <Badge variant="error">Out</Badge>
+                    <Badge variant="error">{t("product.out_of_stock_badge")}</Badge>
                   </li>
                 ))}
                 {lowStock.slice(0, 3).map((p) => (

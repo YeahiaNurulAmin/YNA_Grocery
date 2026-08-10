@@ -4,11 +4,14 @@
  */
 import { Search as SearchIcon } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
+import { useLanguage } from "../context/LanguageContext";
 import ProductCard from "../components/ProductCard";
 import { SectionHeader, EmptyState, Button } from "../components/ui";
 
 const SearchResults = () => {
   const { products, searchQuery, setSearchQuery, navigate } = useAppContext();
+  const { t } = useLanguage();
+
   const q = (searchQuery || "").trim().toLowerCase();
   const results = q
     ? products.filter(
@@ -22,9 +25,9 @@ const SearchResults = () => {
   return (
     <div className="py-10 md:py-14 mb-nav animate-fade-in">
       <SectionHeader
-        eyebrow="Search"
-        title={q ? `Results for “${searchQuery}”` : "Search products"}
-        subtitle={q ? `${results.length} matches` : "Type in the navbar or below to find groceries."}
+        eyebrow={t("nav.search_placeholder").split(" ")[0]}
+        title={q ? `${t("search.results_for")} “${searchQuery}”` : t("nav.search_placeholder")}
+        subtitle={q ? `${results.length} ${t("category.available")}` : t("home.newsletter_subtitle")}
       />
 
       <div className="mb-8 max-w-lg">
@@ -33,7 +36,7 @@ const SearchResults = () => {
           <input
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Search by name or category…"
+            placeholder={t("search.placeholder")}
             className="w-full bg-transparent outline-none text-sm"
             aria-label="Search"
           />
@@ -43,8 +46,8 @@ const SearchResults = () => {
       {results.length === 0 ? (
         <EmptyState
           icon={SearchIcon}
-          title="No matches"
-          description="Try another keyword or browse the full catalog."
+          title={t("search.no_matches")}
+          description={t("search.no_matches_desc")}
           action={
             <Button
               variant="outline"
@@ -53,7 +56,7 @@ const SearchResults = () => {
                 navigate("/products");
               }}
             >
-              Browse all
+              {t("search.browse_all")}
             </Button>
           }
         />

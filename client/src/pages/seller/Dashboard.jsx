@@ -99,15 +99,15 @@ const SellerDashboard = () => {
     { label: t("seller.total_sales"), value: formatPrice(revenue, currency), icon: DollarSign, hint: t("status.delivered") },
     { label: t("seller.pending_orders"), value: active.length, icon: ShoppingBag, hint: t("status.processing") },
     { label: t("seller.active_products"), value: products?.length || 0, icon: Package, hint: t("nav.products") },
-    { label: "Low stock", value: lowStock.length, icon: AlertTriangle, hint: "Attention" },
+    { label: t("seller.low_stock_alerts"), value: lowStock.length, icon: AlertTriangle, hint: t("seller.attention") },
   ];
 
   return (
     <div className="animate-fade-in max-w-6xl">
       <SectionHeader
-        eyebrow="Overview"
+        eyebrow={t("seller.overview_eyebrow")}
         title={t("seller.dashboard")}
-        subtitle="A clear snapshot of your store performance."
+        subtitle={t("seller.dashboard_subtitle")}
         action={
           <Button asChild size="sm">
             <Link to="/seller">
@@ -151,7 +151,7 @@ const SellerDashboard = () => {
               <div className="p-6">
                 <EmptyState
                   icon={ShoppingBag}
-                  title="Couldn’t load orders"
+                  title={t("seller.couldnt_load_orders")}
                   description={ordersError}
                 />
               </div>
@@ -178,7 +178,7 @@ const SellerDashboard = () => {
 
         <div className="space-y-4">
           <Card className="p-5!">
-            <h3 className="font-heading font-semibold mb-3">Quick actions</h3>
+            <h3 className="font-heading font-semibold mb-3">{t("seller.quick_actions")}</h3>
             <div className="space-y-2">
               {[
                 { to: "/seller", label: t("seller.add_product"), icon: PlusCircle },
@@ -202,9 +202,9 @@ const SellerDashboard = () => {
               <AlertTriangle className="w-4 h-4 text-warning" /> {t("seller.low_stock_alerts")}
             </h3>
             {!showLowStock ? (
-              <p className="text-sm text-text-tertiary">Stock alerts are turned off in Settings</p>
+              <p className="text-sm text-text-tertiary">{t("seller.stock_alerts_off")}</p>
             ) : outOfStock.length === 0 && lowStock.length === 0 ? (
-              <p className="text-sm text-text-tertiary">All good — no alerts</p>
+              <p className="text-sm text-text-tertiary">{t("seller.no_stock_alerts")}</p>
             ) : (
               <ul className="space-y-2 text-sm">
                 {outOfStock.slice(0, 3).map((p) => (

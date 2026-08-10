@@ -2,12 +2,14 @@ import React, { useState, useEffect } from "react";
 import { useParams } from "react-router-dom";
 import { categories } from "../../assets/assets";
 import { useAppContext } from "../../context/AppContext";
+import { useLanguage } from "../../context/LanguageContext";
 import toast from "react-hot-toast";
 
 const EditProduct = () => {
     const { id } = useParams();
     console.log("Product ID from URL:", id);
     const { axios, navigate } = useAppContext();
+    const { t, tCategory } = useLanguage();
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isLoading, setIsLoading] = useState(true);
 
@@ -112,7 +114,7 @@ const EditProduct = () => {
                 ) : (
                     <>
                         <div>
-                            <p className="text-sm md:text-base font-medium">Product Image</p>
+                            <p className="text-sm md:text-base font-medium">{t("seller.upload_image")}</p>
                             <div className="flex flex-wrap items-center gap-2 md:gap-3 mt-2">
                                 {Array(4)
                                     .fill("")
@@ -178,7 +180,7 @@ const EditProduct = () => {
                     <label
                         className="text-sm md:text-base font-medium"
                         htmlFor="product-name">
-                        Product Name
+                        {t("seller.product_title")}
                     </label>
                     <input
                         id="product-name"
@@ -190,7 +192,7 @@ const EditProduct = () => {
                                 name: e.target.value,
                             })
                         }
-                        placeholder="Type here"
+                        placeholder={t("seller.enter_title")}
                         className="outline-none py-2 md:py-2.5 px-3 rounded border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:border-primary transition-colors text-sm"
                         required
                     />
@@ -199,7 +201,7 @@ const EditProduct = () => {
                     <label
                         className="text-sm md:text-base font-medium"
                         htmlFor="product-description">
-                        Product Description
+                        {t("seller.product_desc")}
                     </label>
                     <textarea
                         id="product-description"
@@ -212,11 +214,11 @@ const EditProduct = () => {
                             })
                         }
                         className="outline-none py-2 md:py-2.5 px-3 rounded border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:border-primary transition-colors resize-none text-sm"
-                        placeholder="Type here"></textarea>
+                        placeholder={t("seller.enter_desc")}></textarea>
                 </div>
                 <div className="w-full flex flex-col gap-1">
                     <label className="text-sm md:text-base font-medium" htmlFor="category">
-                        Category
+                        {t("seller.category")}
                     </label>
                     <select
                         id="category"
@@ -228,10 +230,10 @@ const EditProduct = () => {
                             })
                         }
                         className="outline-none py-2 md:py-2.5 px-3 rounded border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:border-primary transition-colors text-sm">
-                        <option value="">Select Category</option>
+                        <option value="">{t("seller.select_category")}</option>
                         {categories.map((item, index) => (
                             <option key={index} value={item.text} className="bg-white dark:bg-slate-800">
-                                {item.text}
+                                {tCategory(item.text)}
                             </option>
                         ))}
                     </select>
@@ -241,7 +243,7 @@ const EditProduct = () => {
                         <label
                             className="text-sm md:text-base font-medium"
                             htmlFor="product-price">
-                            Product Price
+                            {t("seller.price")}
                         </label>
                         <input
                             id="product-price"
@@ -262,7 +264,7 @@ const EditProduct = () => {
                         <label
                             className="text-sm md:text-base font-medium"
                             htmlFor="offer-price">
-                            Offer Price
+                            {t("seller.offer_price")}
                         </label>
                         <input
                             id="offer-price"
@@ -285,13 +287,13 @@ const EditProduct = () => {
                                 type="submit"
                                 disabled={isSubmitting}
                                 className="w-full sm:w-40 py-2 md:py-3 px-4 rounded-lg bg-primary/80 hover:bg-primary disabled:bg-gray-400 text-white text-sm md:text-base font-medium transition-all duration-200">
-                                {isSubmitting ? "UPDATING..." : "UPDATE"}
+                                {isSubmitting ? t("seller.update_product").toUpperCase() + "..." : t("seller.update_product").toUpperCase()}
                             </button>
                             <button
                                 type="button"
                                 onClick={() => navigate("/seller/products")}
                                 className="w-full sm:w-40 py-2 md:py-3 px-4 rounded-lg bg-gray-300 dark:bg-slate-700 hover:bg-gray-400 dark:hover:bg-slate-600 text-gray-800 dark:text-slate-200 text-sm md:text-base font-medium transition-all duration-200">
-                                CANCEL
+                                {t("seller.cancel").toUpperCase()}
                             </button>
                         </div>
                     </>

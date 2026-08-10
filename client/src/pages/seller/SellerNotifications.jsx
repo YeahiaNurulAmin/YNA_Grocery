@@ -5,10 +5,12 @@
 import { useEffect, useState, useCallback } from "react";
 import { Bell, ShoppingBag } from "lucide-react";
 import { useAppContext } from "../../context/AppContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { Card, SectionHeader, EmptyState, Button } from "../../components/ui";
 
 const SellerNotifications = () => {
   const { axios, currency } = useAppContext();
+  const { t, formatPrice } = useLanguage();
   const [items, setItems] = useState([]);
 
   const load = useCallback(async () => {
@@ -39,16 +41,16 @@ const SellerNotifications = () => {
   return (
     <div className="animate-fade-in max-w-2xl">
       <SectionHeader
-        eyebrow="Inbox"
-        title="Notifications"
-        subtitle="New Order Placed events from live polling."
+        eyebrow={t("seller.account_section")}
+        title={t("seller.notifications")}
+        subtitle={t("seller.notifications_subtitle") || "New Order Placed events from live polling."}
         action={
           <Button
             variant="outline"
             size="sm"
             onClick={() => load()}
           >
-            Refresh
+            {t("cart.try_again") || "Refresh"}
           </Button>
         }
       />
@@ -56,8 +58,8 @@ const SellerNotifications = () => {
       {items.length === 0 ? (
         <EmptyState
           icon={Bell}
-          title="All caught up"
-          description="New placed orders will appear here automatically."
+          title={t("seller.no_notifs")}
+          description={t("seller.no_stock_alerts")}
         />
       ) : (
         <Card className="p-0! overflow-hidden divide-y divide-border">
@@ -67,9 +69,9 @@ const SellerNotifications = () => {
                 <ShoppingBag className="w-4 h-4" />
               </div>
               <div className="min-w-0">
-                <p className="text-sm font-semibold">New order — {n.name}</p>
+                <p className="text-sm font-semibold">{t("seller.new_order_title")} — {n.name}</p>
                 <p className="text-xs text-text-tertiary mt-0.5">
-                  {currency}{n.amount} · {n.time}
+                  {formatPrice(n.amount, currency)} · {n.time}
                 </p>
                 <p className="text-[11px] font-mono text-text-placeholder mt-1 truncate">{n.id}</p>
               </div>

@@ -5,6 +5,7 @@
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 import { useAppContext } from "../../context/AppContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { YNALogo } from "../../assets/YNALogo";
 
 const normalizeNextUrl = (value) => {
@@ -14,6 +15,7 @@ const normalizeNextUrl = (value) => {
 
 const LoadingPage = () => {
   const { navigate } = useAppContext();
+  const { t } = useLanguage();
   const { search } = useLocation();
   const nextUrl = normalizeNextUrl(new URLSearchParams(search).get("next") || "/");
 
@@ -35,7 +37,7 @@ const LoadingPage = () => {
         ))}
       </div>
       <p className="mt-6 text-sm text-text-secondary font-medium">
-        Confirming your payment…
+        {t("loader.confirming")}
       </p>
     </div>
   );

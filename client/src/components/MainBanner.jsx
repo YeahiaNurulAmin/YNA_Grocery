@@ -21,10 +21,10 @@ const MainBanner = () => {
         <div className="animate-slide-up z-10">
           <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-accent mb-4">
             <Sparkles className="w-3.5 h-3.5" />
-            {t("home.banner_subtitle").split(".")[0]}
+            YNA GROCERY
           </p>
           <h1 className="font-heading text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold text-text-primary leading-[1.08] tracking-tight max-w-lg">
-            YNA Grocery
+            {t("home.banner_title")}
           </h1>
           <p className="mt-4 text-base md:text-lg text-text-secondary max-w-md leading-relaxed">
             {t("home.banner_subtitle")}

@@ -1,16 +1,19 @@
 /**
  * AddProduct — seller form to create a product (images + details).
  * Route: /seller (index). Posts multipart to /api/products/add.
+ * Fully localized for Arabic & multi-language.
  */
 import { useState } from "react";
 import { Plus, ImagePlus } from "lucide-react";
 import { categories } from "../../assets/assets";
 import { useAppContext } from "../../context/AppContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { Button, Input, Textarea, Card, SectionHeader } from "../../components/ui";
 import toast from "react-hot-toast";
 
 const AddProduct = () => {
   const { axios, navigate, fetchProducts } = useAppContext();
+  const { t, tCategory } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [productData, setProductData] = useState({
     name: "",
@@ -26,12 +29,12 @@ const AddProduct = () => {
     e.preventDefault();
     try {
       if (!productData.name || !productData.category || !productData.price) {
-        toast.error("Please fill all required fields");
+        toast.error(t("addaddress.error"));
         return;
       }
       const files = productData.images.filter(Boolean);
       if (files.length === 0) {
-        toast.error("At least one image is required");
+        toast.error(t("seller.upload_image"));
         return;
       }
       setLoading(true);
@@ -53,7 +56,7 @@ const AddProduct = () => {
         headers: { "Content-Type": "multipart/form-data" },
       });
       if (data.success) {
-        toast.success(data.message || "Product added successfully");
+        toast.success(data.message || t("seller.save_product"));
         setProductData({
           name: "",
           description: "",
@@ -79,14 +82,14 @@ const AddProduct = () => {
   return (
     <div className="animate-fade-in max-w-xl">
       <SectionHeader
-        eyebrow="Catalog"
-        title="Add product"
-        subtitle="Upload images and set pricing for a new grocery item."
+        eyebrow={t("seller.store_section")}
+        title={t("seller.add_new_product")}
+        subtitle={t("seller.add_product")}
       />
       <Card className="p-6!">
         <form onSubmit={submitHandler} className="space-y-5">
           <div>
-            <p className="text-sm font-medium text-text-secondary mb-2">Product images</p>
+            <p className="text-sm font-medium text-text-secondary mb-2">{t("seller.upload_image")}</p>
             <div className="flex flex-wrap gap-3">
               {Array(4)
                 .fill("")
@@ -123,20 +126,21 @@ const AddProduct = () => {
           </div>
 
           <Input
-            label="Product name"
+            label={t("seller.product_title")}
+            placeholder={t("seller.enter_title")}
             value={productData.name}
             onChange={(e) => setProductData({ ...productData, name: e.target.value })}
             required
           />
           <Textarea
-            label="Description"
+            label={t("seller.product_desc")}
+            placeholder={t("seller.enter_desc")}
             value={productData.description}
             onChange={(e) => setProductData({ ...productData, description: e.target.value })}
-            placeholder="One benefit per line or short copy"
           />
           <div className="space-y-1.5">
             <label className="block text-sm font-medium text-text-secondary" htmlFor="category">
-              Category
+              {t("seller.category")}
             </label>
             <select
               id="category"
@@ -145,31 +149,31 @@ const AddProduct = () => {
               className="w-full h-12 px-4 rounded-[16px] bg-bg-white border border-border text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
               required
             >
-              <option value="">Select category</option>
+              <option value="">{t("seller.select_category")}</option>
               {categories.map((item, index) => (
                 <option key={index} value={item.path}>
-                  {item.text}
+                  {tCategory(item.text)}
                 </option>
               ))}
             </select>
           </div>
           <div className="grid grid-cols-2 gap-3">
             <Input
-              label="Price"
+              label={t("seller.price")}
               type="number"
               value={productData.price}
               onChange={(e) => setProductData({ ...productData, price: e.target.value })}
               required
             />
             <Input
-              label="Offer price"
+              label={t("seller.offer_price")}
               type="number"
               value={productData.offerPrice}
               onChange={(e) => setProductData({ ...productData, offerPrice: e.target.value })}
             />
           </div>
           <Input
-            label="Initial quantity"
+            label={t("seller.in_stock_qty")}
             type="number"
             min={0}
             value={productData.quantity}
@@ -177,7 +181,7 @@ const AddProduct = () => {
             required
           />
           <Button type="submit" loading={loading} className="w-full sm:w-auto">
-            <Plus className="w-4 h-4" /> Add product
+            <Plus className="w-4 h-4" /> {t("seller.save_product")}
           </Button>
         </form>
       </Card>

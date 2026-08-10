@@ -1,10 +1,12 @@
 /**
  * ProductCategory — products filtered by category path param.
  * Route: /products/:category
+ * Fully localized for Arabic & multi-language.
  */
 import { useParams, Link } from "react-router-dom";
 import { Package } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
+import { useLanguage } from "../context/LanguageContext";
 import { categories } from "../assets/assets";
 import ProductCard from "../components/ProductCard";
 import { SectionHeader, EmptyState, Button } from "../components/ui";
@@ -12,6 +14,7 @@ import { SectionHeader, EmptyState, Button } from "../components/ui";
 const ProductCategory = () => {
   const { products } = useAppContext();
   const { category } = useParams();
+  const { t, tCategory } = useLanguage();
 
   const searchCategory = categories.find(
     (cargo) => cargo.path.toLowerCase() === category.toLowerCase()
@@ -27,11 +30,11 @@ const ProductCategory = () => {
       <div className="py-16 mb-nav">
         <EmptyState
           icon={Package}
-          title="Category not found"
-          description="This category doesn’t exist. Browse all products instead."
+          title={t("category.not_found")}
+          description={t("category.not_found_desc")}
           action={
             <Button asChild>
-              <Link to="/products">All products</Link>
+              <Link to="/products">{t("category.all_products")}</Link>
             </Button>
           }
         />
@@ -42,19 +45,19 @@ const ProductCategory = () => {
   return (
     <div className="py-10 md:py-14 mb-nav animate-fade-in">
       <SectionHeader
-        eyebrow="Category"
-        title={searchCategory.text}
-        subtitle={`${inStock.length} products available`}
+        eyebrow={t("category.eyebrow")}
+        title={tCategory(searchCategory.text)}
+        subtitle={`${inStock.length} ${t("category.available")}`}
       />
 
       {inStock.length === 0 ? (
         <EmptyState
           icon={Package}
-          title="Nothing in stock here"
-          description="Check back soon or explore other categories."
+          title={t("category.nothing_stock")}
+          description={t("category.nothing_stock_desc")}
           action={
             <Button asChild variant="outline">
-              <Link to="/products">Browse all</Link>
+              <Link to="/products">{t("category.browse_all")}</Link>
             </Button>
           }
         />

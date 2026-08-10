@@ -174,32 +174,32 @@ const Navbar = () => {
                 <ChevronDown className="w-3.5 h-3.5 text-text-tertiary" />
               </button>
               {userMenuOpen && (
-                <div className={`absolute ${isRTL ? "left-0" : "right-0"} top-12 w-48 bg-bg-white border border-border rounded-[20px] shadow-lg p-2 z-50 animate-scale-in`}>
+                <div className={`absolute ${isRTL ? "left-0 text-right" : "right-0 text-left"} top-12 w-48 bg-bg-white border border-border rounded-[20px] shadow-lg p-2 z-50 animate-scale-in`}>
                   <button
                     type="button"
                     onClick={() => { navigate("/profile"); setUserMenuOpen(false); }}
-                    className="w-full text-left px-3 py-2.5 rounded-[14px] text-sm text-text-secondary hover:bg-bg-light-mint hover:text-primary cursor-pointer font-medium"
+                    className={`w-full ${isRTL ? "text-right" : "text-left"} px-3 py-2.5 rounded-[14px] text-sm text-text-secondary hover:bg-bg-light-mint hover:text-primary cursor-pointer font-medium`}
                   >
                     {t("nav.profile")}
                   </button>
                   <button
                     type="button"
                     onClick={() => { navigate("/my-orders"); setUserMenuOpen(false); }}
-                    className="w-full text-left px-3 py-2.5 rounded-[14px] text-sm text-text-secondary hover:bg-bg-light-mint hover:text-primary cursor-pointer font-medium"
+                    className={`w-full ${isRTL ? "text-right" : "text-left"} px-3 py-2.5 rounded-[14px] text-sm text-text-secondary hover:bg-bg-light-mint hover:text-primary cursor-pointer font-medium`}
                   >
                     {t("nav.orders")}
                   </button>
                   <button
                     type="button"
                     onClick={() => { navigate("/wishlist"); setUserMenuOpen(false); }}
-                    className="w-full text-left px-3 py-2.5 rounded-[14px] text-sm text-text-secondary hover:bg-bg-light-mint hover:text-primary cursor-pointer font-medium"
+                    className={`w-full ${isRTL ? "text-right" : "text-left"} px-3 py-2.5 rounded-[14px] text-sm text-text-secondary hover:bg-bg-light-mint hover:text-primary cursor-pointer font-medium`}
                   >
                     {t("nav.wishlist")}
                   </button>
                   <button
                     type="button"
                     onClick={() => { logoutHandler(); setUserMenuOpen(false); }}
-                    className="w-full text-left px-3 py-2.5 rounded-[14px] text-sm text-error hover:bg-error/10 cursor-pointer font-medium"
+                    className={`w-full ${isRTL ? "text-right" : "text-left"} px-3 py-2.5 rounded-[14px] text-sm text-error hover:bg-error/10 cursor-pointer font-medium`}
                   >
                     {t("nav.logout")}
                   </button>

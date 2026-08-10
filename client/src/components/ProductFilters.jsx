@@ -1,6 +1,7 @@
 /**
  * ProductFilters — advanced catalog filters & sort controls for the All Products page.
  * Used by AllProducts (desktop sidebar + mobile drawer). Frontend-only; no API changes.
+ * Fully localized with t() and tCategory().
  */
 import { X, SlidersHorizontal } from "lucide-react";
 import { categories } from "../assets/assets";
@@ -8,13 +9,13 @@ import { Button, Badge } from "./ui";
 import { useLanguage } from "../context/LanguageContext";
 
 export const SORT_OPTIONS = [
-  { value: "featured", labelKey: "filters.sort_featured", defaultLabel: "Featured" },
-  { value: "price-asc", labelKey: "filters.sort_low_high", defaultLabel: "Price: Low to High" },
-  { value: "price-desc", labelKey: "filters.sort_high_low", defaultLabel: "Price: High to Low" },
-  { value: "name-asc", labelKey: "nav.products", defaultLabel: "Name: A–Z" },
-  { value: "name-desc", label: "Name: Z–A" },
-  { value: "rating-desc", labelKey: "product.rating", defaultLabel: "Top rated" },
-  { value: "discount-desc", label: "Best discount" },
+  { value: "featured", labelKey: "filters.sort_featured" },
+  { value: "price-asc", labelKey: "filters.sort_low_high" },
+  { value: "price-desc", labelKey: "filters.sort_high_low" },
+  { value: "name-asc", labelKey: "filters.sort_name_asc" },
+  { value: "name-desc", labelKey: "filters.sort_name_desc" },
+  { value: "rating-desc", labelKey: "filters.sort_top_rated" },
+  { value: "discount-desc", labelKey: "filters.sort_best_discount" },
 ];
 
 export const DEFAULT_FILTERS = {
@@ -124,7 +125,7 @@ const ProductFilters = ({
   onClose,
   className = "",
 }) => {
-  const { t } = useLanguage();
+  const { t, tCategory } = useLanguage();
 
   const toggleCategory = (catPath) => {
     setFilters((prev) => {
@@ -163,7 +164,7 @@ const ProductFilters = ({
               type="button"
               onClick={onClose}
               className="w-8 h-8 rounded-[12px] flex items-center justify-center text-text-tertiary hover:bg-surface-muted cursor-pointer lg:hidden"
-              aria-label="Close filters"
+              aria-label={t("filters.title")}
             >
               <X className="w-4 h-4" />
             </button>
@@ -174,7 +175,7 @@ const ProductFilters = ({
       {/* Sort (shown in panel on mobile; desktop also has top bar) */}
       <div className="lg:hidden space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-          Sort by
+          {t("filters.sort_by")}
         </p>
         <select
           value={sort}
@@ -183,7 +184,7 @@ const ProductFilters = ({
         >
           {SORT_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
-              {o.label}
+              {t(o.labelKey)}
             </option>
           ))}
         </select>
@@ -192,7 +193,7 @@ const ProductFilters = ({
       {/* Categories */}
       <div className="space-y-2.5">
         <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-          Category
+          {t("filters.category")}
         </p>
         <div className="space-y-1.5 max-h-52 overflow-y-auto no-scrollbar">
           {categories.map((cat) => {
@@ -210,7 +211,7 @@ const ProductFilters = ({
                   onChange={() => toggleCategory(cat.path)}
                   className="accent-primary w-3.5 h-3.5 rounded"
                 />
-                <span className="text-sm font-medium">{cat.text}</span>
+                <span className="text-sm font-medium">{tCategory(cat.text)}</span>
               </label>
             );
           })}
@@ -220,26 +221,26 @@ const ProductFilters = ({
       {/* Price */}
       <div className="space-y-2.5">
         <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-          Price range
+          {t("filters.price_range")}
         </p>
         <div className="grid grid-cols-2 gap-2">
           <input
             type="number"
             min={0}
-            placeholder={`Min ${priceBounds.min}`}
+            placeholder={t("filters.min_price", { min: priceBounds.min })}
             value={filters.minPrice}
             onChange={(e) => setFilters((p) => ({ ...p, minPrice: e.target.value }))}
             className="h-11 px-3 rounded-[16px] border border-border bg-bg-white text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
-            aria-label="Minimum price"
+            aria-label={t("filters.min_price", { min: priceBounds.min })}
           />
           <input
             type="number"
             min={0}
-            placeholder={`Max ${priceBounds.max}`}
+            placeholder={t("filters.max_price", { max: priceBounds.max })}
             value={filters.maxPrice}
             onChange={(e) => setFilters((p) => ({ ...p, maxPrice: e.target.value }))}
             className="h-11 px-3 rounded-[16px] border border-border bg-bg-white text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
-            aria-label="Maximum price"
+            aria-label={t("filters.max_price", { max: priceBounds.max })}
           />
         </div>
         <input
@@ -262,7 +263,7 @@ const ProductFilters = ({
       {/* Rating */}
       <div className="space-y-2.5">
         <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-          Minimum rating
+          {t("filters.min_rating")}
         </p>
         <div className="flex flex-wrap gap-1.5">
           {[0, 3, 4, 5].map((r) => (
@@ -276,7 +277,7 @@ const ProductFilters = ({
                   : "bg-bg-white text-text-secondary border-border hover:border-primary/40"
               }`}
             >
-              {r === 0 ? "Any" : `${r}+ ★`}
+              {r === 0 ? t("filters.rating_any") : `${r}+ ★`}
             </button>
           ))}
         </div>
@@ -285,13 +286,13 @@ const ProductFilters = ({
       {/* Availability */}
       <div className="space-y-2.5">
         <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-          Availability
+          {t("filters.availability")}
         </p>
         <div className="space-y-1">
           {[
-            { value: "inStock", label: "In stock" },
-            { value: "all", label: "All items" },
-            { value: "outOfStock", label: "Out of stock" },
+            { value: "inStock", label: t("filters.in_stock_only") },
+            { value: "all", label: t("filters.all_items") },
+            { value: "outOfStock", label: t("filters.out_of_stock") },
           ].map((opt) => (
             <label
               key={opt.value}
@@ -313,8 +314,8 @@ const ProductFilters = ({
       {/* On sale */}
       <label className="flex items-center justify-between gap-3 px-3 py-3 rounded-[14px] bg-bg-soft-peach/60 border border-accent/15 cursor-pointer">
         <div>
-          <p className="text-sm font-semibold text-text-primary">On sale only</p>
-          <p className="text-xs text-text-tertiary">Items with a discount</p>
+          <p className="text-sm font-semibold text-text-primary">{t("filters.on_sale_only")}</p>
+          <p className="text-xs text-text-tertiary">{t("filters.on_sale_desc")}</p>
         </div>
         <input
           type="checkbox"
@@ -326,7 +327,7 @@ const ProductFilters = ({
 
       {onClose && (
         <Button className="w-full lg:hidden" onClick={onClose}>
-          Show results
+          {t("filters.show_results")}
         </Button>
       )}
     </aside>

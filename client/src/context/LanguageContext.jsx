@@ -1,10 +1,10 @@
 /**
- * LanguageContext — manages language (en/ar) + RTL direction.
+ * LanguageContext — manages language state, RTL direction, interpolation & currency formatting.
  * Persisted in localStorage under "yna_lang".
- * Exposes a `t(key)` helper consumed across all components.
+ * Fully extensible for adding any new languages in the future.
  */
-import { createContext, useContext, useState, useEffect, useCallback } from "react";
-import { translations } from "../utils/translations";
+import { createContext, useContext, useState, useEffect, useCallback, useMemo } from "react";
+import { translations, SUPPORTED_LANGUAGES, getCategoryTranslation } from "../locales";
 
 const LanguageContext = createContext();
 
@@ -13,15 +13,20 @@ export const LanguageProvider = ({ children }) => {
     () => localStorage.getItem("yna_lang") || "en"
   );
 
-  // Apply dir + lang attribute + Arabic font import whenever language changes
-  useEffect(() => {
-    const isArabic = language === "ar";
-    document.documentElement.setAttribute("lang", language);
-    document.documentElement.setAttribute("dir", isArabic ? "rtl" : "ltr");
-    document.documentElement.classList.toggle("rtl", isArabic);
+  const currentLangObj = useMemo(
+    () => SUPPORTED_LANGUAGES.find((l) => l.code === language) || SUPPORTED_LANGUAGES[0],
+    [language]
+  );
 
-    // Inject Arabic font on demand
-    if (isArabic) {
+  const isRTL = currentLangObj.dir === "rtl";
+
+  // Apply dir + lang attribute + font imports whenever language changes
+  useEffect(() => {
+    document.documentElement.setAttribute("lang", language);
+    document.documentElement.setAttribute("dir", currentLangObj.dir);
+    document.documentElement.classList.toggle("rtl", isRTL);
+
+    if (isRTL) {
       if (!document.getElementById("arabic-font-link")) {
         const link = document.createElement("link");
         link.id = "arabic-font-link";
@@ -33,37 +38,61 @@ export const LanguageProvider = ({ children }) => {
     }
 
     localStorage.setItem("yna_lang", language);
-  }, [language]);
+  }, [language, currentLangObj.dir, isRTL]);
 
-  /** Translate a key. Falls back to English, then the key itself. */
+  /** Translate a key with optional interpolation params e.g. { count: 5 } */
   const t = useCallback(
-    (key) =>
-      translations[language]?.[key] ?? translations["en"]?.[key] ?? key,
+    (key, params) => {
+      let text = translations[language]?.[key] ?? translations["en"]?.[key] ?? key;
+      if (params && typeof params === "object") {
+        Object.entries(params).forEach(([paramKey, paramVal]) => {
+          text = text.replace(new RegExp(`\\{${paramKey}\\}`, "g"), paramVal);
+        });
+      }
+      return text;
+    },
+    [language]
+  );
+
+  /** Translate category names or paths */
+  const tCategory = useCallback(
+    (catInput) => getCategoryTranslation(catInput, language),
     [language]
   );
 
   const toggleLanguage = () =>
     setLanguage((prev) => (prev === "en" ? "ar" : "en"));
 
-  const isRTL = language === "ar";
+  const currencySymbol = currentLangObj.currency || (language === "ar" ? "ر.س" : "$");
 
-  const currencySymbol = language === "ar" ? "ر.س" : "$";
-
-  /** Format amount with currency symbol based on active language */
+  /** Format price with appropriate currency symbol */
   const formatPrice = useCallback(
-    (amount, baseCurrency = "$") => {
+    (amount, baseCurrency) => {
       const num = Number(amount) || 0;
       if (language === "ar") {
         return `${num.toFixed(2)} ر.س`;
       }
-      return `${baseCurrency}${num.toFixed(2)}`;
+      const symbol = baseCurrency || currencySymbol;
+      return `${symbol}${num.toFixed(2)}`;
     },
-    [language]
+    [language, currencySymbol]
   );
 
   return (
     <LanguageContext.Provider
-      value={{ language, setLanguage, toggleLanguage, t, isRTL, currencySymbol, formatPrice }}
+      value={{
+        language,
+        setLanguage,
+        toggleLanguage,
+        t,
+        tCategory,
+        isRTL,
+        dir: currentLangObj.dir,
+        currencySymbol,
+        formatPrice,
+        supportedLanguages: SUPPORTED_LANGUAGES,
+        currentLanguage: currentLangObj,
+      }}
     >
       {children}
     </LanguageContext.Provider>

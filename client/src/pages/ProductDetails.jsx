@@ -1,6 +1,7 @@
 /**
- * ProductDetails — Apple Store–inspired PDP with gallery, sticky purchase panel, related items.
+ * ProductDetails — PDP with gallery, sticky purchase panel, related items.
  * Route: /products/:category/:id
+ * Fully localized for Arabic & multi-language.
  */
 import React, { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
@@ -15,7 +16,7 @@ const firstProductImage = (p) => p?.images?.[0] || p?.image?.[0] || null;
 
 const ProductDetails = () => {
   const { products, productsLoading, navigate, addToCart, currency } = useAppContext();
-  const { t, formatPrice } = useLanguage();
+  const { t, tCategory, formatPrice } = useLanguage();
   const { id } = useParams();
   const [product, setProduct] = React.useState(() => products.find((p) => p._id === id));
   const [relatedProducts, setRelatedProducts] = React.useState([]);
@@ -78,7 +79,7 @@ const ProductDetails = () => {
         <Link className="hover:text-primary" to="/products">{t("nav.products")}</Link>
         <span>/</span>
         <Link className="hover:text-primary" to={`/products/${product.category.toLowerCase()}`}>
-          {product.category}
+          {tCategory(product.category)}
         </Link>
         <span>/</span>
         <span className="text-text-primary">{product.name}</span>
@@ -116,7 +117,7 @@ const ProductDetails = () => {
         <div className="lg:sticky lg:top-28 self-start space-y-6">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-accent mb-2">
-              {product.category}
+              {tCategory(product.category)}
             </p>
             <h1 className="font-heading text-3xl md:text-4xl font-bold text-text-primary tracking-tight">
               {product.name}
@@ -129,11 +130,11 @@ const ProductDetails = () => {
                   strokeWidth={0}
                 />
               ))}
-              <span className="text-sm text-text-tertiary ml-1">({product.rating || 0})</span>
+              <span className="text-sm text-text-tertiary mx-1">({product.rating || 0})</span>
               {product.inStock ? (
-                <Badge variant="success" className="ml-2">{t("product.in_stock")}</Badge>
+                <Badge variant="success" className="mx-2">{t("product.in_stock")}</Badge>
               ) : (
-                <Badge variant="error" className="ml-2">{t("product.out_of_stock")}</Badge>
+                <Badge variant="error" className="mx-2">{t("product.out_of_stock")}</Badge>
               )}
             </div>
           </div>

@@ -139,7 +139,7 @@ const Navbar = () => {
             type="button"
             onClick={() => navigate("/cart")}
             className="relative h-10 w-10 rounded-[14px] flex items-center justify-center text-text-secondary hover:text-primary hover:bg-bg-light-mint transition-colors cursor-pointer"
-            aria-label={`${t("nav.cart")}, ${cartCount} items`}
+            aria-label={t("nav.cart_count", { count: cartCount })}
           >
             <ShoppingCart className="w-5 h-5" strokeWidth={1.75} />
             {cartCount > 0 && (

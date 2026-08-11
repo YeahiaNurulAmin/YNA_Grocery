@@ -122,7 +122,7 @@ const Footer = () => {
 
         <div className="mt-12 pt-6 border-t border-border flex flex-col sm:flex-row justify-between gap-3 text-xs text-text-tertiary">
           <p>© {new Date().getFullYear()} YNA Grocery. {t("footer.rights")}</p>
-          <p>{t("footer.tagline").split(".")[0]}.</p>
+          <p>{t("footer.tagline_short")}</p>
         </div>
       </div>
     </footer>

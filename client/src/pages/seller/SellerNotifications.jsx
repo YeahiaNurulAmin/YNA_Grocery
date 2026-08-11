@@ -43,14 +43,14 @@ const SellerNotifications = () => {
       <SectionHeader
         eyebrow={t("seller.account_section")}
         title={t("seller.notifications")}
-        subtitle={t("seller.notifications_subtitle") || "New Order Placed events from live polling."}
+        subtitle={t("seller.notifications_subtitle")}
         action={
           <Button
             variant="outline"
             size="sm"
             onClick={() => load()}
           >
-            {t("cart.try_again") || "Refresh"}
+            {t("cart.try_again")}
           </Button>
         }
       />

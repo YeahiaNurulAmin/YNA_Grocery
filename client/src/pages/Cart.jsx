@@ -355,7 +355,7 @@ const Cart = () => {
                           setPaymentMethod(m);
                           setIsDropdownOpen(false);
                         }}
-                        className="w-full text-left px-4 py-2.5 text-sm hover:bg-bg-light-mint cursor-pointer"
+                        className="w-full text-start px-4 py-2.5 text-sm hover:bg-bg-light-mint cursor-pointer"
                       >
                         {m === "COD" ? t("payment.cod") : t("payment.stripe")}
                       </button>

@@ -232,7 +232,7 @@ const AllProducts = () => {
                   onClick={() => setFilters((p) => ({ ...p, minPrice: "" }))}
                   className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-surface-muted text-xs font-semibold cursor-pointer"
                 >
-                  Min: {formatPrice(filters.minPrice, currency)}
+                  {t("filters.min_price", { min: formatPrice(filters.minPrice, currency) })}
                   <X className="w-3 h-3" />
                 </button>
               )}
@@ -242,7 +242,7 @@ const AllProducts = () => {
                   onClick={() => setFilters((p) => ({ ...p, maxPrice: "" }))}
                   className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-surface-muted text-xs font-semibold cursor-pointer"
                 >
-                  Max: {formatPrice(filters.maxPrice, currency)}
+                  {t("filters.max_price", { max: formatPrice(filters.maxPrice, currency) })}
                   <X className="w-3 h-3" />
                 </button>
               )}

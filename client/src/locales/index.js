@@ -31,6 +31,12 @@ const categoryMap = {
   bakerybreads: { en: "Bakery & Breads", ar: "مخبوزات وتوست" },
   grains: { en: "Grains & Cereals", ar: "حبوب وغلال" },
   grainscereals: { en: "Grains & Cereals", ar: "حبوب وغلال" },
+  beverages: { en: "Beverages", ar: "مشروبات" },
+  freshproduce: { en: "Fresh Produce", ar: "خضار وفواكه طازجة" },
+  dairyeggs: { en: "Dairy & Eggs", ar: "ألبان وبيض" },
+  snacks: { en: "Snacks", ar: "تسالي ومقرمشات" },
+  meatseafood: { en: "Meat & Seafood", ar: "لحوم وأسماك" },
+  pantrystaples: { en: "Pantry & Staples", ar: "مؤونة ومواد غذائية" },
 };
 
 /** Translate category name or path */

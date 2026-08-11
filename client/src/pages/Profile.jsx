@@ -30,7 +30,7 @@ import toast from "react-hot-toast";
 
 const Profile = () => {
   const { user, setUser, fetchUser, axios, navigate, currency, setShowUserLogin, setCartItems } = useAppContext();
-  const { t, formatPrice } = useLanguage();
+  const { t, formatPrice, language } = useLanguage();
 
   // Active Tab
   const [activeTab, setActiveTab] = useState("info"); // 'info' | 'addresses' | 'orders' | 'security'
@@ -804,7 +804,7 @@ const Profile = () => {
                           {order.items?.length || 0} {t("myorder.qty")} · {formatPrice(order.amount, currency)}
                         </p>
                         <p className="text-xs text-text-tertiary flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> {new Date(order.createdAt).toLocaleDateString()}
+                          <Clock className="w-3 h-3" /> {new Date(order.createdAt).toLocaleDateString(language)}
                         </p>
                       </div>
                       <Button

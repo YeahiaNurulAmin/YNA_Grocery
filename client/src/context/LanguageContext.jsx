@@ -46,7 +46,7 @@ export const LanguageProvider = ({ children }) => {
       let text = translations[language]?.[key] ?? translations["en"]?.[key] ?? key;
       if (params && typeof params === "object") {
         Object.entries(params).forEach(([paramKey, paramVal]) => {
-          text = text.replace(new RegExp(`\\{${paramKey}\\}`, "g"), paramVal);
+          text = text.split(`{${paramKey}}`).join(String(paramVal));
         });
       }
       return text;
@@ -69,10 +69,10 @@ export const LanguageProvider = ({ children }) => {
   const formatPrice = useCallback(
     (amount, baseCurrency) => {
       const num = Number(amount) || 0;
-      if (language === "ar") {
-        return `${num.toFixed(2)} ر.س`;
-      }
       const symbol = baseCurrency || currencySymbol;
+      if (language === "ar") {
+        return `${num.toFixed(2)} ${symbol}`;
+      }
       return `${symbol}${num.toFixed(2)}`;
     },
     [language, currencySymbol]

@@ -19,6 +19,7 @@ export const ar = {
   "nav.orders": "طلباتي",
   "nav.wishlist": "قائمة الرغبات",
   "nav.cart": "السلة",
+  "nav.cart_count": "السلة، {count} عناصر",
   "nav.account": "حسابي",
   "nav.shop": "التسوق",
   "nav.language": "اللغة",
@@ -110,6 +111,7 @@ export const ar = {
   "product.inclusive_tax": "شامل جميع الضرائب",
   "product.about": "عن هذا المنتج",
   "product.add_to_cart_full": "أضف إلى السلة",
+  "product.add_to_cart_aria": "إضافة {name} إلى السلة",
   "product.buy_now": "اشتري الآن",
   "product.reviews_soon": "تقييمات العملاء قريباً. التقييم",
   "product.reviews_by": "من المتسوقين الأوائل.",
@@ -216,9 +218,11 @@ export const ar = {
   "auth.reset_password": "إعادة تعيين كلمة المرور",
   "auth.reset_unavailable": "إعادة تعيين كلمة المرور غير متاحة حالياً. يرجى التواصل مع الدعم.",
   "auth.login_error": "حدث خطأ أثناء تسجيل الدخول",
+  "auth.login_success": "تم تسجيل الدخول بنجاح!",
 
   // Footer & Layout
   "footer.tagline": "بقالة طازجة تُسلم بكل عناية. منتجات ممتازة ومستلزمات يومية للعائلات في المملكة العربية السعودية والشرق الأوسط.",
+  "footer.tagline_short": "بقالة طازجة تُسلم بكل عناية.",
   "footer.rights": "جميع الحقوق محفوظة.",
   "footer.shop": "التسوق",
   "footer.company": "الشركة",
@@ -445,6 +449,7 @@ export const ar = {
   "seller.no_dummy_orders": "لم يتم العثور على طلبات تجريبية",
   "seller.demo_order_added": "تمت إضافة طلب تجريبي محلياً!",
   "seller.demo_order_updated": "تم تحديث حالة الطلب التجريبي محلياً!",
+  "seller.demo_order": "طلب تجريبي",
   "seller.order_status_updated": "تم تحديث حالة الطلب بنجاح!",
   "seller.order_status_error": "فشل تحديث حالة الطلب",
   "seller.product_delete_error": "خطأ في حذف المنتج",
@@ -474,7 +479,7 @@ export const ar = {
   "seller.in_stock_qty": "كمية المخزون",
   "seller.save_product": "حفظ المنتج",
   "seller.update_product": "تحديث المنتج",
-  "seller.delete_confirm": "هل أنت أكر من رغبتك في حذف هذا المنتج؟",
+  "seller.delete_confirm": "هل أنت متأكد من رغبتك في حذف هذا المنتج؟",
 
   // Coupons
   "seller.coupons_title": "القسائم والخصومات",

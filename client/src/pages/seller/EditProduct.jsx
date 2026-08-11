@@ -232,7 +232,7 @@ const EditProduct = () => {
                         className="outline-none py-2 md:py-2.5 px-3 rounded border border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 focus:border-primary transition-colors text-sm">
                         <option value="">{t("seller.select_category")}</option>
                         {categories.map((item, index) => (
-                            <option key={index} value={item.text} className="bg-white dark:bg-slate-800">
+                            <option key={index} value={item.path} className="bg-white dark:bg-slate-800">
                                 {tCategory(item.text)}
                             </option>
                         ))}

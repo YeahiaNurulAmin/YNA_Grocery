@@ -21,15 +21,15 @@ const MyOrder = () => {
   const [myOrders, setMyOrders] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const { currency, axios, user, navigate, setShowUserLogin } = useAppContext();
-  const { t, formatPrice } = useLanguage();
+  const { t, formatPrice, language } = useLanguage();
 
   const translateStatus = (status) => {
     if (!status) return status;
     const lower = status.toLowerCase();
     if (lower.includes("deliver")) return t("status.delivered");
     if (lower.includes("cancel")) return t("status.cancelled");
-    if (lower.includes("out")) return t("status.out_for_delivery");
-    if (lower.includes("process")) return t("status.processing");
+    if (lower.includes("placed") || lower.includes("pack") || lower.includes("ship"))
+      return t("status.order_placed");
     return t("status.pending");
   };
 
@@ -152,7 +152,7 @@ const MyOrder = () => {
                       </div>
                     </div>
                     <div className="text-sm text-text-secondary md:text-right space-y-0.5">
-                      <p>{new Date(order.createdAt).toLocaleDateString()}</p>
+                      <p>{new Date(order.createdAt).toLocaleDateString(language)}</p>
                       <p className="font-semibold text-text-primary">
                         {formatPrice(item.quantity * (item.product?.offerPrice || item.product?.price || 0), currency)}
                       </p>

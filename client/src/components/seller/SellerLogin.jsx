@@ -35,9 +35,9 @@ const SellerLogin = () => {
       if (data.success) {
         setIsSeller(true);
         navigate("/seller");
-        toast.success(t("auth.login_title"));
+        toast.success(t("auth.login_success"));
       } else {
-        toast.error(data.message || t("auth.login_title"));
+        toast.error(data.message || t("auth.login_error"));
       }
     } catch (error) {
       const status = error.response?.status;
@@ -45,7 +45,7 @@ const SellerLogin = () => {
       if (status === 401 && message) {
         toast.error(message);
       } else {
-        toast.error(message || t("auth.login_title"));
+        toast.error(message || t("auth.login_error"));
       }
       console.log(error);
     } finally {

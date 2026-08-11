@@ -94,7 +94,7 @@ const ProductCard = ({ product }) => {
             type="button"
             onClick={() => addToCart(product._id)}
             className="h-10 px-3.5 rounded-[14px] bg-bg-light-mint text-primary border border-primary/20 font-semibold text-sm flex items-center gap-1.5 hover:bg-primary hover:text-white transition-all duration-200 cursor-pointer"
-            aria-label={`Add ${product.name} to cart`}
+            aria-label={t("product.add_to_cart_aria", { name: product.name })}
           >
             <ShoppingBag className="w-4 h-4" strokeWidth={2} />
             {t("product.add_to_cart")}

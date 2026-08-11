@@ -42,11 +42,11 @@ const Contact = () => {
             aria-disabled="true"
           >
             <p className="text-sm text-text-secondary">
-              {t("contact.unavailable_note", { email: "" }).split("{email}")[0]}
+              {t("contact.unavailable_note", { email: "__EMAIL__" }).split("__EMAIL__")[0]}
               <a href="mailto:hello@ynagrocery.com" className="text-primary font-semibold">
                 hello@ynagrocery.com
               </a>
-              {t("contact.unavailable_note", { email: "" }).split("{email}")[1] || "."}
+              {t("contact.unavailable_note", { email: "__EMAIL__" }).split("__EMAIL__")[1]}
             </p>
             <Input label={t("contact.name")} name="name" disabled />
             <Input label={t("contact.email")} type="email" name="email" disabled />

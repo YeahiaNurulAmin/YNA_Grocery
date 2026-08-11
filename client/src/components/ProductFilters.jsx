@@ -97,7 +97,7 @@ export const applyProductFilters = (products, filters, searchQuery, sort) => {
   } else if (sort === "name-desc") {
     list.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
   } else if (sort === "rating-desc") {
-    list.sort((a, b) => (Number(b.rating) || 0) - (Number(a.rating) || 0));
+    list.sort((a, b) => (Number(b.rating) || 4.5) - (Number(a.rating) || 4.5));
   } else if (sort === "discount-desc") {
     list.sort((a, b) => getDiscountPercent(b) - getDiscountPercent(a));
   }

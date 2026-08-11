@@ -130,7 +130,7 @@ const Navbar = () => {
             type="button"
             onClick={toggleTheme}
             className="h-10 w-10 rounded-[14px] flex items-center justify-center text-text-tertiary hover:text-primary hover:bg-bg-light-mint transition-colors cursor-pointer"
-            aria-label={isDark ? "Switch to light mode" : "Switch to dark mode"}
+            aria-label={isDark ? t("nav.theme_light") : t("nav.theme_dark")}
           >
             {isDark ? <Sun className="w-4.5 h-4.5" /> : <Moon className="w-4.5 h-4.5" />}
           </button>
@@ -216,14 +216,14 @@ const Navbar = () => {
             type="button"
             onClick={toggleTheme}
             className="h-10 w-10 rounded-[14px] flex items-center justify-center text-text-tertiary cursor-pointer"
-            aria-label="Toggle theme"
+            aria-label={t("nav.toggle_theme")}
           >
             {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
           </button>
           <button
             type="button"
             onClick={() => setOpen((v) => !v)}
-            aria-label={open ? "Close menu" : "Open menu"}
+            aria-label={open ? t("nav.close_menu") : t("nav.open_menu")}
             className="h-10 w-10 rounded-[14px] flex items-center justify-center text-text-primary cursor-pointer"
           >
             {open ? <X className="w-5 h-5" /> : <Menu className="w-5 h-5" />}

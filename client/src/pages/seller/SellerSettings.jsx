@@ -46,12 +46,12 @@ const SellerSettings = () => {
           setDefaultPrompt(data.defaultPrompt || "");
           if (data.maxLength) setMaxLength(data.maxLength);
         } else {
-          toast.error(data.message || "Failed to load chat prompt");
+          toast.error(data.message || t("seller.prompt_load_error"));
         }
       } catch (err) {
         if (!cancelled) {
           toast.error(
-            err?.response?.data?.message || "Failed to load chat prompt"
+            err?.response?.data?.message || t("seller.prompt_load_error")
           );
         }
       } finally {
@@ -67,13 +67,13 @@ const SellerSettings = () => {
 
   const savePrefs = () => {
     localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
-    toast.success("Preferences saved");
+    toast.success(t("seller.prefs_saved"));
   };
 
   const savePrompt = async () => {
     const trimmed = prompt.trim();
     if (!trimmed) {
-      toast.error("Prompt cannot be empty");
+      toast.error(t("seller.prompt_empty"));
       return;
     }
     setPromptSaving(true);
@@ -83,12 +83,12 @@ const SellerSettings = () => {
       });
       if (data.success) {
         setPrompt(data.systemPrompt ?? prompt);
-        toast.success(data.message || "Chat prompt saved");
+        toast.success(data.message || t("seller.prompt_saved"));
       } else {
-        toast.error(data.message || "Failed to save prompt");
+        toast.error(data.message || t("seller.prompt_save_error"));
       }
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to save prompt");
+      toast.error(err?.response?.data?.message || t("seller.prompt_save_error"));
     } finally {
       setPromptSaving(false);
     }
@@ -100,12 +100,12 @@ const SellerSettings = () => {
       const { data } = await axios.post("/api/chat/prompt/reset");
       if (data.success) {
         setPrompt(data.systemPrompt ?? defaultPrompt ?? "");
-        toast.success(data.message || "Prompt reset to default");
+        toast.success(data.message || t("seller.prompt_reset"));
       } else {
-        toast.error(data.message || "Failed to reset prompt");
+        toast.error(data.message || t("seller.prompt_reset_error"));
       }
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to reset prompt");
+      toast.error(err?.response?.data?.message || t("seller.prompt_reset_error"));
     } finally {
       setPromptResetting(false);
     }
@@ -164,7 +164,7 @@ const SellerSettings = () => {
         ) : (
           <>
             <textarea
-              aria-label="Chatbot system prompt"
+              aria-label={t("seller.chatbot_prompt_title")}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value.slice(0, maxLength))}
               rows={14}

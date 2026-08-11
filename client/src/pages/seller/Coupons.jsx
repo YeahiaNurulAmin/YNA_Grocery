@@ -25,7 +25,7 @@ const Coupons = () => {
             const { data } = await axios.get("/api/coupons/list");
             if (data.success) setCoupons(data.coupons);
         } catch {
-            toast.error("Failed to load coupons.");
+            toast.error(t("seller.coupons_load_error"));
         } finally {
             setLoading(false);
         }
@@ -38,21 +38,21 @@ const Coupons = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
         if (!form.code || !form.discountValue || !form.expiresAt) {
-            toast.error("Please fill in all required fields.");
+            toast.error(t("seller.coupons_fill_fields"));
             return;
         }
         try {
             setSubmitting(true);
             const { data } = await axios.post("/api/coupons/add", form);
             if (data.success) {
-                toast.success("Coupon created!");
+                toast.success(t("seller.coupon_created"));
                 setForm(defaultForm);
                 fetchCoupons();
             } else {
                 toast.error(data.message);
             }
         } catch (err) {
-            toast.error(err?.response?.data?.message || "Failed to create coupon.");
+            toast.error(err?.response?.data?.message || t("seller.coupon_create_error"));
         } finally {
             setSubmitting(false);
         }
@@ -69,7 +69,7 @@ const Coupons = () => {
                 toast.error(data.message);
             }
         } catch {
-            toast.error("Failed to delete coupon.");
+            toast.error(t("seller.coupon_delete_error"));
         }
     };
 
@@ -81,7 +81,7 @@ const Coupons = () => {
                 fetchCoupons();
             }
         } catch {
-            toast.error("Failed to toggle coupon.");
+            toast.error(t("seller.coupon_toggle_error"));
         }
     };
 

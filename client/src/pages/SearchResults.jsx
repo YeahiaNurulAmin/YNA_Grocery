@@ -38,7 +38,7 @@ const SearchResults = () => {
             onChange={(e) => setSearchQuery(e.target.value)}
             placeholder={t("search.placeholder")}
             className="w-full bg-transparent outline-none text-sm"
-            aria-label="Search"
+            aria-label={t("search.aria")}
           />
         </div>
       </div>

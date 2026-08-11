@@ -47,11 +47,11 @@ const Cart = () => {
     try {
       if (!user) {
         setShowUserLogin(true);
-        toast.error("Please login to checkout");
+        toast.error(t("cart.login_to_checkout"));
         return;
       }
       if (!selectedAddress) {
-        toast.error("Please select a delivery address");
+        toast.error(t("cart.select_address"));
         return;
       }
       setPlacing(true);
@@ -67,11 +67,11 @@ const Cart = () => {
       if (paymentMethod === "COD") {
         const { data } = await axios.post("/api/order/cod", payload);
         if (data.success) {
-          toast.success("Order placed successfully");
+          toast.success(t("cart.order_placed"));
           setCartItems({});
           navigate("/my-orders");
         } else {
-          toast.error("Failed to place order");
+          toast.error(t("cart.order_failed"));
           console.error("Error placing order:", data.message);
         }
       } else {
@@ -79,12 +79,12 @@ const Cart = () => {
         if (data.success) {
           window.location.replace(data.url);
         } else {
-          toast.error("Failed to place order");
+          toast.error(t("cart.order_failed"));
           console.error("Error placing order:", data.message);
         }
       }
     } catch (error) {
-      toast.error("Failed to place order");
+      toast.error(t("cart.order_failed"));
       console.error("Error placing order:", error);
     } finally {
       setPlacing(false);
@@ -126,7 +126,7 @@ const Cart = () => {
         setAddress(data.addresses);
         if (data.addresses.length > 0) setSelectedAddress(data.addresses[0]);
       } else {
-        toast.error("Failed to fetch address");
+        toast.error(t("cart.fetch_address_failed"));
       }
     } catch (error) {
       console.error("Error fetching user address:", error);
@@ -166,7 +166,7 @@ const Cart = () => {
   if (productsLoading) {
     return (
       <div className="py-16 mb-nav text-center text-sm text-text-secondary">
-        Loading…
+        {t("cart.loading")}
       </div>
     );
   }
@@ -176,11 +176,11 @@ const Cart = () => {
       <div className="py-16 mb-nav">
         <EmptyState
           icon={ShoppingBag}
-          title="Error"
+          title={t("cart.error")}
           description={productsError}
           action={
             <Button onClick={() => window.location.reload()}>
-              Try again
+              {t("cart.try_again")}
             </Button>
           }
         />
@@ -238,7 +238,7 @@ const Cart = () => {
                         type="button"
                         onClick={() => clearFromCart(product._id)}
                         className="text-text-tertiary hover:text-error transition-colors cursor-pointer"
-                        aria-label={`Remove ${product.name} from cart`}
+                        aria-label={t("cart.remove_item", { name: product.name })}
                       >
                         <Trash2 className="w-4 h-4" />
                       </button>
@@ -246,7 +246,7 @@ const Cart = () => {
                         <button
                           type="button"
                           className="w-8 h-full flex items-center justify-center text-primary cursor-pointer"
-                          aria-label={`Decrease quantity of ${product.name}`}
+                          aria-label={t("cart.decrease_qty", { name: product.name })}
                           onClick={() => {
                             if (product.quantity <= 1) removeFromCart(product._id);
                             else updateCartItem(product._id, product.quantity - 1);
@@ -258,7 +258,7 @@ const Cart = () => {
                         <button
                           type="button"
                           className="w-8 h-full flex items-center justify-center text-primary cursor-pointer"
-                          aria-label={`Increase quantity of ${product.name}`}
+                          aria-label={t("cart.increase_qty", { name: product.name })}
                           onClick={() => {
                             const max = product.stockQuantity < 9 ? product.stockQuantity : 9;
                             if (product.quantity < max) updateCartItem(product._id, product.quantity + 1);
@@ -375,7 +375,7 @@ const Cart = () => {
                 <Badge variant="success">{t("cart.free_delivery")}</Badge>
               </div>
               <div className="flex justify-between">
-                <span>Tax (15%)</span>
+                <span>{t("cart.tax")}</span>
                 <span>{formatPrice(tax, currency)}</span>
               </div>
               <div className="flex justify-between font-heading text-base font-bold text-text-primary pt-2">

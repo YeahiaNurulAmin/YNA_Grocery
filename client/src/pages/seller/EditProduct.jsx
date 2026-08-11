@@ -44,7 +44,7 @@ const EditProduct = () => {
                 setIsLoading(false);
             } catch (error) {
                 console.error("Error fetching product:", error);
-                toast.error("Error loading product");
+                toast.error(t("seller.product_load_error"));
                 setIsLoading(false);
             }
         };
@@ -61,7 +61,7 @@ const EditProduct = () => {
                 !productData.category ||
                 !productData.price
             ) {
-                toast.error("Please fill all required fields");
+                toast.error(t("seller.fill_required"));
                 setIsSubmitting(false);
             } else {
                 const formData = new FormData();
@@ -88,15 +88,15 @@ const EditProduct = () => {
                     }
                 );
                 if (data.message === "Product updated successfully") {
-                    toast.success("Product updated successfully");
+                    toast.success(t("seller.product_updated"));
                     navigate("/seller/products");
                 } else {
-                    toast.error("Error updating product");
+                    toast.error(t("seller.product_update_error"));
                 }
                 setIsSubmitting(false);
             }
         } catch (error) {
-            toast.error("Error updating product");
+            toast.error(t("seller.product_update_error"));
             console.error("Error updating product:", error);
             setIsSubmitting(false);
         }

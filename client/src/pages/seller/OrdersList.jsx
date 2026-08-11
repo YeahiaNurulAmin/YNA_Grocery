@@ -30,7 +30,7 @@ const OrdersList = () => {
 
     const addDemoOrderHandler = () => {
         if (!dummyOrders || dummyOrders.length === 0) {
-            toast.error("No dummy orders found");
+            toast.error(t("seller.no_dummy_orders"));
             return;
         }
         
@@ -45,26 +45,26 @@ const OrdersList = () => {
         };
 
         setOrders(prev => [newDemoOrder, ...prev]);
-        toast.success("Demo order added locally!");
+        toast.success(t("seller.demo_order_added"));
     };
 
     const handleStatusChange = async (orderId, newStatus, isDemo) => {
         try {
             if (isDemo) {
                 setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
-                toast.success("Demo order status updated locally!");
+                toast.success(t("seller.demo_order_updated"));
                 return;
             }
 
             const { data } = await axios.post("/api/order/status", { orderId, status: newStatus });
             if (data.success) {
                 setOrders(prev => prev.map(o => o._id === orderId ? { ...o, status: newStatus } : o));
-                toast.success("Order status updated successfully!");
+                toast.success(t("seller.order_status_updated"));
             } else {
-                toast.error(data.message || "Failed to update order status");
+                toast.error(data.message || t("seller.order_status_error"));
             }
         } catch (error) {
-            toast.error("Failed to update order status");
+            toast.error(t("seller.order_status_error"));
             console.error("Error updating order status:", error);
         }
     };

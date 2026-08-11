@@ -43,7 +43,7 @@ const ProductCard = ({ product }) => {
           )}
           {product.inStock && product.quantity != null && product.quantity <= 5 && (
             <Badge variant="warning" className={`absolute top-3 ${isRTL ? "left-3" : "right-3"} z-10`}>
-              {isRTL ? "مخزون منخفض" : "Low stock"}
+              {t("product.low_stock")}
             </Badge>
           )}
           <img
@@ -105,7 +105,7 @@ const ProductCard = ({ product }) => {
               type="button"
               onClick={() => removeFromCart(product._id)}
               className="w-9 h-full flex items-center justify-center text-primary hover:bg-primary/10 rounded-l-[14px] cursor-pointer"
-              aria-label="Decrease quantity"
+              aria-label={t("product.qty_decrease")}
             >
               <Minus className="w-3.5 h-3.5" />
             </button>
@@ -114,7 +114,7 @@ const ProductCard = ({ product }) => {
               type="button"
               onClick={() => addToCart(product._id)}
               className="w-9 h-full flex items-center justify-center text-primary hover:bg-primary/10 rounded-r-[14px] cursor-pointer"
-              aria-label="Increase quantity"
+              aria-label={t("product.qty_increase")}
             >
               <Plus className="w-3.5 h-3.5" />
             </button>

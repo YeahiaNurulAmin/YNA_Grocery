@@ -15,7 +15,7 @@ const NewsLetter = () => {
   const onSubmit = (e) => {
     e.preventDefault();
     if (!email.trim()) return;
-    toast.error("Newsletter signup is not available yet.");
+    toast.error(t("home.newsletter_unavailable"));
   };
 
   return (
@@ -39,7 +39,7 @@ const NewsLetter = () => {
               onChange={(e) => setEmail(e.target.value)}
               placeholder={t("home.email_placeholder")}
               className="flex-1 h-12 px-4 rounded-[16px] bg-bg-white border border-border text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
-              aria-label="Email address"
+              aria-label={t("home.email_aria")}
               dir="ltr"
             />
             <Button type="submit" size="md" className="sm:shrink-0">

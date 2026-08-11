@@ -83,20 +83,20 @@ const ChatBot = () => {
           { role: "assistant", content: data.reply },
         ]);
       } else {
-        const msg = data.message || "Could not get a reply.";
+        const msg = data.message || t("chat.no_reply");
         toast.error(msg);
         setMessages((prev) => [
           ...prev,
-          { role: "assistant", content: `Sorry — ${msg}` },
+          { role: "assistant", content: t("chat.sorry", { msg }) },
         ]);
       }
     } catch (err) {
       const msg =
-        err?.response?.data?.message || "Chat failed. Please try again.";
+        err?.response?.data?.message || t("chat.failed");
       toast.error(msg);
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: `Sorry — ${msg}` },
+        { role: "assistant", content: t("chat.sorry", { msg }) },
       ]);
     } finally {
       inFlightRef.current = false;
@@ -130,7 +130,7 @@ const ChatBot = () => {
               type="button"
               onClick={() => setOpen(false)}
               className="p-2 rounded-[12px] hover:bg-white/15 transition-colors cursor-pointer"
-              aria-label="Close chat"
+              aria-label={t("chat.close")}
             >
               <X className="w-4 h-4" />
             </button>
@@ -214,7 +214,7 @@ const ChatBot = () => {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="ml-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg hover:bg-primary-dark hover:shadow-xl transition-all duration-250 cursor-pointer active:scale-95"
-        aria-label={open ? "Close chat" : "Open chat"}
+        aria-label={open ? t("chat.close") : t("chat.open")}
         aria-expanded={open}
       >
         {open ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}

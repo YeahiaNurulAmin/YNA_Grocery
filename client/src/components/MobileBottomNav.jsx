@@ -23,7 +23,7 @@ const MobileBottomNav = () => {
   return (
     <nav
       className="sm:hidden fixed bottom-0 inset-x-0 z-40 bg-bg-white/95 backdrop-blur-xl border-t border-border pb-safe shadow-[0_-4px_24px_rgb(15_23_42/0.06)]"
-      aria-label="Mobile navigation"
+      aria-label={t("nav.mobile_nav")}
     >
       <div className="flex items-stretch h-16 px-1">
         <NavLink to="/" end className={linkClass}>

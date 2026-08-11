@@ -50,13 +50,13 @@ const SellerDashboard = () => {
         setOrders(data.orders || []);
       } else if (!isSilent) {
         setOrdersError(data.message || "Failed to load orders");
-        toast.error(data.message || "Failed to load orders");
+        toast.error(data.message || t("seller.orders_load_error"));
       }
     } catch (e) {
       console.error(e);
       if (!isSilent) {
         setOrdersError("Failed to load orders");
-        toast.error("Failed to load orders");
+        toast.error(t("seller.orders_load_error"));
       }
     } finally {
       if (!isSilent) setLoading(false);

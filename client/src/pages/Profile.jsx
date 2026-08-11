@@ -95,14 +95,14 @@ const Profile = () => {
     const file = e.target.files[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
-        return toast.error("Please select a valid image file");
+        return toast.error(t("profile.invalid_image"));
       }
       if (file.size > 5 * 1024 * 1024) {
-        return toast.error("Image size should be less than 5MB");
+        return toast.error(t("profile.image_size"));
       }
       setSelectedFile(file);
       setImagePreview(URL.createObjectURL(file));
-      toast.success("Image selected! Click 'Save Changes' to upload to Cloudinary.");
+      toast.success(t("profile.image_selected"));
     }
   };
 
@@ -164,18 +164,18 @@ const Profile = () => {
       const { data } = await axios.put("/api/users/profile", formData);
 
       if (data.success) {
-        toast.success("Profile updated successfully!");
+        toast.success(t("profile.updated"));
         setSelectedFile(null);
         if (data.user?.avatar) {
           setImagePreview(data.user.avatar);
         }
         if (fetchUser) await fetchUser();
       } else {
-        toast.error(data.message || "Failed to update profile");
+        toast.error(data.message || t("profile.update_failed"));
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast.error(error.response?.data?.message || "Error updating profile");
+      toast.error(error.response?.data?.message || t("profile.update_error"));
     } finally {
       setSavingProfile(false);
     }
@@ -188,7 +188,7 @@ const Profile = () => {
     try {
       const { data } = await axios.post("/api/address/add", { address: addressForm });
       if (data.success) {
-        toast.success("Address added successfully!");
+        toast.success(t("profile.address_added"));
         setShowAddAddressModal(false);
         setAddressForm({
           firstName: "",
@@ -207,7 +207,7 @@ const Profile = () => {
       }
     } catch (error) {
       console.error("Error adding address:", error);
-      toast.error("Error adding address");
+      toast.error(t("profile.address_add_error"));
     } finally {
       setSavingAddress(false);
     }
@@ -215,18 +215,18 @@ const Profile = () => {
 
   // Delete Address Handler
   const handleDeleteAddress = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this address?")) return;
+    if (!window.confirm(t("profile.delete_address_confirm"))) return;
     try {
       const { data } = await axios.delete("/api/address/delete", { data: { _id: id } });
       if (data.success) {
-        toast.success("Address deleted");
+        toast.success(t("profile.address_deleted"));
         fetchAddresses();
       } else {
         toast.error(data.message || "Failed to delete address");
       }
     } catch (error) {
       console.error("Error deleting address:", error);
-      toast.error("Error deleting address");
+      toast.error(t("profile.address_delete_error"));
     }
   };
 
@@ -234,10 +234,10 @@ const Profile = () => {
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      return toast.error("New passwords do not match!");
+      return toast.error(t("profile.password_mismatch"));
     }
     if (passwordForm.newPassword.length < 6) {
-      return toast.error("New password must be at least 6 characters!");
+      return toast.error(t("profile.password_short"));
     }
 
     setChangingPassword(true);
@@ -248,7 +248,7 @@ const Profile = () => {
       });
 
       if (data.success) {
-        toast.success("Password changed successfully!");
+        toast.success(t("profile.password_changed"));
         setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
       } else {
         toast.error(data.message || "Failed to change password");
@@ -266,7 +266,7 @@ const Profile = () => {
     try {
       const { data } = await axios.get("/api/users/logout");
       if (data.success) {
-        toast.success("Logged out successfully");
+        toast.success(t("profile.logged_out"));
         setCartItems({});
         setUser(null);
         navigate("/");

@@ -128,7 +128,7 @@ const Seller = () => {
                                 <ShoppingBag className="w-4 h-4 text-primary" strokeWidth={2} />
                             </div>
                             <div>
-                                <p className="font-heading font-bold text-text-primary text-sm">New Order!</p>
+                                <p className="font-heading font-bold text-text-primary text-sm">{t("seller.new_order_title")}</p>
                                 <p className="text-xs text-text-secondary">
                                     {`${o.address?.firstName || ""} ${o.address?.lastName || ""}`.trim()} — {formatPrice(o.amount, currency)}
                                 </p>
@@ -138,7 +138,7 @@ const Seller = () => {
                 });
             }
         } catch (_) { /* silent fail on polling */ }
-    }, [axios, currency, formatPrice]);
+    }, [axios, currency, formatPrice, t]);
 
     useEffect(() => {
         axios.get("/api/order/seller").then(({ data }) => {
@@ -208,7 +208,7 @@ const Seller = () => {
                 toast.error(data.message);
             }
         } catch (error) {
-            toast.error("Error logging out");
+            toast.error(t("seller.logout_error"));
             console.error("Error in logoutHandler:", error);
         }
     };
@@ -223,7 +223,7 @@ const Seller = () => {
 
                 <div className="flex items-center gap-2 md:gap-4">
                     <span className="text-sm hidden md:inline text-text-secondary font-medium">
-                        {isRTL ? "مرحباً! المسؤول" : "Hi! Admin"}
+                        {t("seller.hi_admin")}
                     </span>
 
                     {/* Language toggle button */}
@@ -241,7 +241,7 @@ const Seller = () => {
                         id="dark-mode-toggle"
                         onClick={() => setIsDark(d => !d)}
                         className="relative w-11 h-6 rounded-full border border-border bg-surface-muted hover:border-primary/40 transition-colors flex items-center cursor-pointer"
-                        title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                        title={isDark ? t("nav.theme_light") : t("nav.theme_dark")}
                     >
                         <span className={`absolute flex items-center justify-center w-5 h-5 rounded-full transition-transform duration-300 ${isDark ? "translate-x-[22px] bg-surface-elevated text-accent" : "translate-x-0.5 bg-primary text-white"}`}>
                             {isDark ? <Moon className="w-3 h-3" /> : <Sun className="w-3 h-3" />}
@@ -270,7 +270,7 @@ const Seller = () => {
                                     <div className="flex items-center gap-2">
                                         {notifications.length > 0 && (
                                             <button onClick={() => setNotifications([])} className="text-xs text-text-tertiary hover:text-error transition-colors cursor-pointer">
-                                                Clear all
+                                                {t("seller.clear_all")}
                                             </button>
                                         )}
                                         <Link to="/seller/notifications" onClick={() => setShowNotifPanel(false)} className="text-xs text-primary hover:underline font-medium">
@@ -282,7 +282,7 @@ const Seller = () => {
                                     {notifications.length === 0 ? (
                                         <div className="py-10 text-center text-text-tertiary text-sm">
                                             <Bell className="w-8 h-8 mx-auto mb-2 text-text-placeholder" strokeWidth={1.5} />
-                                            No new notifications
+                                            {t("seller.no_notifs")}
                                         </div>
                                     ) : (
                                         notifications.map((n, i) => (
@@ -291,8 +291,8 @@ const Seller = () => {
                                                     <ShoppingBag className="w-4 h-4 text-primary" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-semibold truncate">New Order — {n.name}</p>
-                                                    <p className="text-xs text-text-tertiary">Amount: {formatPrice(n.amount, currency)} · {n.time}</p>
+                                                    <p className="text-sm font-semibold truncate">{t("seller.new_order_item", { name: n.name })}</p>
+                                                    <p className="text-xs text-text-tertiary">{t("seller.amount_line", { amount: formatPrice(n.amount, currency), time: n.time })}</p>
                                                 </div>
                                             </div>
                                         ))
@@ -316,7 +316,7 @@ const Seller = () => {
                 {/* Sidebar */}
                 <aside className="hidden md:flex w-60 shrink-0 border-r border-border/60 min-h-[calc(100vh-57px)] flex-col bg-bg-white">
                     <nav className="flex-1 p-4 space-y-1">
-                        <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-text-tertiary">Store</p>
+                        <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-text-tertiary">{t("seller.store_section")}</p>
                         {mainLinks.map((item) => (
                             <NavLink to={item.path} key={item.path} end={item.end} className={navLinkClass}>
                                 <item.icon className="w-[18px] h-[18px] shrink-0" strokeWidth={1.75} />
@@ -327,7 +327,7 @@ const Seller = () => {
                     </nav>
 
                     <div className="p-4 border-t border-border/60 space-y-1">
-                        <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-text-tertiary">Account</p>
+                        <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-text-tertiary">{t("seller.account_section")}</p>
                         {accountLinks.map((item) => (
                             <NavLink to={item.path} key={item.path} className={navLinkClass}>
                                 <item.icon className="w-[18px] h-[18px] shrink-0" strokeWidth={1.75} />
@@ -362,7 +362,7 @@ const Seller = () => {
                             aria-haspopup="menu"
                         >
                             <MoreHorizontal className="w-5 h-5" strokeWidth={1.75} />
-                            <span>More</span>
+                            <span>{t("seller.more")}</span>
                         </button>
                         {moreOpen && (
                             <div

@@ -256,7 +256,7 @@ const ProductFilters = ({
             setFilters((p) => ({ ...p, maxPrice: e.target.value }))
           }
           className="w-full accent-primary"
-          aria-label="Max price slider"
+          aria-label={t("filters.max_price_slider")}
         />
       </div>
 

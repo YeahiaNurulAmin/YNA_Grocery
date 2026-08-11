@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import toast from "react-hot-toast";
 import axios from "axios";
+import { useLanguage } from "./LanguageContext";
 
 axios.defaults.withCredentials = true;
 axios.defaults.baseURL = import.meta.env.VITE_BACKEND_URL;
@@ -11,6 +12,7 @@ export const AppContext = createContext();
 export const AppContextProvider = ({ children }) => {
     // Environment Variables
     const currency = import.meta.env.VITE_CURRENCY;
+    const { t } = useLanguage();
 
     // Navigation
     const navigate = useNavigate();
@@ -70,15 +72,15 @@ export const AppContextProvider = ({ children }) => {
                 setProducts(data.products);
             } else {
                 setProducts([]);
-                setProductsError(data.message || "Error fetching products");
+                setProductsError(data.message || t("cart.fetch_error"));
                 console.log("Error fetching products:", data.message);
-                toast.error(data.message);
+                toast.error(data.message ?? t("cart.fetch_error"));
             }
         } catch (error) {
             setProducts([]);
-            setProductsError("Error fetching products");
+            setProductsError(t("cart.fetch_error"));
             console.log("Error fetching products:", error);
-            toast.error("Error fetching products");
+            toast.error(t("cart.fetch_error"));
         } finally {
             setProductsLoading(false);
         }
@@ -99,7 +101,7 @@ export const AppContextProvider = ({ children }) => {
         }
         setCartItems(itemData);
 
-        toast.success("Item added to cart");
+        toast.success(t("cart.added"));
     };
 
     // Update cart
@@ -109,7 +111,7 @@ export const AppContextProvider = ({ children }) => {
         cartData[itemID] = quantity;
         setCartItems(cartData);
 
-        toast.success("Cart Updated");
+        toast.success(t("cart.updated"));
     };
 
     // Remove one unit from cart
@@ -124,7 +126,7 @@ export const AppContextProvider = ({ children }) => {
             }
         }
         setCartItems(cartData);
-        toast.success("Item removed from cart");
+        toast.success(t("cart.removed"));
     };
 
     // Remove entire product entry from cart
@@ -132,7 +134,7 @@ export const AppContextProvider = ({ children }) => {
         let cartData = structuredClone(cartItems);
         delete cartData[itemID];
         setCartItems(cartData);
-        toast.success("Item removed from cart");
+        toast.success(t("cart.removed"));
     };
 
     // Get total abound
@@ -168,14 +170,14 @@ export const AppContextProvider = ({ children }) => {
                 }
             } catch (error) {
                 console.error("Error updating cart in DB:", error);
-                toast.error("Error updating cart");
+                toast.error(t("cart.update_error"));
             }
         };
 
         if (user) {
             updateCartInDB();
         }
-    }, [cartItems]);
+    }, [cartItems, t]);
 
 
     const value = {

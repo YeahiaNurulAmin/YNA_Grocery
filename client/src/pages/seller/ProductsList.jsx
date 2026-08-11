@@ -29,10 +29,10 @@ const ProductsList = () => {
         setConfirmDeleteId(null);
         fetchProducts();
       } else {
-        toast.error("Error deleting product");
+        toast.error(t("seller.product_delete_error"));
       }
     } catch (error) {
-      toast.error("Error deleting product");
+      toast.error(t("seller.product_delete_error"));
       console.error("Error deleting product:", error);
     }
   };
@@ -44,13 +44,13 @@ const ProductsList = () => {
         inStock: !currentStockStatus,
       });
       if (data.success) {
-        toast.success("Product stock status changed successfully");
+        toast.success(t("seller.stock_changed"));
         fetchProducts();
       } else {
-        toast.error("Error changing product stock status");
+        toast.error(t("seller.stock_change_error"));
       }
     } catch (error) {
-      toast.error("Error changing product stock status");
+      toast.error(t("seller.stock_change_error"));
       console.error("Error changing product stock status:", error);
     }
   };
@@ -123,7 +123,7 @@ const ProductsList = () => {
                         type="button"
                         onClick={() => handleToggleStock(product._id, product.inStock)}
                         className="cursor-pointer"
-                        aria-label="Toggle stock"
+                        aria-label={t("seller.toggle_stock_aria")}
                       >
                         <Badge variant={product.inStock ? "success" : "error"}>
                           {product.inStock ? t("product.in_stock_badge") : t("product.out_of_stock_badge")}

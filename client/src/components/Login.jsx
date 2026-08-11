@@ -72,7 +72,7 @@ const Login = () => {
   const submitHandler = async (event) => {
     event.preventDefault();
     if (state === "forgot") {
-      toast.error("Password reset is not available yet. Please contact support.");
+      toast.error(t("auth.reset_unavailable"));
       setState("login");
       return;
     }
@@ -88,7 +88,7 @@ const Login = () => {
         toast.error(data.message);
       }
     } catch (error) {
-      toast.error("An error occurred while logging in");
+      toast.error(t("auth.login_error"));
       console.error("Error in submitHandler", error);
     } finally {
       setLoading(false);
@@ -98,7 +98,7 @@ const Login = () => {
   const titles = {
     login:    { h: t("auth.login_title"),  p: t("auth.login_desc") },
     register: { h: t("auth.signup_title"), p: t("auth.signup_desc") },
-    forgot:   { h: "Reset password",      p: "Password reset is not available yet" },
+    forgot:   { h: t("auth.reset_password"),      p: t("auth.reset_unavailable") },
   };
 
   return (
@@ -188,7 +188,7 @@ const Login = () => {
             onClick={() => setState("forgot")}
             className="mt-3 text-xs text-accent hover:text-accent-dark font-medium cursor-pointer"
           >
-            Forgot password?
+            {t("auth.forgot_password")}
           </button>
         )}
 

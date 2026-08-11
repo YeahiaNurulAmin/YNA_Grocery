@@ -31,7 +31,7 @@ const BestSeller = () => {
       {productsError ? (
         <EmptyState
           icon={Package}
-          title="Couldn’t load products"
+          title={t("home.couldnt_load")}
           description={productsError}
         />
       ) : (

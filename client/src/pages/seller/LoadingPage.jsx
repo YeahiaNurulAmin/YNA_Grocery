@@ -27,7 +27,7 @@ const LoadingPage = () => {
   return (
     <div className="fixed inset-0 z-50 flex flex-col items-center justify-center gradient-hero bg-bg-cream">
       <YNALogo size="medium" />
-      <div className="mt-10 flex items-center gap-3" aria-label="Loading">
+      <div className="mt-10 flex items-center gap-3" aria-label={t("seller.loading_aria")}>
         {[0, 1, 2, 3].map((i) => (
           <span
             key={i}

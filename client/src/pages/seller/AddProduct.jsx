@@ -69,10 +69,10 @@ const AddProduct = () => {
         fetchProducts?.();
         navigate("/seller/products");
       } else {
-        toast.error(data.message || "Error adding product");
+        toast.error(data.message || t("seller.add_product_error"));
       }
     } catch (error) {
-      toast.error("Error adding product");
+      toast.error(t("seller.add_product_error"));
       console.error(error);
     } finally {
       setLoading(false);

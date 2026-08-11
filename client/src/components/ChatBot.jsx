@@ -6,26 +6,33 @@ import { useEffect, useRef, useState } from "react";
 import { MessageCircle, X, Send, Loader2 } from "lucide-react";
 import toast from "react-hot-toast";
 import { useAppContext } from "../context/AppContext";
+import { useLanguage } from "../context/LanguageContext";
 import { Button } from "./ui";
 
 const MAX_HISTORY = 12;
-const WELCOME =
-  "Hi! I’m the YNA Grocery assistant. Ask about delivery, payments, or what to buy from our catalog.";
-
-const SUGGESTIONS = [
-  "Delivery times?",
-  "Fresh fruit under $5?",
-  "Payment methods?",
-];
 
 const ChatBot = () => {
   const { axios } = useAppContext();
+  const { t, isRTL } = useLanguage();
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
+  
+  const welcomeMsg = isRTL
+    ? "مرحباً! أنا مساعد YNA Grocery. اسألني عن التوصيل أو المدفوعات أو اختيار المنتجات."
+    : "Hi! I’m the YNA Grocery assistant. Ask about delivery, payments, or what to buy from our catalog.";
+
+  const suggestions = isRTL
+    ? ["ما هي سرعة التوصيل؟", "ما هي طرق الدفع المتاحة؟", "كيف يمكنني إرجاع منتج؟"]
+    : ["Delivery times?", "Fresh fruit under $5?", "Payment methods?"];
+
   const [messages, setMessages] = useState([
-    { role: "assistant", content: WELCOME },
+    { role: "assistant", content: welcomeMsg },
   ]);
+
+  useEffect(() => {
+    setMessages([{ role: "assistant", content: welcomeMsg }]);
+  }, [isRTL]);
   const listRef = useRef(null);
   const inputRef = useRef(null);
   const inFlightRef = useRef(false);
@@ -76,20 +83,20 @@ const ChatBot = () => {
           { role: "assistant", content: data.reply },
         ]);
       } else {
-        const msg = data.message || "Could not get a reply.";
+        const msg = data.message || t("chat.no_reply");
         toast.error(msg);
         setMessages((prev) => [
           ...prev,
-          { role: "assistant", content: `Sorry — ${msg}` },
+          { role: "assistant", content: t("chat.sorry", { msg }) },
         ]);
       }
     } catch (err) {
       const msg =
-        err?.response?.data?.message || "Chat failed. Please try again.";
+        err?.response?.data?.message || t("chat.failed");
       toast.error(msg);
       setMessages((prev) => [
         ...prev,
-        { role: "assistant", content: `Sorry — ${msg}` },
+        { role: "assistant", content: t("chat.sorry", { msg }) },
       ]);
     } finally {
       inFlightRef.current = false;
@@ -103,27 +110,27 @@ const ChatBot = () => {
   };
 
   return (
-    <div className="fixed z-50 right-4 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] sm:right-6 sm:bottom-6">
+    <div className={`fixed z-50 bottom-[calc(4.5rem+env(safe-area-inset-bottom))] sm:bottom-6 ${isRTL ? "left-4 sm:left-6" : "right-4 sm:right-6"}`}>
       {open && (
         <div
           className="mb-3 w-[min(100vw-2rem,22rem)] h-[min(70vh,28rem)] flex flex-col rounded-card border border-border bg-bg-white shadow-[0_12px_40px_rgb(15_23_42/0.14)] overflow-hidden animate-scale-in"
           role="dialog"
-          aria-label="YNA Grocery chat assistant"
+          aria-label={t("chat.title")}
         >
           <div className="flex items-center justify-between gap-3 px-4 py-3 bg-primary text-white">
             <div className="min-w-0">
               <p className="font-heading font-semibold text-sm truncate">
-                YNA Assistant
+                {t("chat.title")}
               </p>
               <p className="text-xs text-white/80 truncate">
-                Shopping & support
+                {t("chat.subtitle")}
               </p>
             </div>
             <button
               type="button"
               onClick={() => setOpen(false)}
               className="p-2 rounded-[12px] hover:bg-white/15 transition-colors cursor-pointer"
-              aria-label="Close chat"
+              aria-label={t("chat.close")}
             >
               <X className="w-4 h-4" />
             </button>
@@ -154,14 +161,14 @@ const ChatBot = () => {
               <div className="flex justify-start">
                 <div className="inline-flex items-center gap-2 rounded-[16px] rounded-bl-[6px] px-3.5 py-2 text-sm bg-bg-white border border-border text-text-tertiary">
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                  Thinking…
+                  ...
                 </div>
               </div>
             )}
 
             {messages.length <= 1 && !loading && (
               <div className="flex flex-wrap gap-2 pt-1">
-                {SUGGESTIONS.map((chip) => (
+                {suggestions.map((chip) => (
                   <button
                     key={chip}
                     type="button"
@@ -186,7 +193,7 @@ const ChatBot = () => {
               onChange={(e) => setInput(e.target.value)}
               maxLength={500}
               disabled={loading}
-              placeholder="Ask about products or support…"
+              placeholder={t("chat.placeholder")}
               className="flex-1 min-w-0 h-10 px-3 rounded-[14px] border border-border bg-bg-cream text-sm text-text-primary placeholder:text-text-placeholder focus:outline-none focus:ring-2 focus:ring-primary/30 focus:border-primary disabled:opacity-60"
             />
             <Button
@@ -194,10 +201,10 @@ const ChatBot = () => {
               size="icon"
               loading={loading}
               disabled={!input.trim() || loading}
-              aria-label="Send message"
+              aria-label={t("chat.send")}
               className="shrink-0"
             >
-              {!loading && <Send className="w-4 h-4" />}
+              {!loading && <Send className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />}
             </Button>
           </form>
         </div>
@@ -207,7 +214,7 @@ const ChatBot = () => {
         type="button"
         onClick={() => setOpen((v) => !v)}
         className="ml-auto flex h-14 w-14 items-center justify-center rounded-full bg-primary text-white shadow-lg hover:bg-primary-dark hover:shadow-xl transition-all duration-250 cursor-pointer active:scale-95"
-        aria-label={open ? "Close chat" : "Open chat"}
+        aria-label={open ? t("chat.close") : t("chat.open")}
         aria-expanded={open}
       >
         {open ? <X className="w-6 h-6" /> : <MessageCircle className="w-6 h-6" />}

@@ -1,20 +1,23 @@
 /**
  * Categories — horizontal category tiles on Home.
  * Navigates to /products/:category path from assets.categories.
+ * Fully localized for Arabic & future languages.
  */
 import { useNavigate } from "react-router-dom";
 import { categories } from "../assets/assets";
 import { SectionHeader } from "./ui";
+import { useLanguage } from "../context/LanguageContext";
 
 const Categories = () => {
   const navigate = useNavigate();
+  const { t, tCategory } = useLanguage();
 
   return (
     <section className="mt-16 md:mt-20">
       <SectionHeader
-        eyebrow="Browse"
-        title="Shop by category"
-        subtitle="Fresh picks organized for faster grocery runs."
+        eyebrow={t("category.browse")}
+        title={t("category.shop_by")}
+        subtitle={t("category.subtitle")}
       />
       <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-7 gap-3 md:gap-4">
         {categories.map((cat, idx) => (
@@ -31,12 +34,12 @@ const Categories = () => {
             <div className="w-16 h-16 md:w-20 md:h-20 flex items-center justify-center">
               <img
                 src={cat.image}
-                alt={cat.text}
+                alt={tCategory(cat.text)}
                 className="max-w-full max-h-full object-contain transition-transform duration-300 group-hover:scale-110"
               />
             </div>
             <span className="font-heading text-sm font-semibold text-text-primary leading-tight">
-              {cat.text}
+              {tCategory(cat.text)}
             </span>
           </button>
         ))}

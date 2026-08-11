@@ -5,12 +5,14 @@
 import { useState, useEffect } from "react";
 import { Mail, Lock } from "lucide-react";
 import { useAppContext } from "../../context/AppContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { Button, Input } from "../ui";
 import { YNALogo } from "../../assets/YNALogo";
 import toast from "react-hot-toast";
 
 const SellerLogin = () => {
   const { isSeller, setIsSeller, navigate, axios } = useAppContext();
+  const { t, isRTL } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ email: "", password: "" });
 
@@ -33,9 +35,9 @@ const SellerLogin = () => {
       if (data.success) {
         setIsSeller(true);
         navigate("/seller");
-        toast.success("Logged in successfully");
+        toast.success(t("auth.login_success"));
       } else {
-        toast.error(data.message || "Login failed");
+        toast.error(data.message || t("auth.login_error"));
       }
     } catch (error) {
       const status = error.response?.status;
@@ -43,7 +45,7 @@ const SellerLogin = () => {
       if (status === 401 && message) {
         toast.error(message);
       } else {
-        toast.error(message || "An error occurred during login");
+        toast.error(message || t("auth.login_error"));
       }
       console.log(error);
     } finally {
@@ -63,41 +65,43 @@ const SellerLogin = () => {
           <YNALogo size="small" />
         </div>
         <h1 className="font-heading text-2xl font-bold text-center text-text-primary">
-          Seller login
+          {t("auth.login_title")}
         </h1>
         <p className="text-sm text-text-secondary text-center mt-1.5">
-          Sign in to manage products and orders
+          {t("auth.login_desc")}
         </p>
 
         <div className="mt-8 space-y-4">
           <div className="relative">
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
+            <Mail className={`absolute ${isRTL ? "right-4" : "left-4"} top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary`} />
             <Input
               type="email"
               name="email"
-              placeholder="Email"
-              className="pl-11"
+              placeholder={t("auth.email")}
+              className={isRTL ? "pr-11 text-right" : "pl-11"}
               value={formData.email}
               onChange={handleChange}
               required
+              dir="ltr"
             />
           </div>
           <div className="relative">
-            <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary" />
+            <Lock className={`absolute ${isRTL ? "right-4" : "left-4"} top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary`} />
             <Input
               type="password"
               name="password"
-              placeholder="Password"
-              className="pl-11"
+              placeholder={t("auth.password")}
+              className={isRTL ? "pr-11 text-right" : "pl-11"}
               value={formData.password}
               onChange={handleChange}
               required
+              dir="ltr"
             />
           </div>
         </div>
 
         <Button type="submit" className="w-full mt-6" size="lg" loading={loading}>
-          Sign in
+          {t("auth.submit_login")}
         </Button>
       </form>
     </div>

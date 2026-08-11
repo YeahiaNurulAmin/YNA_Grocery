@@ -6,6 +6,7 @@
 import { useEffect, useState } from "react";
 import { Card, SectionHeader, Button } from "../../components/ui";
 import { useAppContext } from "../../context/AppContext";
+import { useLanguage } from "../../context/LanguageContext";
 import toast from "react-hot-toast";
 import { Loader2, RotateCcw } from "lucide-react";
 
@@ -22,6 +23,7 @@ const loadPrefs = () => {
 
 const SellerSettings = () => {
   const { axios } = useAppContext();
+  const { t } = useLanguage();
   const [prefs, setPrefs] = useState(loadPrefs);
 
   const [prompt, setPrompt] = useState("");
@@ -44,12 +46,12 @@ const SellerSettings = () => {
           setDefaultPrompt(data.defaultPrompt || "");
           if (data.maxLength) setMaxLength(data.maxLength);
         } else {
-          toast.error(data.message || "Failed to load chat prompt");
+          toast.error(data.message || t("seller.prompt_load_error"));
         }
       } catch (err) {
         if (!cancelled) {
           toast.error(
-            err?.response?.data?.message || "Failed to load chat prompt"
+            err?.response?.data?.message || t("seller.prompt_load_error")
           );
         }
       } finally {
@@ -65,13 +67,13 @@ const SellerSettings = () => {
 
   const savePrefs = () => {
     localStorage.setItem(PREFS_KEY, JSON.stringify(prefs));
-    toast.success("Preferences saved");
+    toast.success(t("seller.prefs_saved"));
   };
 
   const savePrompt = async () => {
     const trimmed = prompt.trim();
     if (!trimmed) {
-      toast.error("Prompt cannot be empty");
+      toast.error(t("seller.prompt_empty"));
       return;
     }
     setPromptSaving(true);
@@ -81,12 +83,12 @@ const SellerSettings = () => {
       });
       if (data.success) {
         setPrompt(data.systemPrompt ?? prompt);
-        toast.success(data.message || "Chat prompt saved");
+        toast.success(data.message || t("seller.prompt_saved"));
       } else {
-        toast.error(data.message || "Failed to save prompt");
+        toast.error(data.message || t("seller.prompt_save_error"));
       }
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to save prompt");
+      toast.error(err?.response?.data?.message || t("seller.prompt_save_error"));
     } finally {
       setPromptSaving(false);
     }
@@ -98,12 +100,12 @@ const SellerSettings = () => {
       const { data } = await axios.post("/api/chat/prompt/reset");
       if (data.success) {
         setPrompt(data.systemPrompt ?? defaultPrompt ?? "");
-        toast.success(data.message || "Prompt reset to default");
+        toast.success(data.message || t("seller.prompt_reset"));
       } else {
-        toast.error(data.message || "Failed to reset prompt");
+        toast.error(data.message || t("seller.prompt_reset_error"));
       }
     } catch (err) {
-      toast.error(err?.response?.data?.message || "Failed to reset prompt");
+      toast.error(err?.response?.data?.message || t("seller.prompt_reset_error"));
     } finally {
       setPromptResetting(false);
     }
@@ -112,19 +114,19 @@ const SellerSettings = () => {
   return (
     <div className="animate-fade-in max-w-2xl space-y-8">
       <SectionHeader
-        eyebrow="Account"
-        title="Settings"
+        eyebrow={t("seller.account_section")}
+        title={t("seller.settings")}
         subtitle="Preferences for your admin experience and storefront chatbot."
       />
 
       <Card className="p-6! space-y-5">
         <h3 className="font-heading font-semibold text-text-primary text-base">
-          Preferences
+          {t("seller.preferences")}
         </h3>
         {[
-          { key: "chime", label: "Order chime", desc: "Play a soft sound for new Order Placed events" },
-          { key: "emailDigest", label: "Daily digest", desc: "Preference saved locally (email delivery not wired yet)" },
-          { key: "lowStock", label: "Stock alerts", desc: "Highlight low-stock products on the dashboard" },
+          { key: "chime", label: t("seller.chime_sound"), desc: t("seller.chime_sound_desc") },
+          { key: "emailDigest", label: t("seller.daily_digest"), desc: t("seller.daily_digest_desc") },
+          { key: "lowStock", label: t("seller.low_stock_alerts"), desc: t("seller.low_stock_desc") },
         ].map((item) => (
           <label key={item.key} className="flex items-start justify-between gap-4 cursor-pointer">
             <div>
@@ -140,30 +142,29 @@ const SellerSettings = () => {
           </label>
         ))}
         <Button onClick={savePrefs} className="mt-2">
-          Save preferences
+          {t("seller.save_prefs")}
         </Button>
       </Card>
 
       <Card className="p-6! space-y-4">
         <div>
           <h3 className="font-heading font-semibold text-text-primary text-base">
-            Chatbot system prompt
+            {t("seller.chatbot_prompt_title")}
           </h3>
           <p className="text-xs text-text-tertiary mt-1 leading-relaxed">
-            Controls how the storefront assistant answers customers. The live
-            product catalog is always appended automatically after this prompt.
+            {t("seller.chatbot_prompt_desc")}
           </p>
         </div>
 
         {promptLoading ? (
           <div className="flex items-center gap-2 text-sm text-text-tertiary py-8 justify-center">
             <Loader2 className="w-4 h-4 animate-spin" />
-            Loading prompt…
+            {t("seller.loading_prompt")}
           </div>
         ) : (
           <>
             <textarea
-              aria-label="Chatbot system prompt"
+              aria-label={t("seller.chatbot_prompt_title")}
               value={prompt}
               onChange={(e) => setPrompt(e.target.value.slice(0, maxLength))}
               rows={14}
@@ -184,14 +185,14 @@ const SellerSettings = () => {
                   disabled={promptSaving || promptResetting}
                 >
                   {!promptResetting && <RotateCcw className="w-4 h-4" />}
-                  Reset to default
+                  {t("seller.reset_default")}
                 </Button>
                 <Button
                   onClick={savePrompt}
                   loading={promptSaving}
                   disabled={promptSaving || promptResetting || !prompt.trim()}
                 >
-                  Save prompt
+                  {t("seller.save_prompt")}
                 </Button>
               </div>
             </div>

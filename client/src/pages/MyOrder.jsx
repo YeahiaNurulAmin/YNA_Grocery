@@ -5,6 +5,7 @@
 import React, { useEffect } from "react";
 import { Package, ShoppingBag } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
+import { useLanguage } from "../context/LanguageContext";
 import { Card, Badge, SectionHeader, EmptyState, Button } from "../components/ui";
 
 import { socket } from "../configs/socket";
@@ -20,6 +21,17 @@ const MyOrder = () => {
   const [myOrders, setMyOrders] = React.useState([]);
   const [loading, setLoading] = React.useState(true);
   const { currency, axios, user, navigate, setShowUserLogin } = useAppContext();
+  const { t, formatPrice, language } = useLanguage();
+
+  const translateStatus = (status) => {
+    if (!status) return status;
+    const lower = status.toLowerCase();
+    if (lower.includes("deliver")) return t("status.delivered");
+    if (lower.includes("cancel")) return t("status.cancelled");
+    if (lower.includes("placed") || lower.includes("pack") || lower.includes("ship"))
+      return t("status.order_placed");
+    return t("status.pending");
+  };
 
   const fetchMyOrders = React.useCallback(async (isSilent = false) => {
     try {
@@ -65,9 +77,9 @@ const MyOrder = () => {
       <div className="py-16 mb-nav">
         <EmptyState
           icon={ShoppingBag}
-          title="Sign in to view orders"
-          description="Your order history appears here after you log in."
-          action={<Button onClick={() => setShowUserLogin(true)}>Login</Button>}
+          title={t("myorder.sign_in")}
+          description={t("myorder.sign_in_desc")}
+          action={<Button onClick={() => setShowUserLogin(true)}>{t("myorder.login")}</Button>}
         />
       </div>
     );
@@ -76,9 +88,9 @@ const MyOrder = () => {
   return (
     <div className="py-10 md:py-14 mb-nav animate-fade-in max-w-4xl mx-auto">
       <SectionHeader
-        eyebrow="Account"
-        title="My orders"
-        subtitle="Track deliveries and revisit past purchases."
+        eyebrow={t("myorder.eyebrow")}
+        title={t("myorder.title")}
+        subtitle={t("myorder.subtitle")}
       />
 
       {loading ? (
@@ -90,9 +102,9 @@ const MyOrder = () => {
       ) : myOrders.length === 0 ? (
         <EmptyState
           icon={Package}
-          title="No orders yet"
-          description="When you place an order, it will show up here."
-          action={<Button onClick={() => navigate("/products")}>Start shopping</Button>}
+          title={t("myorder.no_orders")}
+          description={t("myorder.no_orders_desc")}
+          action={<Button onClick={() => navigate("/products")}>{t("myorder.start_shopping")}</Button>}
         />
       ) : (
         <div className="space-y-4">
@@ -100,16 +112,16 @@ const MyOrder = () => {
             <Card key={order._id} className="p-5! md:p-6!">
               <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5 pb-4 border-b border-border">
                 <div>
-                  <p className="text-xs text-text-tertiary">Order ID</p>
+                  <p className="text-xs text-text-tertiary">{t("myorder.order_id")}</p>
                   <p className="font-mono text-sm text-text-primary mt-0.5 truncate max-w-[220px]">
                     {order._id}
                   </p>
                 </div>
                 <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="outline">{order.paymentType}</Badge>
-                  <Badge variant={statusVariant(order.status)}>{order.status}</Badge>
+                  <Badge variant="outline">{order.paymentType === "COD" ? t("payment.cod") : t("payment.stripe")}</Badge>
+                  <Badge variant={statusVariant(order.status)}>{translateStatus(order.status)}</Badge>
                   <span className="font-heading font-bold text-primary">
-                    {currency}{order.amount}
+                    {formatPrice(order.amount, currency)}
                   </span>
                 </div>
               </div>
@@ -135,15 +147,14 @@ const MyOrder = () => {
                           {item.product?.name}
                         </h3>
                         <p className="text-xs text-text-tertiary mt-0.5">
-                          {item.product?.category} · Qty {item.quantity}
+                          {item.product?.category} · {t("myorder.qty")} {item.quantity}
                         </p>
                       </div>
                     </div>
                     <div className="text-sm text-text-secondary md:text-right space-y-0.5">
-                      <p>{new Date(order.createdAt).toLocaleDateString()}</p>
+                      <p>{new Date(order.createdAt).toLocaleDateString(language)}</p>
                       <p className="font-semibold text-text-primary">
-                        {currency}
-                        {item.quantity * (item.product?.offerPrice || item.product?.price || 0)}
+                        {formatPrice(item.quantity * (item.product?.offerPrice || item.product?.price || 0), currency)}
                       </p>
                     </div>
                   </div>

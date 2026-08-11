@@ -24,11 +24,13 @@ import {
   X,
 } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
+import { useLanguage } from "../context/LanguageContext";
 import { Card, Button, Input, Badge, EmptyState } from "../components/ui";
 import toast from "react-hot-toast";
 
 const Profile = () => {
   const { user, setUser, fetchUser, axios, navigate, currency, setShowUserLogin, setCartItems } = useAppContext();
+  const { t, formatPrice, language } = useLanguage();
 
   // Active Tab
   const [activeTab, setActiveTab] = useState("info"); // 'info' | 'addresses' | 'orders' | 'security'
@@ -93,14 +95,14 @@ const Profile = () => {
     const file = e.target.files[0];
     if (file) {
       if (!file.type.startsWith("image/")) {
-        return toast.error("Please select a valid image file");
+        return toast.error(t("profile.invalid_image"));
       }
       if (file.size > 5 * 1024 * 1024) {
-        return toast.error("Image size should be less than 5MB");
+        return toast.error(t("profile.image_size"));
       }
       setSelectedFile(file);
       setImagePreview(URL.createObjectURL(file));
-      toast.success("Image selected! Click 'Save Changes' to upload to Cloudinary.");
+      toast.success(t("profile.image_selected"));
     }
   };
 
@@ -162,18 +164,18 @@ const Profile = () => {
       const { data } = await axios.put("/api/users/profile", formData);
 
       if (data.success) {
-        toast.success("Profile updated successfully!");
+        toast.success(t("profile.updated"));
         setSelectedFile(null);
         if (data.user?.avatar) {
           setImagePreview(data.user.avatar);
         }
         if (fetchUser) await fetchUser();
       } else {
-        toast.error(data.message || "Failed to update profile");
+        toast.error(data.message || t("profile.update_failed"));
       }
     } catch (error) {
       console.error("Error updating profile:", error);
-      toast.error(error.response?.data?.message || "Error updating profile");
+      toast.error(error.response?.data?.message || t("profile.update_error"));
     } finally {
       setSavingProfile(false);
     }
@@ -186,7 +188,7 @@ const Profile = () => {
     try {
       const { data } = await axios.post("/api/address/add", { address: addressForm });
       if (data.success) {
-        toast.success("Address added successfully!");
+        toast.success(t("profile.address_added"));
         setShowAddAddressModal(false);
         setAddressForm({
           firstName: "",
@@ -205,7 +207,7 @@ const Profile = () => {
       }
     } catch (error) {
       console.error("Error adding address:", error);
-      toast.error("Error adding address");
+      toast.error(t("profile.address_add_error"));
     } finally {
       setSavingAddress(false);
     }
@@ -213,18 +215,18 @@ const Profile = () => {
 
   // Delete Address Handler
   const handleDeleteAddress = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this address?")) return;
+    if (!window.confirm(t("profile.delete_address_confirm"))) return;
     try {
       const { data } = await axios.delete("/api/address/delete", { data: { _id: id } });
       if (data.success) {
-        toast.success("Address deleted");
+        toast.success(t("profile.address_deleted"));
         fetchAddresses();
       } else {
         toast.error(data.message || "Failed to delete address");
       }
     } catch (error) {
       console.error("Error deleting address:", error);
-      toast.error("Error deleting address");
+      toast.error(t("profile.address_delete_error"));
     }
   };
 
@@ -232,10 +234,10 @@ const Profile = () => {
   const handlePasswordSubmit = async (e) => {
     e.preventDefault();
     if (passwordForm.newPassword !== passwordForm.confirmPassword) {
-      return toast.error("New passwords do not match!");
+      return toast.error(t("profile.password_mismatch"));
     }
     if (passwordForm.newPassword.length < 6) {
-      return toast.error("New password must be at least 6 characters!");
+      return toast.error(t("profile.password_short"));
     }
 
     setChangingPassword(true);
@@ -246,7 +248,7 @@ const Profile = () => {
       });
 
       if (data.success) {
-        toast.success("Password changed successfully!");
+        toast.success(t("profile.password_changed"));
         setPasswordForm({ currentPassword: "", newPassword: "", confirmPassword: "" });
       } else {
         toast.error(data.message || "Failed to change password");
@@ -264,7 +266,7 @@ const Profile = () => {
     try {
       const { data } = await axios.get("/api/users/logout");
       if (data.success) {
-        toast.success("Logged out successfully");
+        toast.success(t("profile.logged_out"));
         setCartItems({});
         setUser(null);
         navigate("/");
@@ -279,9 +281,9 @@ const Profile = () => {
       <div className="py-16 mb-nav">
         <EmptyState
           icon={UserIcon}
-          title="Sign in to view your profile"
-          description="Access your orders, saved addresses, and personal settings."
-          action={<Button onClick={() => setShowUserLogin(true)}>Login to Account</Button>}
+          title={t("myorder.sign_in")}
+          description={t("myorder.sign_in_desc")}
+          action={<Button onClick={() => setShowUserLogin(true)}>{t("myorder.login")}</Button>}
         />
       </div>
     );
@@ -326,7 +328,7 @@ const Profile = () => {
                 type="button"
                 onClick={() => fileInputRef.current?.click()}
                 className="absolute bottom-0 right-0 p-2.5 rounded-full bg-primary text-white shadow-md hover:bg-primary-dark transition-all cursor-pointer group-hover:scale-105"
-                title="Upload Photo from Device"
+                title={t("profile.change_photo")}
               >
                 <Camera className="w-4 h-4" />
               </button>
@@ -360,7 +362,7 @@ const Profile = () => {
                   onClick={() => fileInputRef.current?.click()}
                   className="inline-flex items-center gap-1.5 text-xs text-primary font-medium hover:underline cursor-pointer"
                 >
-                  <Upload className="w-3.5 h-3.5" /> Upload profile picture from device
+                  <Upload className="w-3.5 h-3.5" /> {t("profile.change_photo")}
                 </button>
               </div>
             </div>
@@ -374,7 +376,7 @@ const Profile = () => {
               onClick={() => navigate("/my-orders")}
               className="gap-2"
             >
-              <Package className="w-4 h-4" /> Orders ({recentOrders.length})
+              <Package className="w-4 h-4" /> {t("nav.orders")} ({recentOrders.length})
             </Button>
             <Button
               variant="danger"
@@ -382,7 +384,7 @@ const Profile = () => {
               onClick={handleLogout}
               className="gap-2"
             >
-              <LogOut className="w-4 h-4" /> Logout
+              <LogOut className="w-4 h-4" /> {t("nav.logout")}
             </Button>
           </div>
         </div>
@@ -396,7 +398,7 @@ const Profile = () => {
           </div>
           <div>
             <p className="text-xs text-text-tertiary font-medium uppercase tracking-wider">
-              Total Orders
+              {t("profile.orders")}
             </p>
             <p className="font-heading text-2xl font-bold text-text-primary mt-0.5">
               {recentOrders.length}
@@ -410,7 +412,7 @@ const Profile = () => {
           </div>
           <div>
             <p className="text-xs text-text-tertiary font-medium uppercase tracking-wider">
-              Saved Addresses
+              {t("profile.addresses")}
             </p>
             <p className="font-heading text-2xl font-bold text-text-primary mt-0.5">
               {addresses.length}
@@ -424,13 +426,13 @@ const Profile = () => {
           </div>
           <div className="flex-1">
             <p className="text-xs text-text-tertiary font-medium uppercase tracking-wider">
-              Wishlist & Saved
+              {t("nav.wishlist")}
             </p>
             <button
               onClick={() => navigate("/wishlist")}
               className="text-xs text-primary font-semibold hover:underline mt-1 block cursor-pointer"
             >
-              View Wishlist &rarr;
+              {t("wishlist.browse")} &rarr;
             </button>
           </div>
         </Card>
@@ -441,10 +443,10 @@ const Profile = () => {
         {/* Left Tab Links */}
         <div className="md:col-span-1 space-y-1">
           {[
-            { id: "info", label: "Personal Info", icon: UserIcon },
-            { id: "addresses", label: "Saved Addresses", icon: MapPin, count: addresses.length },
-            { id: "orders", label: "Order History", icon: Package, count: recentOrders.length },
-            { id: "security", label: "Security & Password", icon: KeyRound },
+            { id: "info", label: t("profile.tab_info"), icon: UserIcon },
+            { id: "addresses", label: t("profile.tab_addresses"), icon: MapPin, count: addresses.length },
+            { id: "orders", label: t("profile.tab_orders"), icon: Package, count: recentOrders.length },
+            { id: "security", label: t("profile.tab_security"), icon: KeyRound },
           ].map((tab) => {
             const Icon = tab.icon;
             const active = activeTab === tab.id;
@@ -484,10 +486,10 @@ const Profile = () => {
             <Card className="p-6 md:p-8 space-y-6">
               <div>
                 <h3 className="font-heading text-xl font-bold text-text-primary">
-                  Personal Information
+                  {t("profile.personal_title")}
                 </h3>
                 <p className="text-sm text-text-secondary mt-1">
-                  Upload your profile picture directly from your device to Cloudinary, and update your personal info.
+                  {t("profile.personal_subtitle")}
                 </p>
               </div>
 
@@ -495,7 +497,7 @@ const Profile = () => {
                 {/* Device Image Uploader Section */}
                 <div className="space-y-2">
                   <label className="block text-sm font-medium text-text-secondary">
-                    Profile Picture (Device Upload)
+                    {t("profile.change_photo")}
                   </label>
                   <div className="flex flex-col sm:flex-row items-center gap-5 p-4 rounded-[20px] bg-surface-muted border border-border">
                     <div className="relative shrink-0">
@@ -521,7 +523,7 @@ const Profile = () => {
                           onClick={() => fileInputRef.current?.click()}
                           className="gap-2"
                         >
-                          <Upload className="w-4 h-4" /> Select Image File
+                          <Upload className="w-4 h-4" /> {t("profile.change_photo")}
                         </Button>
 
                         {(imagePreview || selectedFile) && (
@@ -532,49 +534,38 @@ const Profile = () => {
                             onClick={handleRemoveImage}
                             className="text-error hover:bg-error/10 gap-1.5"
                           >
-                            <X className="w-4 h-4" /> Remove
+                            <X className="w-4 h-4" /> {t("profile.remove_photo")}
                           </Button>
                         )}
                       </div>
-
-                      <p className="text-xs text-text-tertiary">
-                        {selectedFile ? (
-                          <span className="font-semibold text-primary">
-                            Selected: {selectedFile.name} ({(selectedFile.size / 1024).toFixed(1)} KB)
-                          </span>
-                        ) : (
-                          "Supports JPG, PNG, WEBP up to 5MB. Image will be saved safely on Cloudinary."
-                        )}
-                      </p>
                     </div>
                   </div>
                 </div>
 
                 <Input
-                  label="Full Name"
+                  label={t("profile.full_name")}
                   name="name"
                   value={profileForm.name}
                   onChange={(e) => setProfileForm({ ...profileForm, name: e.target.value })}
-                  placeholder="Your full name"
+                  placeholder={t("profile.full_name")}
                   required
                 />
 
                 <Input
-                  label="Email Address"
+                  label={t("profile.email_address")}
                   name="email"
                   type="email"
                   value={user.email}
                   disabled
-                  hint="Email cannot be changed directly for security reasons."
                 />
 
                 <Input
-                  label="Phone Number"
+                  label={t("profile.phone_number")}
                   name="phone"
                   type="tel"
                   value={profileForm.phone}
                   onChange={(e) => setProfileForm({ ...profileForm, phone: e.target.value })}
-                  placeholder="e.g. +1 (555) 000-0000"
+                  placeholder={t("profile.phone_number")}
                 />
 
                 <div className="pt-2">
@@ -584,7 +575,7 @@ const Profile = () => {
                     size="lg"
                     className="w-full sm:w-auto"
                   >
-                    Save & Upload Profile
+                    {t("profile.save_changes")}
                   </Button>
                 </div>
               </form>
@@ -597,10 +588,10 @@ const Profile = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-heading text-xl font-bold text-text-primary">
-                    Saved Shipping Addresses
+                    {t("profile.addresses_title")}
                   </h3>
                   <p className="text-sm text-text-secondary mt-1">
-                    Manage your delivery locations for fast checkout.
+                    {t("profile.addresses_subtitle")}
                   </p>
                 </div>
                 <Button
@@ -608,7 +599,7 @@ const Profile = () => {
                   size="sm"
                   className="gap-2 shrink-0"
                 >
-                  <Plus className="w-4 h-4" /> Add Address
+                  <Plus className="w-4 h-4" /> {t("profile.add_new_address")}
                 </Button>
               </div>
 
@@ -617,27 +608,27 @@ const Profile = () => {
                 <Card className="p-6 border-primary/30 shadow-lg animate-scale-in space-y-4 bg-bg-light-mint/30">
                   <div className="flex items-center justify-between border-b border-border pb-3">
                     <h4 className="font-heading font-bold text-text-primary flex items-center gap-2">
-                      <MapPin className="w-4 h-4 text-primary" /> Add New Address
+                      <MapPin className="w-4 h-4 text-primary" /> {t("profile.add_new_address")}
                     </h4>
                     <button
                       type="button"
                       onClick={() => setShowAddAddressModal(false)}
                       className="text-xs text-text-tertiary hover:text-error"
                     >
-                      Cancel
+                      {t("seller.cancel")}
                     </button>
                   </div>
                   <form onSubmit={handleAddressSubmit} className="space-y-3">
                     <div className="grid grid-cols-2 gap-3">
                       <Input
-                        label="First Name"
+                        label={t("addaddress.first_name")}
                         name="firstName"
                         value={addressForm.firstName}
                         onChange={(e) => setAddressForm({ ...addressForm, firstName: e.target.value })}
                         required
                       />
                       <Input
-                        label="Last Name"
+                        label={t("addaddress.last_name")}
                         name="lastName"
                         value={addressForm.lastName}
                         onChange={(e) => setAddressForm({ ...addressForm, lastName: e.target.value })}
@@ -645,7 +636,7 @@ const Profile = () => {
                       />
                     </div>
                     <Input
-                      label="Email"
+                      label={t("addaddress.email")}
                       name="email"
                       type="email"
                       value={addressForm.email}
@@ -653,7 +644,7 @@ const Profile = () => {
                       required
                     />
                     <Input
-                      label="Street Address"
+                      label={t("addaddress.street")}
                       name="street"
                       value={addressForm.street}
                       onChange={(e) => setAddressForm({ ...addressForm, street: e.target.value })}
@@ -661,14 +652,14 @@ const Profile = () => {
                     />
                     <div className="grid grid-cols-2 gap-3">
                       <Input
-                        label="City"
+                        label={t("addaddress.city")}
                         name="city"
                         value={addressForm.city}
                         onChange={(e) => setAddressForm({ ...addressForm, city: e.target.value })}
                         required
                       />
                       <Input
-                        label="State / Province"
+                        label={t("addaddress.state")}
                         name="state"
                         value={addressForm.state}
                         onChange={(e) => setAddressForm({ ...addressForm, state: e.target.value })}
@@ -677,14 +668,14 @@ const Profile = () => {
                     </div>
                     <div className="grid grid-cols-2 gap-3">
                       <Input
-                        label="Zip / Postal Code"
+                        label={t("addaddress.zip")}
                         name="zipCode"
                         value={addressForm.zipCode}
                         onChange={(e) => setAddressForm({ ...addressForm, zipCode: e.target.value })}
                         required
                       />
                       <Input
-                        label="Country"
+                        label={t("addaddress.country")}
                         name="country"
                         value={addressForm.country}
                         onChange={(e) => setAddressForm({ ...addressForm, country: e.target.value })}
@@ -692,7 +683,7 @@ const Profile = () => {
                       />
                     </div>
                     <Input
-                      label="Phone"
+                      label={t("addaddress.phone")}
                       name="phone"
                       type="tel"
                       value={addressForm.phone}
@@ -701,14 +692,14 @@ const Profile = () => {
                     />
                     <div className="flex gap-3 pt-2">
                       <Button type="submit" loading={savingAddress} className="flex-1">
-                        Save Address
+                        {t("addaddress.save")}
                       </Button>
                       <Button
                         type="button"
                         variant="outline"
                         onClick={() => setShowAddAddressModal(false)}
                       >
-                        Cancel
+                        {t("seller.cancel")}
                       </Button>
                     </div>
                   </form>
@@ -724,11 +715,11 @@ const Profile = () => {
               ) : addresses.length === 0 ? (
                 <EmptyState
                   icon={MapPin}
-                  title="No addresses saved"
-                  description="Add your delivery address for a smooth checkout experience."
+                  title={t("profile.no_addresses")}
+                  description={t("profile.no_addresses_desc")}
                   action={
                     <Button onClick={() => setShowAddAddressModal(true)} size="sm">
-                      Add Address Now
+                      {t("profile.add_new_address")}
                     </Button>
                   }
                 />
@@ -744,14 +735,14 @@ const Profile = () => {
                           <p className="font-heading font-bold text-text-primary">
                             {addr.firstName} {addr.lastName}
                           </p>
-                          <Badge variant="outline">Saved</Badge>
+                          <Badge variant="outline">{t("profile.addresses")}</Badge>
                         </div>
                         <p className="text-sm text-text-secondary">{addr.street}</p>
                         <p className="text-sm text-text-secondary">
                           {addr.city}, {addr.state} {addr.zipCode}
                         </p>
                         <p className="text-sm text-text-secondary">{addr.country}</p>
-                        <p className="text-xs text-text-tertiary mt-2">Phone: {addr.phone}</p>
+                        <p className="text-xs text-text-tertiary mt-2">{t("addaddress.phone")}: {addr.phone}</p>
                       </div>
                       <div className="pt-2 border-t border-border/60 flex justify-end">
                         <button
@@ -759,7 +750,7 @@ const Profile = () => {
                           onClick={() => handleDeleteAddress(addr._id)}
                           className="text-xs font-semibold text-error hover:bg-error/10 px-2.5 py-1 rounded-[10px] transition-colors flex items-center gap-1 cursor-pointer"
                         >
-                          <Trash2 className="w-3.5 h-3.5" /> Remove
+                          <Trash2 className="w-3.5 h-3.5" /> {t("seller.delete")}
                         </button>
                       </div>
                     </Card>
@@ -775,14 +766,14 @@ const Profile = () => {
               <div className="flex items-center justify-between">
                 <div>
                   <h3 className="font-heading text-xl font-bold text-text-primary">
-                    Recent Orders
+                    {t("profile.orders_title")}
                   </h3>
                   <p className="text-sm text-text-secondary mt-1">
-                    Check current order status or view purchase history.
+                    {t("profile.orders_subtitle")}
                   </p>
                 </div>
                 <Button onClick={() => navigate("/my-orders")} variant="outline" size="sm">
-                  View Full Orders Page &rarr;
+                  {t("profile.view_all_orders")} &rarr;
                 </Button>
               </div>
 
@@ -794,9 +785,9 @@ const Profile = () => {
               ) : recentOrders.length === 0 ? (
                 <EmptyState
                   icon={ShoppingBag}
-                  title="No past orders"
-                  description="Start exploring our grocery selection!"
-                  action={<Button onClick={() => navigate("/products")}>Start Shopping</Button>}
+                  title={t("myorder.no_orders")}
+                  description={t("myorder.no_orders_desc")}
+                  action={<Button onClick={() => navigate("/products")}>{t("myorder.start_shopping")}</Button>}
                 />
               ) : (
                 <div className="space-y-4">
@@ -810,10 +801,10 @@ const Profile = () => {
                           </Badge>
                         </div>
                         <p className="text-sm font-semibold text-text-primary">
-                          {order.items?.length || 0} item(s) · {currency}{order.amount}
+                          {order.items?.length || 0} {t("myorder.qty")} · {formatPrice(order.amount, currency)}
                         </p>
                         <p className="text-xs text-text-tertiary flex items-center gap-1">
-                          <Clock className="w-3 h-3" /> {new Date(order.createdAt).toLocaleDateString()}
+                          <Clock className="w-3 h-3" /> {new Date(order.createdAt).toLocaleDateString(language)}
                         </p>
                       </div>
                       <Button
@@ -821,7 +812,7 @@ const Profile = () => {
                         size="sm"
                         onClick={() => navigate("/my-orders")}
                       >
-                        View Order Details
+                        {t("myorder.order_id")}
                       </Button>
                     </Card>
                   ))}
@@ -835,53 +826,53 @@ const Profile = () => {
             <Card className="p-6 md:p-8 space-y-6">
               <div>
                 <h3 className="font-heading text-xl font-bold text-text-primary">
-                  Security Settings
+                  {t("profile.security_title")}
                 </h3>
                 <p className="text-sm text-text-secondary mt-1">
-                  Change your password to keep your account safe and secure.
+                  {t("profile.security_subtitle")}
                 </p>
               </div>
 
               <form onSubmit={handlePasswordSubmit} className="space-y-4">
                 <Input
-                  label="Current Password"
+                  label={t("profile.current_password")}
                   type="password"
                   name="currentPassword"
                   value={passwordForm.currentPassword}
                   onChange={(e) =>
                     setPasswordForm({ ...passwordForm, currentPassword: e.target.value })
                   }
-                  placeholder="Enter current password"
+                  placeholder={t("profile.current_password")}
                   required
                 />
 
                 <Input
-                  label="New Password"
+                  label={t("profile.new_password")}
                   type="password"
                   name="newPassword"
                   value={passwordForm.newPassword}
                   onChange={(e) =>
                     setPasswordForm({ ...passwordForm, newPassword: e.target.value })
                   }
-                  placeholder="Minimum 6 characters"
+                  placeholder={t("profile.new_password")}
                   required
                 />
 
                 <Input
-                  label="Confirm New Password"
+                  label={t("profile.confirm_password")}
                   type="password"
                   name="confirmPassword"
                   value={passwordForm.confirmPassword}
                   onChange={(e) =>
                     setPasswordForm({ ...passwordForm, confirmPassword: e.target.value })
                   }
-                  placeholder="Re-enter new password"
+                  placeholder={t("profile.confirm_password")}
                   required
                 />
 
                 <div className="pt-2">
                   <Button type="submit" loading={changingPassword} size="lg" className="w-full sm:w-auto">
-                    Update Password
+                    {t("profile.update_password")}
                   </Button>
                 </div>
               </form>

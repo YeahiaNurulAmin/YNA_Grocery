@@ -5,25 +5,27 @@
 import { useState } from "react";
 import { ChevronDown } from "lucide-react";
 import { Card, SectionHeader } from "../components/ui";
-
-const faqs = [
-  { q: "How fast is delivery?", a: "Most orders in covered areas arrive the same day. Exact windows depend on your city and order time." },
-  { q: "What payment methods do you accept?", a: "Cash on delivery and online payment via Stripe are both supported at checkout." },
-  { q: "Can I change my delivery address?", a: "Add a new address from checkout or the Add Address page, then select it before placing your order." },
-  { q: "How do refunds work?", a: "Contact support with your order ID. Eligible refunds are processed according to our return policy." },
-  { q: "Do you deliver outside major cities?", a: "We’re expanding across Saudi Arabia and the Middle East. Check availability at checkout." },
-  { q: "Are products organic?", a: "Many items are organic or farm-fresh. Product pages list category and quality details." },
-];
+import { useLanguage } from "../context/LanguageContext";
 
 const FAQ = () => {
   const [open, setOpen] = useState(0);
+  const { t } = useLanguage();
+
+  const faqs = [
+    { q: t("faq.q1"), a: t("faq.a1") },
+    { q: t("faq.q2"), a: t("faq.a2") },
+    { q: t("faq.q3"), a: t("faq.a3") },
+    { q: t("faq.q4"), a: t("faq.a4") },
+    { q: t("faq.q5"), a: t("faq.a5") },
+    { q: t("faq.q6"), a: t("faq.a6") },
+  ];
 
   return (
     <div className="py-10 md:py-14 mb-nav animate-fade-in max-w-3xl mx-auto">
       <SectionHeader
-        eyebrow="Help"
-        title="Frequently asked questions"
-        subtitle="Quick answers about shopping, delivery, and payments."
+        eyebrow={t("faq.eyebrow")}
+        title={t("faq.title")}
+        subtitle={t("faq.subtitle")}
       />
       <div className="space-y-3">
         {faqs.map((item, i) => (

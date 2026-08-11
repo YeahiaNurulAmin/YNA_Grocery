@@ -1,11 +1,13 @@
 /**
- * ProductDetails — Apple Store–inspired PDP with gallery, sticky purchase panel, related items.
+ * ProductDetails — PDP with gallery, sticky purchase panel, related items.
  * Route: /products/:category/:id
+ * Fully localized for Arabic & multi-language.
  */
 import React, { useEffect } from "react";
 import { Link, useParams } from "react-router-dom";
 import { Star, ShoppingBag, Zap, Package } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
+import { useLanguage } from "../context/LanguageContext";
 import ProductCard from "../components/ProductCard";
 import { isValidOffer, getUnitPrice } from "../components/ProductFilters";
 import { Button, Badge, Card, SectionHeader, EmptyState, Skeleton } from "../components/ui";
@@ -14,6 +16,7 @@ const firstProductImage = (p) => p?.images?.[0] || p?.image?.[0] || null;
 
 const ProductDetails = () => {
   const { products, productsLoading, navigate, addToCart, currency } = useAppContext();
+  const { t, tCategory, formatPrice } = useLanguage();
   const { id } = useParams();
   const [product, setProduct] = React.useState(() => products.find((p) => p._id === id));
   const [relatedProducts, setRelatedProducts] = React.useState([]);
@@ -52,11 +55,11 @@ const ProductDetails = () => {
       <div className="py-16 mb-nav">
         <EmptyState
           icon={Package}
-          title="Product not found"
-          description="This product doesn’t exist or is no longer available."
+          title={t("product.not_found")}
+          description={t("product.not_found_desc")}
           action={
             <Button asChild>
-              <Link to="/products">Browse products</Link>
+              <Link to="/products">{t("product.browse")}</Link>
             </Button>
           }
         />
@@ -71,12 +74,12 @@ const ProductDetails = () => {
   return (
     <div className="py-8 md:py-12 mb-nav animate-fade-in">
       <nav className="text-sm text-text-tertiary mb-6 flex flex-wrap gap-1">
-        <Link className="hover:text-primary" to="/">Home</Link>
+        <Link className="hover:text-primary" to="/">{t("nav.home")}</Link>
         <span>/</span>
-        <Link className="hover:text-primary" to="/products">Products</Link>
+        <Link className="hover:text-primary" to="/products">{t("nav.products")}</Link>
         <span>/</span>
         <Link className="hover:text-primary" to={`/products/${product.category.toLowerCase()}`}>
-          {product.category}
+          {tCategory(product.category)}
         </Link>
         <span>/</span>
         <span className="text-text-primary">{product.name}</span>
@@ -114,7 +117,7 @@ const ProductDetails = () => {
         <div className="lg:sticky lg:top-28 self-start space-y-6">
           <div>
             <p className="text-xs font-semibold uppercase tracking-wider text-accent mb-2">
-              {product.category}
+              {tCategory(product.category)}
             </p>
             <h1 className="font-heading text-3xl md:text-4xl font-bold text-text-primary tracking-tight">
               {product.name}
@@ -127,11 +130,11 @@ const ProductDetails = () => {
                   strokeWidth={0}
                 />
               ))}
-              <span className="text-sm text-text-tertiary ml-1">({product.rating || 0})</span>
+              <span className="text-sm text-text-tertiary mx-1">({product.rating || 0})</span>
               {product.inStock ? (
-                <Badge variant="success" className="ml-2">In stock</Badge>
+                <Badge variant="success" className="mx-2">{t("product.in_stock")}</Badge>
               ) : (
-                <Badge variant="error" className="ml-2">Out of stock</Badge>
+                <Badge variant="error" className="mx-2">{t("product.out_of_stock")}</Badge>
               )}
             </div>
           </div>
@@ -139,19 +142,19 @@ const ProductDetails = () => {
           <div>
             <div className="flex items-baseline gap-3">
               <span className="font-heading text-3xl font-bold text-text-primary">
-                {currency}{unitPrice}
+                {formatPrice(unitPrice, currency)}
               </span>
               {hasOffer && (
                 <span className="text-text-tertiary line-through text-lg">
-                  {currency}{product.price}
+                  {formatPrice(product.price, currency)}
                 </span>
               )}
             </div>
-            <p className="text-xs text-text-tertiary mt-1">Inclusive of all taxes</p>
+            <p className="text-xs text-text-tertiary mt-1">{t("product.inclusive_tax")}</p>
           </div>
 
           <Card className="p-5!" padding={false}>
-            <h3 className="font-heading font-semibold text-text-primary mb-3">About this product</h3>
+            <h3 className="font-heading font-semibold text-text-primary mb-3">{t("product.about")}</h3>
             <ul className="space-y-2">
               {(product.description || []).map((desc, index) => (
                 <li key={index} className="text-sm text-text-secondary flex gap-2">
@@ -170,7 +173,7 @@ const ProductDetails = () => {
               disabled={!product.inStock}
               onClick={() => addToCart(product._id)}
             >
-              <ShoppingBag className="w-4 h-4" /> Add to Cart
+              <ShoppingBag className="w-4 h-4" /> {t("product.add_to_cart_full")}
             </Button>
             <Button
               size="lg"
@@ -181,14 +184,14 @@ const ProductDetails = () => {
                 navigate("/cart");
               }}
             >
-              <Zap className="w-4 h-4" /> Buy Now
+              <Zap className="w-4 h-4" /> {t("product.buy_now")}
             </Button>
           </div>
 
           <Card className="p-5! bg-surface-muted/50">
-            <h3 className="font-heading font-semibold text-sm text-text-primary mb-2">Reviews</h3>
+            <h3 className="font-heading font-semibold text-sm text-text-primary mb-2">{t("product.reviews")}</h3>
             <p className="text-sm text-text-tertiary">
-              Customer reviews coming soon. Rated {product.rating || 0}/5 by early shoppers.
+              {t("product.reviews_soon")} {product.rating || 0}/5 {t("product.reviews_by")}
             </p>
           </Card>
         </div>
@@ -196,7 +199,7 @@ const ProductDetails = () => {
 
       {relatedProducts.filter((p) => p.inStock).length > 0 && (
         <section className="mt-16 md:mt-20">
-          <SectionHeader title="Related products" subtitle="More from this category" />
+          <SectionHeader title={t("product.related_products")} subtitle={t("product.more_from")} />
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-3 md:gap-5">
             {relatedProducts.filter((p) => p.inStock).map((p) => (
               <ProductCard key={p._id} product={p} />
@@ -204,7 +207,7 @@ const ProductDetails = () => {
           </div>
           <div className="flex justify-center mt-10">
             <Button variant="outline" onClick={() => { navigate("/products"); scrollTo(0, 0); }}>
-              See more
+              {t("product.see_more")}
             </Button>
           </div>
         </section>

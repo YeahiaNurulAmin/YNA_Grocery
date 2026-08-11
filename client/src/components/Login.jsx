@@ -5,6 +5,7 @@
 import React, { useEffect, useRef, useState } from "react";
 import { X, Mail, Lock, User } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
+import { useLanguage } from "../context/LanguageContext";
 import { Button, Input } from "./ui";
 import { YNALogo } from "../assets/YNALogo";
 import toast from "react-hot-toast";
@@ -15,6 +16,7 @@ const FOCUSABLE =
 const Login = () => {
   const [state, setState] = useState("login");
   const { setShowUserLogin, setUser, axios, navigate } = useAppContext();
+  const { t, isRTL } = useLanguage();
   const [loading, setLoading] = useState(false);
   const [formData, setFormData] = useState({ name: "", email: "", password: "" });
   const dialogRef = useRef(null);
@@ -70,7 +72,7 @@ const Login = () => {
   const submitHandler = async (event) => {
     event.preventDefault();
     if (state === "forgot") {
-      toast.error("Password reset is not available yet. Please contact support.");
+      toast.error(t("auth.reset_unavailable"));
       setState("login");
       return;
     }
@@ -86,7 +88,7 @@ const Login = () => {
         toast.error(data.message);
       }
     } catch (error) {
-      toast.error("An error occurred while logging in");
+      toast.error(t("auth.login_error"));
       console.error("Error in submitHandler", error);
     } finally {
       setLoading(false);
@@ -94,9 +96,9 @@ const Login = () => {
   };
 
   const titles = {
-    login: { h: "Welcome back", p: "Sign in to continue shopping" },
-    register: { h: "Create account", p: "Join YNA Grocery in a minute" },
-    forgot: { h: "Reset password", p: "Password reset is not available yet" },
+    login:    { h: t("auth.login_title"),  p: t("auth.login_desc") },
+    register: { h: t("auth.signup_title"), p: t("auth.signup_desc") },
+    forgot:   { h: t("auth.reset_password"),      p: t("auth.reset_unavailable") },
   };
 
   return (
@@ -117,7 +119,7 @@ const Login = () => {
         <button
           type="button"
           onClick={close}
-          className="absolute top-4 right-4 w-9 h-9 rounded-[12px] flex items-center justify-center text-text-tertiary hover:bg-surface-muted cursor-pointer"
+          className={`absolute top-4 ${isRTL ? "left-4" : "right-4"} w-9 h-9 rounded-[12px] flex items-center justify-center text-text-tertiary hover:bg-surface-muted cursor-pointer`}
           aria-label="Close"
         >
           <X className="w-4 h-4" />
@@ -135,43 +137,46 @@ const Login = () => {
         <div className="mt-7 space-y-4">
           {state === "register" && (
             <div className="relative">
-              <User className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary pointer-events-none" />
+              <User className={`absolute ${isRTL ? "right-4" : "left-4"} top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary pointer-events-none`} />
               <Input
                 name="name"
                 value={formData.name}
                 onChange={handleChange}
-                placeholder="Full name"
+                placeholder={t("auth.name")}
                 required
-                className="pl-11"
+                className={isRTL ? "pr-11 text-right" : "pl-11"}
                 autoComplete="name"
+                dir={isRTL ? "rtl" : "ltr"}
               />
             </div>
           )}
           <div className="relative">
-            <Mail className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary pointer-events-none" />
+            <Mail className={`absolute ${isRTL ? "right-4" : "left-4"} top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary pointer-events-none`} />
             <Input
               name="email"
               type="email"
               value={formData.email}
               onChange={handleChange}
-              placeholder="Email"
+              placeholder={t("auth.email")}
               required
-              className="pl-11"
+              className={isRTL ? "pr-11 text-right" : "pl-11"}
               autoComplete="email"
+              dir="ltr"
             />
           </div>
           {state !== "forgot" && (
             <div className="relative">
-              <Lock className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary pointer-events-none" />
+              <Lock className={`absolute ${isRTL ? "right-4" : "left-4"} top-1/2 -translate-y-1/2 w-4 h-4 text-text-tertiary pointer-events-none`} />
               <Input
                 name="password"
                 type="password"
                 value={formData.password}
                 onChange={handleChange}
-                placeholder="Password"
+                placeholder={t("auth.password")}
                 required
-                className="pl-11"
+                className={isRTL ? "pr-11 text-right" : "pl-11"}
                 autoComplete={state === "login" ? "current-password" : "new-password"}
+                dir="ltr"
               />
             </div>
           )}
@@ -183,34 +188,34 @@ const Login = () => {
             onClick={() => setState("forgot")}
             className="mt-3 text-xs text-accent hover:text-accent-dark font-medium cursor-pointer"
           >
-            Forgot password?
+            {t("auth.forgot_password")}
           </button>
         )}
 
         <Button type="submit" className="w-full mt-6" size="lg" loading={loading}>
-          {state === "login" ? "Sign in" : state === "register" ? "Create account" : "Continue"}
+          {state === "login" ? t("auth.submit_login") : state === "register" ? t("auth.submit_signup") : t("auth.submit_login")}
         </Button>
 
         <p className="mt-5 text-center text-sm text-text-secondary">
           {state === "login" && (
             <>
-              New here?{" "}
+              {t("auth.no_account")}{" "}
               <button type="button" onClick={() => setState("register")} className="text-primary font-semibold cursor-pointer">
-                Create account
+                {t("auth.sign_up_now")}
               </button>
             </>
           )}
           {state === "register" && (
             <>
-              Already have an account?{" "}
+              {t("auth.has_account")}{" "}
               <button type="button" onClick={() => setState("login")} className="text-primary font-semibold cursor-pointer">
-                Sign in
+                {t("auth.sign_in_now")}
               </button>
             </>
           )}
           {state === "forgot" && (
             <button type="button" onClick={() => setState("login")} className="text-primary font-semibold cursor-pointer">
-              Back to sign in
+              {t("auth.sign_in_now")}
             </button>
           )}
         </p>

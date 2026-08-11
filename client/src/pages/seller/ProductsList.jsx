@@ -1,16 +1,18 @@
 /**
  * ProductsList — seller product table with stock toggle, edit, delete.
  * Route: /seller/products
+ * Fully localized for Arabic & multi-language with RTL support.
  */
 import { useEffect, useState } from "react";
-import { Pencil, Trash2, Check, X } from "lucide-react";
+import { Pencil, Trash2, Check, X, Package } from "lucide-react";
 import { useAppContext } from "../../context/AppContext";
+import { useLanguage } from "../../context/LanguageContext";
 import { Card, Badge, Button, SectionHeader, EmptyState } from "../../components/ui";
-import { Package } from "lucide-react";
 import toast from "react-hot-toast";
 
 const ProductsList = () => {
   const { products, currency, fetchProducts, axios, navigate } = useAppContext();
+  const { t, tCategory, isRTL, formatPrice } = useLanguage();
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
 
   useEffect(() => {
@@ -23,14 +25,14 @@ const ProductsList = () => {
         data: { id: productId },
       });
       if (data.message === "Product deleted successfully") {
-        toast.success("Product deleted successfully");
+        toast.success(t("seller.delete"));
         setConfirmDeleteId(null);
         fetchProducts();
       } else {
-        toast.error("Error deleting product");
+        toast.error(t("seller.product_delete_error"));
       }
     } catch (error) {
-      toast.error("Error deleting product");
+      toast.error(t("seller.product_delete_error"));
       console.error("Error deleting product:", error);
     }
   };
@@ -42,13 +44,13 @@ const ProductsList = () => {
         inStock: !currentStockStatus,
       });
       if (data.success) {
-        toast.success("Product stock status changed successfully");
+        toast.success(t("seller.stock_changed"));
         fetchProducts();
       } else {
-        toast.error("Error changing product stock status");
+        toast.error(t("seller.stock_change_error"));
       }
     } catch (error) {
-      toast.error("Error changing product stock status");
+      toast.error(t("seller.stock_change_error"));
       console.error("Error changing product stock status:", error);
     }
   };
@@ -56,12 +58,12 @@ const ProductsList = () => {
   return (
     <div className="animate-fade-in max-w-6xl">
       <SectionHeader
-        eyebrow="Catalog"
-        title="Products"
-        subtitle="Manage stock, pricing, and listings."
+        eyebrow={t("seller.store_section")}
+        title={t("seller.products_list")}
+        subtitle={t("seller.active_products")}
         action={
           <Button size="sm" onClick={() => navigate("/seller")}>
-            Add product
+            {t("seller.add_product")}
           </Button>
         }
       />
@@ -69,22 +71,22 @@ const ProductsList = () => {
       {products.length === 0 ? (
         <EmptyState
           icon={Package}
-          title="No products yet"
-          description="Add your first grocery item to get started."
-          action={<Button onClick={() => navigate("/seller")}>Add product</Button>}
+          title={t("product.no_products")}
+          description={t("category.nothing_stock_desc")}
+          action={<Button onClick={() => navigate("/seller")}>{t("seller.add_product")}</Button>}
         />
       ) : (
         <Card className="p-0! overflow-hidden">
           <div className="overflow-x-auto">
             <table className="w-full text-sm">
               <thead>
-                <tr className="text-left text-xs uppercase tracking-wider text-text-tertiary bg-surface-muted/60 border-b border-border">
-                  <th className="px-4 py-3 font-semibold">Product</th>
-                  <th className="px-4 py-3 font-semibold hidden sm:table-cell">Category</th>
-                  <th className="px-4 py-3 font-semibold">Price</th>
-                  <th className="px-4 py-3 font-semibold hidden md:table-cell">Offer</th>
-                  <th className="px-4 py-3 font-semibold">Stock</th>
-                  <th className="px-4 py-3 font-semibold">Actions</th>
+                <tr className={`text-xs uppercase tracking-wider text-text-tertiary bg-surface-muted/60 border-b border-border ${isRTL ? "text-right" : "text-left"}`}>
+                  <th className="px-4 py-3 font-semibold">{t("seller.title")}</th>
+                  <th className="px-4 py-3 font-semibold hidden sm:table-cell">{t("seller.category")}</th>
+                  <th className="px-4 py-3 font-semibold">{t("seller.price")}</th>
+                  <th className="px-4 py-3 font-semibold hidden md:table-cell">{t("seller.offer_price")}</th>
+                  <th className="px-4 py-3 font-semibold">{t("seller.stock")}</th>
+                  <th className="px-4 py-3 font-semibold">{t("seller.action")}</th>
                 </tr>
               </thead>
               <tbody>
@@ -108,23 +110,23 @@ const ProductsList = () => {
                       </div>
                     </td>
                     <td className="px-4 py-3 hidden sm:table-cell text-text-secondary">
-                      {product.category}
+                      {tCategory(product.category)}
                     </td>
                     <td className="px-4 py-3 font-medium">
-                      {currency}{product.price}
+                      {formatPrice(product.price, currency)}
                     </td>
                     <td className="px-4 py-3 hidden md:table-cell text-text-secondary">
-                      {currency}{product.offerPrice}
+                      {formatPrice(product.offerPrice, currency)}
                     </td>
                     <td className="px-4 py-3">
                       <button
                         type="button"
                         onClick={() => handleToggleStock(product._id, product.inStock)}
                         className="cursor-pointer"
-                        aria-label="Toggle stock"
+                        aria-label={t("seller.toggle_stock_aria")}
                       >
                         <Badge variant={product.inStock ? "success" : "error"}>
-                          {product.inStock ? "In stock" : "Out"}
+                          {product.inStock ? t("product.in_stock_badge") : t("product.out_of_stock_badge")}
                         </Badge>
                       </button>
                     </td>
@@ -134,7 +136,8 @@ const ProductsList = () => {
                           type="button"
                           onClick={() => navigate(`/seller/update-product/${product._id}`)}
                           className="w-9 h-9 rounded-[12px] border border-border flex items-center justify-center text-text-secondary hover:text-primary hover:border-primary/40 cursor-pointer"
-                          aria-label="Edit"
+                          aria-label={t("seller.edit")}
+                          title={t("seller.edit")}
                         >
                           <Pencil className="w-3.5 h-3.5" />
                         </button>
@@ -144,7 +147,7 @@ const ProductsList = () => {
                               type="button"
                               onClick={() => handleDeleteProduct(product._id)}
                               className="w-9 h-9 rounded-[12px] bg-error text-white flex items-center justify-center cursor-pointer"
-                              aria-label="Confirm delete"
+                              aria-label={t("seller.delete")}
                             >
                               <Check className="w-3.5 h-3.5" />
                             </button>
@@ -152,7 +155,7 @@ const ProductsList = () => {
                               type="button"
                               onClick={() => setConfirmDeleteId(null)}
                               className="w-9 h-9 rounded-[12px] bg-surface-muted flex items-center justify-center cursor-pointer"
-                              aria-label="Cancel delete"
+                              aria-label={t("seller.cancel")}
                             >
                               <X className="w-3.5 h-3.5" />
                             </button>
@@ -162,7 +165,8 @@ const ProductsList = () => {
                             type="button"
                             onClick={() => setConfirmDeleteId(product._id)}
                             className="w-9 h-9 rounded-[12px] border border-border flex items-center justify-center text-text-secondary hover:text-error hover:border-error/40 cursor-pointer"
-                            aria-label="Delete"
+                            aria-label={t("seller.delete")}
+                            title={t("seller.delete")}
                           >
                             <Trash2 className="w-3.5 h-3.5" />
                           </button>

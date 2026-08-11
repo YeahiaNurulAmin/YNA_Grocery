@@ -1,11 +1,13 @@
 import React, { useEffect, useCallback } from 'react'
 import { useAppContext } from '../../context/AppContext'
-import { assets, dummyOrders } from '../../assets/assets';
+import { useLanguage } from '../../context/LanguageContext'
+import { assets } from '../../assets/assets';
 import toast from 'react-hot-toast';
 import { socket } from '../../configs/socket';
 
 const OrderHistory = () => {
     const { currency, axios } = useAppContext();
+    const { t, isRTL, formatPrice } = useLanguage();
     const [orders, setOrders] = React.useState([]);
     const [searchQuery, setSearchQuery] = React.useState("");
     const [sortBy, setSortBy] = React.useState("date-desc");
@@ -16,21 +18,20 @@ const OrderHistory = () => {
             if (!isSilent) setLoading(true);
             const { data } = await axios.get("/api/order/seller");
             if (data.success) {
-                // Filter only Delivered and Cancelled orders
                 const historyOrders = data.orders.filter(
                     order => order.status === "Delivered" || order.status === "Cancelled"
                 );
                 setOrders(historyOrders);
             } else if (!isSilent) {
-                toast.error(data.message || "Failed to fetch orders");
+                toast.error(data.message || t("seller.couldnt_load_orders"));
             }
         } catch (error) {
-            if (!isSilent) toast.error("Failed to fetch orders");
+            if (!isSilent) toast.error(t("seller.couldnt_load_orders"));
             console.error("Error fetching orders:", error);
         } finally {
             if (!isSilent) setLoading(false);
         }
-    }, [axios]);
+    }, [axios, t]);
 
     useEffect(() => {
         fetchOrders(false);
@@ -55,7 +56,6 @@ const OrderHistory = () => {
         };
     }, [fetchOrders]);
 
-    // Filter by search query (name, email, phone, order ID)
     const filteredOrders = orders.filter(order => {
         if (!searchQuery) return true;
         const query = searchQuery.toLowerCase().trim();
@@ -71,7 +71,6 @@ const OrderHistory = () => {
                id.includes(query);
     });
 
-    // Sort
     const sortedOrders = [...filteredOrders].sort((a, b) => {
         if (sortBy === "date-desc") return new Date(b.createdAt) - new Date(a.createdAt);
         if (sortBy === "date-asc") return new Date(a.createdAt) - new Date(b.createdAt);
@@ -85,14 +84,14 @@ const OrderHistory = () => {
             return (
                 <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700 uppercase tracking-wider">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>
-                    Delivered
+                    {t("status.delivered")}
                 </span>
             );
         }
         return (
             <span className="inline-flex items-center gap-1 text-[10px] font-bold px-2 py-0.5 rounded-full bg-red-100 text-red-600 uppercase tracking-wider">
                 <span className="w-1.5 h-1.5 rounded-full bg-red-500 inline-block"></span>
-                Cancelled
+                {t("status.cancelled")}
             </span>
         );
     };
@@ -100,10 +99,10 @@ const OrderHistory = () => {
     const renderOrderCard = (order, index) => (
         <div
             key={order._id || index}
-            className={`flex flex-col md:grid md:grid-cols-[2fr_1fr_1fr_1fr] md:items-center gap-5 p-5 max-w-4xl rounded-md border bg-white text-gray-800 shadow-sm relative overflow-hidden transition-all duration-300 hover:shadow-md ${
+            className={`flex flex-col md:grid md:grid-cols-[2fr_1fr_1fr_1fr] md:items-center gap-5 p-5 max-w-4xl rounded-md border bg-bg-white text-text-primary shadow-sm relative overflow-hidden transition-all duration-300 hover:shadow-md ${
                 order.status === "Delivered"
-                    ? "border-l-4 border-l-green-500 border-gray-200"
-                    : "border-l-4 border-l-red-400 border-gray-200 opacity-90 hover:opacity-100"
+                    ? "border-l-4 border-l-green-500 border-border"
+                    : "border-l-4 border-l-red-400 border-border opacity-90 hover:opacity-100"
             }`}
         >
             <div className="flex gap-5">
@@ -111,38 +110,38 @@ const OrderHistory = () => {
                 <div className="flex flex-col justify-center gap-2">
                     {order.items?.map((item, itemIdx) => (
                         <div key={itemIdx}>
-                            <p className="font-bold text-gray-900">
-                                {item.product?.name || "Unknown Product"}
-                                <span className={`text-primary ml-1 ${item.quantity < 2 && "hidden"}`}>x {item.quantity}</span>
+                            <p className="font-bold text-text-primary">
+                                {item.product?.name || "Product"}
+                                <span className={`text-primary mx-1 ${item.quantity < 2 && "hidden"}`}>x {item.quantity}</span>
                             </p>
                         </div>
                     ))}
                 </div>
             </div>
 
-            <div className="text-sm text-gray-600">
-                <p className="font-bold text-gray-900 mb-1">
+            <div className="text-sm text-text-secondary">
+                <p className="font-bold text-text-primary mb-1">
                     {order.address?.firstName || "N/A"} {order.address?.lastName || ""}
                 </p>
                 <p>{order.address?.street || ""}, {order.address?.city || ""}</p>
                 <p>{order.address?.state || ""}, {order.address?.zipCode || order.address?.zipcode || ""}, {order.address?.country || ""}</p>
-                <p className="mt-1 text-xs">Phone: {order.address?.phone || ""}</p>
+                <p className="mt-1 text-xs">{t("addaddress.phone")}: {order.address?.phone || ""}</p>
             </div>
 
             <div className="flex flex-col gap-2">
-                <p className="font-semibold text-lg text-primary">{currency}{order.amount}</p>
-                <p className="text-xs text-gray-500"><span className="font-medium">Method:</span> {order.paymentType}</p>
-                <p className="text-xs text-gray-500"><span className="font-medium">Date:</span> {new Date(order.createdAt).toLocaleDateString()}</p>
-                <p className="text-xs"><span className="font-medium">Payment:</span>{" "}
+                <p className="font-semibold text-lg text-primary">{formatPrice(order.amount, currency)}</p>
+                <p className="text-xs text-text-tertiary"><span className="font-medium">{t("seller.action")}:</span> {order.paymentType || t("payment.cod")}</p>
+                <p className="text-xs text-text-tertiary"><span className="font-medium">{t("seller.date")}:</span> {new Date(order.createdAt).toLocaleDateString()}</p>
+                <p className="text-xs"><span className="font-medium">{t("seller.status")}:</span>{" "}
                     <span className={order.isPaid ? "text-green-600 font-semibold" : "text-amber-600 font-semibold"}>
-                        {order.isPaid ? "Paid" : "Pending"}
+                        {order.isPaid ? (isRTL ? "تم الدفع" : "Paid") : (isRTL ? "قيد الانتظار" : "Pending")}
                     </span>
                 </p>
             </div>
 
             <div className="flex flex-col gap-2 items-start">
                 {getStatusBadge(order.status)}
-                <p className="text-[10px] text-gray-400 font-mono truncate max-w-[140px]" title={order._id}>
+                <p className="text-[10px] text-text-tertiary font-mono truncate max-w-[140px]" title={order._id}>
                     ID: {order._id?.slice(-8) || "—"}
                 </p>
             </div>
@@ -150,17 +149,17 @@ const OrderHistory = () => {
     );
 
     return (
-        <div className="md:p-10 p-4 space-y-6 no-scrollbar flex-1 h-[95vh] overflow-y-scroll bg-surface/10">
+        <div className="space-y-6 animate-fade-in max-w-5xl">
             {/* Header */}
             <div className="max-w-4xl">
-                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-gray-200">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-border">
                     <div>
-                        <h2 className="text-xl font-semibold text-primary">Order History</h2>
-                        <p className="text-xs text-gray-500 font-medium mt-0.5">
-                            All delivered & cancelled orders
+                        <h2 className="text-xl font-semibold text-primary">{t("seller.order_history")}</h2>
+                        <p className="text-xs text-text-secondary font-medium mt-0.5">
+                            {t("myorder.subtitle")}
                             {!loading && (
-                                <span className="ml-2 bg-gray-100 text-gray-600 font-bold px-2 py-0.5 rounded-full text-[11px]">
-                                    {orders.length} total
+                                <span className="mx-2 bg-surface-muted text-text-secondary font-bold px-2 py-0.5 rounded-full text-[11px]">
+                                    {orders.length}
                                 </span>
                             )}
                         </p>
@@ -171,18 +170,15 @@ const OrderHistory = () => {
                         <div className="relative flex-1 sm:w-64">
                             <input
                                 type="text"
-                                placeholder="Search by name, email, phone, ID..."
+                                placeholder={t("nav.search_placeholder")}
                                 value={searchQuery}
                                 onChange={(e) => setSearchQuery(e.target.value)}
-                                className="outline-none border border-gray-300 rounded-md pl-8 pr-8 py-1.5 text-xs bg-white focus:border-primary focus:ring-1 focus:ring-primary w-full text-gray-700 font-medium shadow-sm transition"
+                                className={`outline-none border border-border rounded-md ${isRTL ? "pr-8 pl-8" : "pl-8 pr-8"} py-1.5 text-xs bg-bg-white focus:border-primary focus:ring-1 focus:ring-primary w-full text-text-primary font-medium shadow-sm transition`}
                             />
-                            <svg className="w-4 h-4 text-gray-400 absolute left-2.5 top-2.5" fill="none" stroke="currentColor" strokeWidth="2" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                            </svg>
                             {searchQuery && (
                                 <button
                                     onClick={() => setSearchQuery("")}
-                                    className="absolute right-2.5 top-2.5 text-gray-400 hover:text-gray-600 transition"
+                                    className={`absolute ${isRTL ? "left-2.5" : "right-2.5"} top-2.5 text-text-tertiary hover:text-text-primary transition`}
                                 >
                                     <svg className="w-3.5 h-3.5" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
                                         <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
@@ -194,12 +190,12 @@ const OrderHistory = () => {
                         <select
                             value={sortBy}
                             onChange={(e) => setSortBy(e.target.value)}
-                            className="outline-none border border-gray-300 rounded-md px-3 py-1.5 text-xs bg-white focus:border-primary focus:ring-1 focus:ring-primary text-gray-700 font-semibold cursor-pointer shadow-sm hover:border-gray-400 transition"
+                            className="outline-none border border-border rounded-md px-3 py-1.5 text-xs bg-bg-white focus:border-primary focus:ring-1 focus:ring-primary text-text-primary font-semibold cursor-pointer shadow-sm transition"
                         >
-                            <option value="date-desc">Newest First</option>
-                            <option value="date-asc">Oldest First</option>
-                            <option value="amount-desc">Amount: High to Low</option>
-                            <option value="amount-asc">Amount: Low to High</option>
+                            <option value="date-desc">{t("filters.sort_newest")}</option>
+                            <option value="date-asc">{isRTL ? "الأقدم أولاً" : "Oldest First"}</option>
+                            <option value="amount-desc">{t("filters.sort_high_low")}</option>
+                            <option value="amount-asc">{t("filters.sort_low_high")}</option>
                         </select>
                     </div>
                 </div>
@@ -212,19 +208,19 @@ const OrderHistory = () => {
                         <p className="text-xl font-bold text-green-700">
                             {orders.filter(o => o.status === "Delivered").length}
                         </p>
-                        <p className="text-xs text-green-600 font-medium mt-0.5">Delivered</p>
+                        <p className="text-xs text-green-600 font-medium mt-0.5">{t("status.delivered")}</p>
                     </div>
                     <div className="flex-1 bg-red-50 border border-red-200 rounded-lg p-3 text-center">
                         <p className="text-xl font-bold text-red-600">
                             {orders.filter(o => o.status === "Cancelled").length}
                         </p>
-                        <p className="text-xs text-red-500 font-medium mt-0.5">Cancelled</p>
+                        <p className="text-xs text-red-500 font-medium mt-0.5">{t("status.cancelled")}</p>
                     </div>
-                    <div className="flex-1 bg-gray-50 border border-gray-200 rounded-lg p-3 text-center">
-                        <p className="text-xl font-bold text-gray-700">
-                            {currency}{orders.filter(o => o.status === "Delivered").reduce((sum, o) => sum + o.amount, 0).toFixed(2)}
+                    <div className="flex-1 bg-surface-muted border border-border rounded-lg p-3 text-center">
+                        <p className="text-xl font-bold text-text-primary">
+                            {formatPrice(orders.filter(o => o.status === "Delivered").reduce((sum, o) => sum + o.amount, 0), currency)}
                         </p>
-                        <p className="text-xs text-gray-500 font-medium mt-0.5">Revenue (Delivered)</p>
+                        <p className="text-xs text-text-secondary font-medium mt-0.5">{t("seller.total_sales")}</p>
                     </div>
                 </div>
             )}
@@ -232,20 +228,19 @@ const OrderHistory = () => {
             {/* Orders List */}
             <div className="space-y-4">
                 {loading ? (
-                    <div className="text-center py-10 text-gray-500 font-medium max-w-4xl">
-                        Loading order history...
+                    <div className="text-center py-10 text-text-tertiary font-medium max-w-4xl">
+                        ...
                     </div>
                 ) : orders.length === 0 ? (
-                    <div className="text-center py-12 text-gray-500 font-medium max-w-4xl border border-dashed border-gray-300 rounded-lg flex flex-col items-center gap-3">
-                        <svg className="w-10 h-10 text-gray-300" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
+                    <div className="text-center py-12 text-text-tertiary font-medium max-w-4xl border border-dashed border-border rounded-lg flex flex-col items-center gap-3">
+                        <svg className="w-10 h-10 text-text-placeholder" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
                             <path strokeLinecap="round" strokeLinejoin="round" d="M12 6v6h4.5m4.5 0a9 9 0 1 1-18 0 9 9 0 0 1 18 0Z" />
                         </svg>
-                        <p>No completed or cancelled orders yet.</p>
-                        <p className="text-xs text-gray-400">Orders marked as Delivered or Cancelled will appear here.</p>
+                        <p>{t("orders.no_orders")}</p>
                     </div>
                 ) : sortedOrders.length === 0 ? (
-                    <div className="text-center py-10 text-gray-500 font-medium max-w-4xl border border-dashed border-gray-300 rounded-lg">
-                        No orders match "<span className="text-primary font-semibold">{searchQuery}</span>".
+                    <div className="text-center py-10 text-text-tertiary font-medium max-w-4xl border border-dashed border-border rounded-lg">
+                        {t("search.no_matches")} "<span className="text-primary font-semibold">{searchQuery}</span>".
                     </div>
                 ) : (
                     sortedOrders.map((order, index) => renderOrderCard(order, index))

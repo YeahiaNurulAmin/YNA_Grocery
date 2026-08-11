@@ -1,8 +1,10 @@
 /**
  * Footer — site-wide footer for customer routes with brand, links, social.
+ * Translatable via useLanguage hook.
  */
 import { Link } from "react-router-dom";
 import { YNALogo } from "../assets/YNALogo";
+import { useLanguage } from "../context/LanguageContext";
 
 const InstagramIcon = (props) => (
   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round" {...props}>
@@ -38,37 +40,39 @@ const socialLinks = [
   { label: "YouTube", icon: YoutubeIcon, url: "https://youtube.com" },
 ];
 
-const columns = [
-  {
-    title: "Shop",
-    links: [
-      { text: "Home", url: "/" },
-      { text: "All Products", url: "/products" },
-      { text: "Contact", url: "/contact" },
-      { text: "FAQ", url: "/faq" },
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { text: "About", url: "/about" },
-      { text: "Privacy Policy", url: "/privacy" },
-      { text: "Terms of Service", url: "/terms" },
-      { text: "My Orders", url: "/my-orders" },
-    ],
-  },
-  {
-    title: "Help",
-    links: [
-      { text: "Delivery Info", url: "/faq" },
-      { text: "Returns", url: "/faq" },
-      { text: "Payment Methods", url: "/faq" },
-      { text: "Track Order", url: "/my-orders" },
-    ],
-  },
-];
-
 const Footer = () => {
+  const { t } = useLanguage();
+
+  const columns = [
+    {
+      titleKey: "footer.shop",
+      links: [
+        { textKey: "nav.home", url: "/" },
+        { textKey: "nav.all_products", url: "/products" },
+        { textKey: "nav.contact", url: "/contact" },
+        { textKey: "nav.faq", url: "/faq" },
+      ],
+    },
+    {
+      titleKey: "footer.company",
+      links: [
+        { textKey: "nav.about", url: "/about" },
+        { textKey: "nav.privacy", url: "/privacy" },
+        { textKey: "nav.terms", url: "/terms" },
+        { textKey: "nav.orders", url: "/my-orders" },
+      ],
+    },
+    {
+      titleKey: "footer.help",
+      links: [
+        { textKey: "footer.delivery_info", url: "/faq" },
+        { textKey: "footer.returns", url: "/faq" },
+        { textKey: "footer.payment_methods", url: "/faq" },
+        { textKey: "footer.track_order", url: "/my-orders" },
+      ],
+    },
+  ];
+
   return (
     <footer className="mt-auto border-t border-border bg-bg-white">
       <div className="max-w-[1400px] mx-auto px-5 md:px-8 lg:px-12 py-14 md:py-16">
@@ -76,7 +80,7 @@ const Footer = () => {
           <div className="lg:col-span-2">
             <YNALogo size="medium" />
             <p className="mt-5 text-sm text-text-secondary leading-relaxed max-w-sm">
-              Fresh groceries, delivered with care. Premium produce and everyday essentials for families across Saudi Arabia and the Middle East.
+              {t("footer.tagline")}
             </p>
             <div className="flex items-center gap-3 mt-6">
               {socialLinks.map(({ label, icon: Icon, url }) => (
@@ -96,18 +100,18 @@ const Footer = () => {
           </div>
 
           {columns.map((col) => (
-            <div key={col.title}>
+            <div key={col.titleKey}>
               <h3 className="font-heading font-semibold text-text-primary text-sm mb-4">
-                {col.title}
+                {t(col.titleKey)}
               </h3>
               <ul className="space-y-2.5">
                 {col.links.map((link) => (
-                  <li key={link.text}>
+                  <li key={link.textKey}>
                     <Link
                       to={link.url}
                       className="text-sm text-text-secondary hover:text-primary transition-colors"
                     >
-                      {link.text}
+                      {t(link.textKey)}
                     </Link>
                   </li>
                 ))}
@@ -117,8 +121,8 @@ const Footer = () => {
         </div>
 
         <div className="mt-12 pt-6 border-t border-border flex flex-col sm:flex-row justify-between gap-3 text-xs text-text-tertiary">
-          <p>© {new Date().getFullYear()} YNA Grocery. All rights reserved.</p>
-          <p>Fresh groceries, delivered with care.</p>
+          <p>© {new Date().getFullYear()} YNA Grocery. {t("footer.rights")}</p>
+          <p>{t("footer.tagline_short")}</p>
         </div>
       </div>
     </footer>

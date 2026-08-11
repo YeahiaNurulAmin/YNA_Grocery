@@ -1,19 +1,21 @@
 /**
  * ProductFilters — advanced catalog filters & sort controls for the All Products page.
  * Used by AllProducts (desktop sidebar + mobile drawer). Frontend-only; no API changes.
+ * Fully localized with t() and tCategory().
  */
 import { X, SlidersHorizontal } from "lucide-react";
 import { categories } from "../assets/assets";
 import { Button, Badge } from "./ui";
+import { useLanguage } from "../context/LanguageContext";
 
 export const SORT_OPTIONS = [
-  { value: "featured", label: "Featured" },
-  { value: "price-asc", label: "Price: Low to High" },
-  { value: "price-desc", label: "Price: High to Low" },
-  { value: "name-asc", label: "Name: A–Z" },
-  { value: "name-desc", label: "Name: Z–A" },
-  { value: "rating-desc", label: "Top rated" },
-  { value: "discount-desc", label: "Best discount" },
+  { value: "featured", labelKey: "filters.sort_featured" },
+  { value: "price-asc", labelKey: "filters.sort_low_high" },
+  { value: "price-desc", labelKey: "filters.sort_high_low" },
+  { value: "name-asc", labelKey: "filters.sort_name_asc" },
+  { value: "name-desc", labelKey: "filters.sort_name_desc" },
+  { value: "rating-desc", labelKey: "filters.sort_top_rated" },
+  { value: "discount-desc", labelKey: "filters.sort_best_discount" },
 ];
 
 export const DEFAULT_FILTERS = {
@@ -58,84 +60,81 @@ export const applyProductFilters = (products, filters, searchQuery, sort) => {
     list = list.filter((p) => selected.includes(p.category?.toLowerCase()));
   }
 
-  const minP = filters.minPrice === "" ? null : Number(filters.minPrice);
-  const maxP = filters.maxPrice === "" ? null : Number(filters.maxPrice);
-  if (minP != null && !Number.isNaN(minP)) {
-    list = list.filter((p) => getUnitPrice(p) >= minP);
+  if (filters.minPrice !== "") {
+    const min = Number(filters.minPrice);
+    if (!Number.isNaN(min)) {
+      list = list.filter((p) => getUnitPrice(p) >= min);
+    }
   }
-  if (maxP != null && !Number.isNaN(maxP)) {
-    list = list.filter((p) => getUnitPrice(p) <= maxP);
+
+  if (filters.maxPrice !== "") {
+    const max = Number(filters.maxPrice);
+    if (!Number.isNaN(max)) {
+      list = list.filter((p) => getUnitPrice(p) <= max);
+    }
   }
 
   if (filters.minRating > 0) {
-    list = list.filter((p) => (p.rating || 0) >= filters.minRating);
+    list = list.filter((p) => (Number(p.rating) || 4.5) >= filters.minRating);
   }
 
   if (filters.stock === "inStock") {
-    list = list.filter((p) => p.inStock);
+    list = list.filter((p) => (p.stock !== undefined ? p.stock > 0 : true));
   } else if (filters.stock === "outOfStock") {
-    list = list.filter((p) => !p.inStock);
+    list = list.filter((p) => p.stock === 0);
   }
 
   if (filters.onSale) {
-    list = list.filter((p) => getDiscountPercent(p) > 0);
+    list = list.filter(isValidOffer);
   }
 
-  switch (sort) {
-    case "price-asc":
-      list.sort((a, b) => getUnitPrice(a) - getUnitPrice(b));
-      break;
-    case "price-desc":
-      list.sort((a, b) => getUnitPrice(b) - getUnitPrice(a));
-      break;
-    case "name-asc":
-      list.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
-      break;
-    case "name-desc":
-      list.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
-      break;
-    case "rating-desc":
-      list.sort((a, b) => (b.rating || 0) - (a.rating || 0));
-      break;
-    case "discount-desc":
-      list.sort((a, b) => getDiscountPercent(b) - getDiscountPercent(a));
-      break;
-    default:
-      break;
+  if (sort === "price-asc") {
+    list.sort((a, b) => getUnitPrice(a) - getUnitPrice(b));
+  } else if (sort === "price-desc") {
+    list.sort((a, b) => getUnitPrice(b) - getUnitPrice(a));
+  } else if (sort === "name-asc") {
+    list.sort((a, b) => (a.name || "").localeCompare(b.name || ""));
+  } else if (sort === "name-desc") {
+    list.sort((a, b) => (b.name || "").localeCompare(a.name || ""));
+  } else if (sort === "rating-desc") {
+    list.sort((a, b) => (Number(b.rating) || 4.5) - (Number(a.rating) || 4.5));
+  } else if (sort === "discount-desc") {
+    list.sort((a, b) => getDiscountPercent(b) - getDiscountPercent(a));
   }
 
   return list;
 };
 
-export const countActiveFilters = (filters) => {
-  let n = 0;
-  if (filters.categories.length) n += filters.categories.length;
-  if (filters.minPrice !== "") n += 1;
-  if (filters.maxPrice !== "") n += 1;
-  if (filters.minRating > 0) n += 1;
-  if (filters.stock !== "inStock") n += 1;
-  if (filters.onSale) n += 1;
-  return n;
+export const countActiveFilters = (f) => {
+  let c = 0;
+  if (f.categories.length > 0) c += f.categories.length;
+  if (f.minPrice !== "" || f.maxPrice !== "") c += 1;
+  if (f.minRating > 0) c += 1;
+  if (f.stock !== "inStock") c += 1;
+  if (f.onSale) c += 1;
+  return c;
 };
 
 const ProductFilters = ({
   filters,
   setFilters,
+  priceBounds = { min: 0, max: 100 },
   sort,
   setSort,
-  priceBounds,
   onClear,
   onClose,
   className = "",
 }) => {
-  const toggleCategory = (path) => {
+  const { t, tCategory } = useLanguage();
+
+  const toggleCategory = (catPath) => {
     setFilters((prev) => {
-      const has = prev.categories.includes(path);
+      const exists = prev.categories.includes(catPath);
       return {
         ...prev,
-        categories: has
-          ? prev.categories.filter((c) => c !== path)
-          : [...prev.categories, path],
+        categories: exists
+          ? prev.categories.filter((c) => c !== catPath)
+          : [...prev.categories, catPath],
       };
     });
   };
@@ -147,7 +146,7 @@ const ProductFilters = ({
       <div className="flex items-center justify-between gap-2">
         <div className="flex items-center gap-2">
           <SlidersHorizontal className="w-4 h-4 text-primary" strokeWidth={1.75} />
-          <h3 className="font-heading font-bold text-text-primary text-sm">Filters</h3>
+          <h3 className="font-heading font-bold text-text-primary text-sm">{t("filters.title")}</h3>
           {countActiveFilters(filters) > 0 && (
             <Badge variant="accent">{countActiveFilters(filters)}</Badge>
           )}
@@ -158,14 +157,14 @@ const ProductFilters = ({
             onClick={onClear}
             className="text-xs font-semibold text-text-tertiary hover:text-primary cursor-pointer px-2 py-1"
           >
-            Clear
+            {t("filters.clear_all")}
           </button>
           {onClose && (
             <button
               type="button"
               onClick={onClose}
               className="w-8 h-8 rounded-[12px] flex items-center justify-center text-text-tertiary hover:bg-surface-muted cursor-pointer lg:hidden"
-              aria-label="Close filters"
+              aria-label={t("filters.title")}
             >
               <X className="w-4 h-4" />
             </button>
@@ -176,7 +175,7 @@ const ProductFilters = ({
       {/* Sort (shown in panel on mobile; desktop also has top bar) */}
       <div className="lg:hidden space-y-2">
         <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-          Sort by
+          {t("filters.sort_by")}
         </p>
         <select
           value={sort}
@@ -185,7 +184,7 @@ const ProductFilters = ({
         >
           {SORT_OPTIONS.map((o) => (
             <option key={o.value} value={o.value}>
-              {o.label}
+              {t(o.labelKey)}
             </option>
           ))}
         </select>
@@ -194,7 +193,7 @@ const ProductFilters = ({
       {/* Categories */}
       <div className="space-y-2.5">
         <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-          Category
+          {t("filters.category")}
         </p>
         <div className="space-y-1.5 max-h-52 overflow-y-auto no-scrollbar">
           {categories.map((cat) => {
@@ -212,7 +211,7 @@ const ProductFilters = ({
                   onChange={() => toggleCategory(cat.path)}
                   className="accent-primary w-3.5 h-3.5 rounded"
                 />
-                <span className="text-sm font-medium">{cat.text}</span>
+                <span className="text-sm font-medium">{tCategory(cat.text)}</span>
               </label>
             );
           })}
@@ -222,26 +221,26 @@ const ProductFilters = ({
       {/* Price */}
       <div className="space-y-2.5">
         <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-          Price range
+          {t("filters.price_range")}
         </p>
         <div className="grid grid-cols-2 gap-2">
           <input
             type="number"
             min={0}
-            placeholder={`Min ${priceBounds.min}`}
+            placeholder={t("filters.min_price", { min: priceBounds.min })}
             value={filters.minPrice}
             onChange={(e) => setFilters((p) => ({ ...p, minPrice: e.target.value }))}
             className="h-11 px-3 rounded-[16px] border border-border bg-bg-white text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
-            aria-label="Minimum price"
+            aria-label={t("filters.min_price", { min: priceBounds.min })}
           />
           <input
             type="number"
             min={0}
-            placeholder={`Max ${priceBounds.max}`}
+            placeholder={t("filters.max_price", { max: priceBounds.max })}
             value={filters.maxPrice}
             onChange={(e) => setFilters((p) => ({ ...p, maxPrice: e.target.value }))}
             className="h-11 px-3 rounded-[16px] border border-border bg-bg-white text-sm focus:outline-none focus:border-primary focus:ring-4 focus:ring-primary/10"
-            aria-label="Maximum price"
+            aria-label={t("filters.max_price", { max: priceBounds.max })}
           />
         </div>
         <input
@@ -257,14 +256,14 @@ const ProductFilters = ({
             setFilters((p) => ({ ...p, maxPrice: e.target.value }))
           }
           className="w-full accent-primary"
-          aria-label="Max price slider"
+          aria-label={t("filters.max_price_slider")}
         />
       </div>
 
       {/* Rating */}
       <div className="space-y-2.5">
         <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-          Minimum rating
+          {t("filters.min_rating")}
         </p>
         <div className="flex flex-wrap gap-1.5">
           {[0, 3, 4, 5].map((r) => (
@@ -278,7 +277,7 @@ const ProductFilters = ({
                   : "bg-bg-white text-text-secondary border-border hover:border-primary/40"
               }`}
             >
-              {r === 0 ? "Any" : `${r}+ ★`}
+              {r === 0 ? t("filters.rating_any") : `${r}+ ★`}
             </button>
           ))}
         </div>
@@ -287,13 +286,13 @@ const ProductFilters = ({
       {/* Availability */}
       <div className="space-y-2.5">
         <p className="text-xs font-semibold uppercase tracking-wider text-text-tertiary">
-          Availability
+          {t("filters.availability")}
         </p>
         <div className="space-y-1">
           {[
-            { value: "inStock", label: "In stock" },
-            { value: "all", label: "All items" },
-            { value: "outOfStock", label: "Out of stock" },
+            { value: "inStock", label: t("filters.in_stock_only") },
+            { value: "all", label: t("filters.all_items") },
+            { value: "outOfStock", label: t("filters.out_of_stock") },
           ].map((opt) => (
             <label
               key={opt.value}
@@ -315,8 +314,8 @@ const ProductFilters = ({
       {/* On sale */}
       <label className="flex items-center justify-between gap-3 px-3 py-3 rounded-[14px] bg-bg-soft-peach/60 border border-accent/15 cursor-pointer">
         <div>
-          <p className="text-sm font-semibold text-text-primary">On sale only</p>
-          <p className="text-xs text-text-tertiary">Items with a discount</p>
+          <p className="text-sm font-semibold text-text-primary">{t("filters.on_sale_only")}</p>
+          <p className="text-xs text-text-tertiary">{t("filters.on_sale_desc")}</p>
         </div>
         <input
           type="checkbox"
@@ -328,7 +327,7 @@ const ProductFilters = ({
 
       {onClose && (
         <Button className="w-full lg:hidden" onClick={onClose}>
-          Show results
+          {t("filters.show_results")}
         </Button>
       )}
     </aside>

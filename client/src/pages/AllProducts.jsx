@@ -1,10 +1,12 @@
 /**
  * AllProducts — full catalog with advanced filtering, sorting, and search.
  * Route: /products. Uses ProductFilters (frontend-only; no API changes).
+ * Fully localized for Arabic & multi-language with clean RTL support.
  */
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { Package, SlidersHorizontal, ArrowUpDown, X } from "lucide-react";
 import { useAppContext } from "../context/AppContext";
+import { useLanguage } from "../context/LanguageContext";
 import ProductCard from "../components/ProductCard";
 import ProductFilters, {
   DEFAULT_FILTERS,
@@ -27,6 +29,7 @@ const FOCUSABLE =
 
 const AllProducts = () => {
   const { products, productsLoading, searchQuery, setSearchQuery, currency } = useAppContext();
+  const { t, tCategory, isRTL, formatPrice } = useLanguage();
   const [filters, setFilters] = useState({ ...DEFAULT_FILTERS });
   const [sort, setSort] = useState("featured");
   const [mobileOpen, setMobileOpen] = useState(false);
@@ -119,18 +122,20 @@ const AllProducts = () => {
     };
   }, [mobileOpen]);
 
-  const categoryLabel = (path) =>
-    categories.find((c) => c.path === path)?.text || path;
+  const categoryLabel = (path) => {
+    const raw = categories.find((c) => c.path === path)?.text || path;
+    return tCategory(raw);
+  };
 
   return (
     <div className="py-10 md:py-14 mb-nav animate-fade-in">
       <SectionHeader
-        eyebrow="Catalog"
-        title="All products"
+        eyebrow={t("nav.shop")}
+        title={t("nav.all_products")}
         subtitle={
           searchQuery
-            ? `Results for “${searchQuery}”`
-            : "Filter by category, price, rating, and more."
+            ? `${t("search.results_for")} “${searchQuery}”`
+            : t("home.banner_subtitle")
         }
       />
 
@@ -155,11 +160,11 @@ const AllProducts = () => {
           <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mb-5">
             <p className="text-sm text-text-secondary">
               <span className="font-heading font-bold text-text-primary">
-                {loading ? "…" : results.length}
+                {productsLoading ? "…" : results.length}
               </span>{" "}
-              {results.length === 1 ? "product" : "products"}
+              {t("category.available")}
               {activeCount > 0 && (
-                <span className="text-text-tertiary"> · {activeCount} filter{activeCount > 1 ? "s" : ""}</span>
+                <span className="text-text-tertiary"> · {activeCount} {t("filters.active_filters")}</span>
               )}
             </p>
 
@@ -171,7 +176,7 @@ const AllProducts = () => {
                 onClick={() => setMobileOpen(true)}
               >
                 <SlidersHorizontal className="w-4 h-4" />
-                Filters
+                {t("filters.title")}
                 {activeCount > 0 && (
                   <Badge variant="accent" className="ml-0.5">
                     {activeCount}
@@ -185,11 +190,11 @@ const AllProducts = () => {
                   value={sort}
                   onChange={(e) => setSort(e.target.value)}
                   className="bg-transparent text-sm font-medium text-text-primary outline-none cursor-pointer pr-1"
-                  aria-label="Sort products"
+                  aria-label={t("filters.sort_by")}
                 >
                   {SORT_OPTIONS.map((o) => (
                     <option key={o.value} value={o.value}>
-                      {o.label}
+                      {t(o.labelKey)}
                     </option>
                   ))}
                 </select>
@@ -206,7 +211,7 @@ const AllProducts = () => {
                   onClick={() => setSearchQuery("")}
                   className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-surface-muted text-xs font-semibold text-text-secondary hover:text-error cursor-pointer"
                 >
-                  Search: {searchQuery}
+                  {t("search.results_for")}: {searchQuery}
                   <X className="w-3 h-3" />
                 </button>
               )}
@@ -227,7 +232,7 @@ const AllProducts = () => {
                   onClick={() => setFilters((p) => ({ ...p, minPrice: "" }))}
                   className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-surface-muted text-xs font-semibold cursor-pointer"
                 >
-                  Min {currency}{filters.minPrice}
+                  {t("filters.min_price", { min: formatPrice(filters.minPrice, currency) })}
                   <X className="w-3 h-3" />
                 </button>
               )}
@@ -237,7 +242,7 @@ const AllProducts = () => {
                   onClick={() => setFilters((p) => ({ ...p, maxPrice: "" }))}
                   className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-surface-muted text-xs font-semibold cursor-pointer"
                 >
-                  Max {currency}{filters.maxPrice}
+                  {t("filters.max_price", { max: formatPrice(filters.maxPrice, currency) })}
                   <X className="w-3 h-3" />
                 </button>
               )}
@@ -257,7 +262,7 @@ const AllProducts = () => {
                   onClick={() => setFilters((p) => ({ ...p, onSale: false }))}
                   className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-accent/10 text-accent-dark text-xs font-semibold cursor-pointer"
                 >
-                  On sale
+                  {t("filters.on_sale_only")}
                   <X className="w-3 h-3" />
                 </button>
               )}
@@ -267,7 +272,7 @@ const AllProducts = () => {
                   onClick={() => setFilters((p) => ({ ...p, stock: "inStock" }))}
                   className="inline-flex items-center gap-1.5 h-8 px-3 rounded-full bg-surface-muted text-xs font-semibold cursor-pointer"
                 >
-                  {filters.stock === "all" ? "All items" : "Out of stock"}
+                  {filters.stock === "all" ? t("filters.all_items") : t("filters.out_of_stock")}
                   <X className="w-3 h-3" />
                 </button>
               )}
@@ -277,7 +282,7 @@ const AllProducts = () => {
                   onClick={clearFilters}
                   className="text-xs font-semibold text-primary hover:text-primary-dark cursor-pointer px-2"
                 >
-                  Clear all
+                  {t("filters.clear_all")}
                 </button>
               )}
             </div>
@@ -289,11 +294,11 @@ const AllProducts = () => {
               value={sort}
               onChange={(e) => setSort(e.target.value)}
               className="w-full h-11 px-3 rounded-[16px] border border-border bg-bg-white text-sm font-medium focus:outline-none focus:border-primary"
-              aria-label="Sort products"
+              aria-label={t("filters.sort_by")}
             >
               {SORT_OPTIONS.map((o) => (
                 <option key={o.value} value={o.value}>
-                  {o.label}
+                  {t(o.labelKey)}
                 </option>
               ))}
             </select>
@@ -308,11 +313,11 @@ const AllProducts = () => {
           ) : results.length === 0 ? (
             <EmptyState
               icon={Package}
-              title="No products match"
-              description="Try clearing filters or adjusting price and category."
+              title={t("filters.no_products_title")}
+              description={t("filters.no_products_desc")}
               action={
                 <Button variant="outline" onClick={resetFiltersAndSearch}>
-                  Reset filters
+                  {t("filters.reset_filters")}
                 </Button>
               }
             />
@@ -332,16 +337,16 @@ const AllProducts = () => {
           <button
             type="button"
             className="absolute inset-0 bg-black/40 backdrop-blur-sm cursor-pointer"
-            aria-label="Close filters"
+            aria-label={t("filters.title")}
             onClick={closeMobileFilters}
           />
           <div
             ref={drawerRef}
             role="dialog"
             aria-modal="true"
-            aria-label="Product filters"
+            aria-label={t("filters.title")}
             tabIndex={-1}
-            className="absolute inset-y-0 right-0 w-full max-w-sm p-4 animate-slide-up overflow-y-auto outline-none"
+            className={`absolute inset-y-0 ${isRTL ? "left-0" : "right-0"} w-full max-w-sm p-4 animate-slide-up overflow-y-auto outline-none`}
           >
             <ProductFilters
               filters={filters}

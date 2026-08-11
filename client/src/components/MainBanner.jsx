@@ -6,8 +6,10 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { assets } from "../assets/assets";
 import { Button } from "./ui";
+import { useLanguage } from "../context/LanguageContext";
 
 const MainBanner = () => {
+  const { t, isRTL } = useLanguage();
   return (
     <section className="relative overflow-hidden rounded-[24px] md:rounded-[28px] gradient-hero border border-border/40 shadow-sm">
       <div className="absolute inset-0 pointer-events-none">
@@ -19,25 +21,25 @@ const MainBanner = () => {
         <div className="animate-slide-up z-10">
           <p className="inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-[0.16em] text-accent mb-4">
             <Sparkles className="w-3.5 h-3.5" />
-            Fresh groceries, delivered with care
+            YNA GROCERY
           </p>
           <h1 className="font-heading text-4xl sm:text-5xl lg:text-[3.5rem] font-extrabold text-text-primary leading-[1.08] tracking-tight max-w-lg">
-            YNA Grocery
+            {t("home.banner_title")}
           </h1>
           <p className="mt-4 text-base md:text-lg text-text-secondary max-w-md leading-relaxed">
-            Premium produce and everyday essentials, curated for busy households across the Middle East.
+            {t("home.banner_subtitle")}
           </p>
           <div className="flex flex-wrap items-center gap-3 mt-8">
             <Button asChild size="lg">
               <Link to="/products">
-                Shop Now
-                <ArrowRight className="w-4 h-4" />
+                {t("home.shop_now")}
+                <ArrowRight className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
               </Link>
             </Button>
             <Button asChild variant="ghost" size="lg" className="text-accent hover:text-accent-dark">
               <Link to="/products">
-                Explore deals
-                <ArrowRight className="w-4 h-4" />
+                {t("home.explore_categories")}
+                <ArrowRight className={`w-4 h-4 ${isRTL ? "rotate-180" : ""}`} />
               </Link>
             </Button>
           </div>

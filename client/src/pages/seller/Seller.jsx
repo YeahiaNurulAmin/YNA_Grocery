@@ -6,6 +6,7 @@
 import { Link, NavLink, Outlet } from "react-router-dom";
 import { YNALogo } from "../../assets/YNALogo.jsx";
 import { useAppContext } from "../../context/AppContext";
+import { useLanguage } from "../../context/LanguageContext";
 import toast from "react-hot-toast";
 import React, { useState, useEffect, useRef, useCallback } from "react";
 import {
@@ -23,6 +24,7 @@ import {
     LogOut,
     ChevronRight,
     MoreHorizontal,
+    Languages,
 } from "lucide-react";
 import { Button } from "../../components/ui";
 import { socket } from "../../configs/socket";
@@ -78,6 +80,7 @@ const navLinkClass = ({ isActive }) =>
 
 const Seller = () => {
     const { navigate, axios, currency } = useAppContext();
+    const { t, language, toggleLanguage, isRTL, formatPrice } = useLanguage();
     const [moreOpen, setMoreOpen] = useState(false);
 
     const [isDark, setIsDark] = useState(() => {
@@ -119,15 +122,15 @@ const Seller = () => {
                 setNotifications(prev => [...newNotifs, ...prev].slice(0, 20));
                 addSeenIds(newOrders.map(o => o._id));
                 newOrders.forEach(o => {
-                    toast.custom((t) => (
-                        <div className={`flex items-start gap-3 bg-bg-white border border-primary/20 rounded-[16px] shadow-lg px-4 py-3 max-w-sm ${t.visible ? "animate-enter" : "animate-leave"}`}>
+                    toast.custom((tToast) => (
+                        <div className={`flex items-start gap-3 bg-bg-white border border-primary/20 rounded-[16px] shadow-lg px-4 py-3 max-w-sm ${tToast.visible ? "animate-enter" : "animate-leave"}`}>
                             <div className="w-9 h-9 rounded-[12px] bg-primary/10 flex items-center justify-center shrink-0">
                                 <ShoppingBag className="w-4 h-4 text-primary" strokeWidth={2} />
                             </div>
                             <div>
-                                <p className="font-heading font-bold text-text-primary text-sm">New Order!</p>
+                                <p className="font-heading font-bold text-text-primary text-sm">{t("seller.new_order_title")}</p>
                                 <p className="text-xs text-text-secondary">
-                                    {`${o.address?.firstName || ""} ${o.address?.lastName || ""}`.trim()} — {currency}{o.amount}
+                                    {`${o.address?.firstName || ""} ${o.address?.lastName || ""}`.trim()} — {formatPrice(o.amount, currency)}
                                 </p>
                             </div>
                         </div>
@@ -135,7 +138,7 @@ const Seller = () => {
                 });
             }
         } catch (_) { /* silent fail on polling */ }
-    }, [axios, currency]);
+    }, [axios, currency, formatPrice, t]);
 
     useEffect(() => {
         axios.get("/api/order/seller").then(({ data }) => {
@@ -176,22 +179,22 @@ const Seller = () => {
     const unreadCount = notifications.length;
 
     const mainLinks = [
-        { name: "Dashboard", path: "/seller/dashboard", icon: LayoutDashboard, end: false },
-        { name: "Add Product", path: "/seller", icon: PlusCircle, end: true },
-        { name: "Products", path: "/seller/products", icon: Package, end: false },
-        { name: "Orders", path: "/seller/orders", icon: ShoppingBag, end: false },
-        { name: "History", path: "/seller/history", icon: History, end: false },
-        { name: "Coupons", path: "/seller/coupons", icon: Ticket, end: false },
+        { name: t("seller.dashboard"), path: "/seller/dashboard", icon: LayoutDashboard, end: false },
+        { name: t("seller.add_product"), path: "/seller", icon: PlusCircle, end: true },
+        { name: t("seller.products_list"), path: "/seller/products", icon: Package, end: false },
+        { name: t("seller.orders_list"), path: "/seller/orders", icon: ShoppingBag, end: false },
+        { name: t("seller.order_history"), path: "/seller/history", icon: History, end: false },
+        { name: t("seller.coupons"), path: "/seller/coupons", icon: Ticket, end: false },
     ];
 
     const accountLinks = [
-        { name: "Notifications", path: "/seller/notifications", icon: Bell },
-        { name: "Settings", path: "/seller/settings", icon: Settings },
-        { name: "Profile", path: "/seller/profile", icon: User },
+        { name: t("seller.notifications"), path: "/seller/notifications", icon: Bell },
+        { name: t("seller.settings"), path: "/seller/settings", icon: Settings },
+        { name: t("seller.profile"), path: "/seller/profile", icon: User },
     ];
 
     const moreLinks = [
-        { name: "Coupons", path: "/seller/coupons", icon: Ticket },
+        { name: t("seller.coupons"), path: "/seller/coupons", icon: Ticket },
         ...accountLinks,
     ];
 
@@ -205,7 +208,7 @@ const Seller = () => {
                 toast.error(data.message);
             }
         } catch (error) {
-            toast.error("Error logging out");
+            toast.error(t("seller.logout_error"));
             console.error("Error in logoutHandler:", error);
         }
     };
@@ -219,13 +222,26 @@ const Seller = () => {
                 </Link>
 
                 <div className="flex items-center gap-2 md:gap-4">
-                    <span className="text-sm hidden md:inline text-text-secondary font-medium">Hi! Admin</span>
+                    <span className="text-sm hidden md:inline text-text-secondary font-medium">
+                        {t("seller.hi_admin")}
+                    </span>
+
+                    {/* Language toggle button */}
+                    <button
+                        type="button"
+                        onClick={toggleLanguage}
+                        title={t("seller.switch_lang")}
+                        className="flex items-center gap-1 h-8 px-2.5 rounded-[12px] border border-border text-xs font-semibold text-text-secondary hover:text-primary hover:border-primary/30 transition-all cursor-pointer"
+                    >
+                        <Languages className="w-3.5 h-3.5 shrink-0" />
+                        <span>{language === "en" ? "العربية" : "EN"}</span>
+                    </button>
 
                     <button
                         id="dark-mode-toggle"
                         onClick={() => setIsDark(d => !d)}
                         className="relative w-11 h-6 rounded-full border border-border bg-surface-muted hover:border-primary/40 transition-colors flex items-center cursor-pointer"
-                        title={isDark ? "Switch to Light Mode" : "Switch to Dark Mode"}
+                        title={isDark ? t("nav.theme_light") : t("nav.theme_dark")}
                     >
                         <span className={`absolute flex items-center justify-center w-5 h-5 rounded-full transition-transform duration-300 ${isDark ? "translate-x-[22px] bg-surface-elevated text-accent" : "translate-x-0.5 bg-primary text-white"}`}>
                             {isDark ? <Moon className="w-3 h-3" /> : <Sun className="w-3 h-3" />}
@@ -237,7 +253,7 @@ const Seller = () => {
                             id="notification-bell"
                             onClick={() => { setShowNotifPanel(p => !p); }}
                             className="relative p-2 rounded-[12px] hover:bg-surface-muted transition-colors cursor-pointer text-text-secondary hover:text-text-primary"
-                            title="Notifications"
+                            title={t("seller.notifications")}
                         >
                             <Bell className="w-5 h-5" strokeWidth={1.75} />
                             {unreadCount > 0 && (
@@ -248,17 +264,17 @@ const Seller = () => {
                         </button>
 
                         {showNotifPanel && (
-                            <div className="absolute right-0 top-12 w-80 bg-bg-white border border-border/60 rounded-[20px] shadow-xl z-50 overflow-hidden">
+                            <div className={`absolute ${isRTL ? "left-0" : "right-0"} top-12 w-80 bg-bg-white border border-border/60 rounded-[20px] shadow-xl z-50 overflow-hidden`}>
                                 <div className="flex items-center justify-between px-4 py-3 border-b border-border/60 bg-surface-muted/50">
-                                    <p className="font-heading font-bold text-sm">Notifications</p>
+                                    <p className="font-heading font-bold text-sm">{t("seller.notifications")}</p>
                                     <div className="flex items-center gap-2">
                                         {notifications.length > 0 && (
                                             <button onClick={() => setNotifications([])} className="text-xs text-text-tertiary hover:text-error transition-colors cursor-pointer">
-                                                Clear all
+                                                {t("seller.clear_all")}
                                             </button>
                                         )}
                                         <Link to="/seller/notifications" onClick={() => setShowNotifPanel(false)} className="text-xs text-primary hover:underline font-medium">
-                                            View all
+                                            {t("seller.view_all")}
                                         </Link>
                                     </div>
                                 </div>
@@ -266,7 +282,7 @@ const Seller = () => {
                                     {notifications.length === 0 ? (
                                         <div className="py-10 text-center text-text-tertiary text-sm">
                                             <Bell className="w-8 h-8 mx-auto mb-2 text-text-placeholder" strokeWidth={1.5} />
-                                            No new notifications
+                                            {t("seller.no_notifs")}
                                         </div>
                                     ) : (
                                         notifications.map((n, i) => (
@@ -275,8 +291,8 @@ const Seller = () => {
                                                     <ShoppingBag className="w-4 h-4 text-primary" />
                                                 </div>
                                                 <div className="flex-1 min-w-0">
-                                                    <p className="text-sm font-semibold truncate">New Order — {n.name}</p>
-                                                    <p className="text-xs text-text-tertiary">Amount: {currency}{n.amount} · {n.time}</p>
+                                                    <p className="text-sm font-semibold truncate">{t("seller.new_order_item", { name: n.name })}</p>
+                                                    <p className="text-xs text-text-tertiary">{t("seller.amount_line", { amount: formatPrice(n.amount, currency), time: n.time })}</p>
                                                 </div>
                                             </div>
                                         ))
@@ -288,9 +304,9 @@ const Seller = () => {
 
                     <Button variant="outline" size="sm" onClick={logoutHandler} className="hidden sm:inline-flex">
                         <LogOut className="w-4 h-4" />
-                        Logout
+                        {t("seller.logout")}
                     </Button>
-                    <button onClick={logoutHandler} className="sm:hidden p-2 rounded-[12px] hover:bg-surface-muted text-text-secondary" title="Logout">
+                    <button onClick={logoutHandler} className="sm:hidden p-2 rounded-[12px] hover:bg-surface-muted text-text-secondary" title={t("seller.logout")}>
                         <LogOut className="w-5 h-5" />
                     </button>
                 </div>
@@ -300,18 +316,18 @@ const Seller = () => {
                 {/* Sidebar */}
                 <aside className="hidden md:flex w-60 shrink-0 border-r border-border/60 min-h-[calc(100vh-57px)] flex-col bg-bg-white">
                     <nav className="flex-1 p-4 space-y-1">
-                        <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-text-tertiary">Store</p>
+                        <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-text-tertiary">{t("seller.store_section")}</p>
                         {mainLinks.map((item) => (
                             <NavLink to={item.path} key={item.path} end={item.end} className={navLinkClass}>
                                 <item.icon className="w-[18px] h-[18px] shrink-0" strokeWidth={1.75} />
                                 <span className="flex-1">{item.name}</span>
-                                <ChevronRight className="w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-40 group-hover:translate-x-0 transition-all" />
+                                <ChevronRight className={`w-3.5 h-3.5 opacity-0 -translate-x-1 group-hover:opacity-40 group-hover:translate-x-0 transition-all ${isRTL ? "rotate-180" : ""}`} />
                             </NavLink>
                         ))}
                     </nav>
 
                     <div className="p-4 border-t border-border/60 space-y-1">
-                        <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-text-tertiary">Account</p>
+                        <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-text-tertiary">{t("seller.account_section")}</p>
                         {accountLinks.map((item) => (
                             <NavLink to={item.path} key={item.path} className={navLinkClass}>
                                 <item.icon className="w-[18px] h-[18px] shrink-0" strokeWidth={1.75} />
@@ -346,7 +362,7 @@ const Seller = () => {
                             aria-haspopup="menu"
                         >
                             <MoreHorizontal className="w-5 h-5" strokeWidth={1.75} />
-                            <span>More</span>
+                            <span>{t("seller.more")}</span>
                         </button>
                         {moreOpen && (
                             <div

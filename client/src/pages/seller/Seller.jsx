@@ -312,10 +312,10 @@ const Seller = () => {
                 </div>
             </header>
 
-            <div className="flex">
+            <div className="flex min-h-[calc(100vh-57px)]">
                 {/* Sidebar */}
-                <aside className="hidden md:flex w-60 shrink-0 border-r border-border/60 min-h-[calc(100vh-57px)] flex-col bg-bg-white">
-                    <nav className="flex-1 p-4 space-y-1">
+                <aside className="hidden md:flex w-64 shrink-0 border-r rtl:border-r-0 rtl:border-l border-border/60 sticky top-[57px] h-[calc(100vh-57px)] flex-col justify-between bg-bg-white overflow-y-auto no-scrollbar z-30">
+                    <nav className="p-4 space-y-1">
                         <p className="px-3 mb-2 text-[10px] font-bold uppercase tracking-[0.14em] text-text-tertiary">{t("seller.store_section")}</p>
                         {mainLinks.map((item) => (
                             <NavLink to={item.path} key={item.path} end={item.end} className={navLinkClass}>
@@ -387,7 +387,7 @@ const Seller = () => {
                 </nav>
 
                 {/* Main content */}
-                <main className="flex-1 min-h-[calc(100vh-57px)] overflow-y-auto no-scrollbar mb-nav md:mb-0">
+                <main className="flex-1 min-w-0 min-h-[calc(100vh-57px)] mb-nav md:mb-0">
                     <div className="p-4 md:p-8 lg:p-10">
                         <Outlet />
                     </div>

@@ -1,13 +1,24 @@
 import React, { useEffect, useCallback } from 'react'
+import { Calendar, CreditCard, MapPin, Phone, ShoppingBag, Plus } from 'lucide-react'
 import { useAppContext } from '../../context/AppContext'
 import { useLanguage } from '../../context/LanguageContext'
 import { assets, dummyOrders } from '../../assets/assets';
 import toast from 'react-hot-toast';
 import { socket } from '../../configs/socket';
+import { OrderStatusDropdown } from '../../components/seller/OrderStatusDropdown';
+
+const getProductImage = (product) => {
+    if (!product) return assets.box_icon;
+    if (Array.isArray(product.images) && product.images.length > 0) return product.images[0];
+    if (Array.isArray(product.image) && product.image.length > 0) return product.image[0];
+    if (typeof product.images === "string" && product.images) return product.images;
+    if (typeof product.image === "string" && product.image) return product.image;
+    return assets.box_icon;
+};
 
 const OrdersList = () => {
     const { currency, axios } = useAppContext();
-    const { t, isRTL, formatPrice } = useLanguage();
+    const { t, tCategory, isRTL, formatPrice } = useLanguage();
     const [orders, setOrders] = React.useState([]);
     const [statusFilter, setStatusFilter] = React.useState("All");
 
@@ -99,22 +110,6 @@ const OrdersList = () => {
         return order.status === statusFilter;
     });
 
-    const getCardStyle = (status) => {
-        let base = "flex flex-col md:grid md:grid-cols-[2fr_1fr_1fr_1.5fr] md:items-center gap-5 p-5 max-w-4xl rounded-lg border text-text-primary shadow-sm relative overflow-hidden transition-all duration-300 hover:shadow-md ";
-        
-        if (status === "Packing") {
-            base += "border-purple-200 border-l-4 border-l-purple-500 bg-purple-50/20";
-        } else if (status === "Shipped") {
-            base += "border-amber-200 border-l-4 border-l-amber-500 bg-amber-50/15";
-        } else if (status === "Out for delivery") {
-            base += "border-teal-200 border-l-4 border-l-teal-500 bg-teal-50/15";
-        } else {
-            base += "border-blue-200 border-l-4 border-l-blue-500 bg-blue-50/20";
-        }
-        
-        return base;
-    }
-
     const getStatusBadge = (status) => {
         if (status === "Packing") {
             return (
@@ -145,69 +140,201 @@ const OrdersList = () => {
                 </span>
             );
         }
-    }
+    };
 
-    const renderOrderCard = (order, index) => (
-        <div key={order._id || index} className={getCardStyle(order.status)}>
-            {order.isDemo && (
-                <div className={`absolute top-0 ${isRTL ? "left-0 rounded-br" : "right-0 rounded-bl"} bg-primary text-white text-[9px] font-bold px-2 py-0.5 tracking-wider uppercase shadow-sm`}>
-                    DEMO
-                </div>
-            )}
-            
-            <div className="flex gap-5">
-                <img className="w-12 h-12 object-cover opacity-60" src={assets.box_icon} alt="boxIcon" />
-                <div className="flex flex-col justify-center gap-2">
-                    {order.items?.map((item, itemIdx) => (
-                        <div key={itemIdx}>
-                            <p className="font-bold text-text-primary">
-                                {item.product?.name || "Product"} 
-                                <span className={`text-primary font-bold ${item.quantity < 2 && "hidden"}`}> x {item.quantity}</span>
-                            </p>
+    const renderOrderCard = (order, index) => {
+        const totalItemsCount = order.items?.reduce((sum, item) => sum + (item.quantity || 1), 0) || 0;
+
+        return (
+            <div 
+                key={order._id || index} 
+                className={`rounded-[20px] border bg-bg-white text-text-primary shadow-sm hover:shadow-md transition-all duration-300 relative ${
+                    order.status === "Packing"
+                        ? "border-purple-200/80 bg-gradient-to-b from-purple-50/20 to-bg-white"
+                        : order.status === "Shipped"
+                        ? "border-amber-200/80 bg-gradient-to-b from-amber-50/20 to-bg-white"
+                        : order.status === "Out for delivery"
+                        ? "border-teal-200/80 bg-gradient-to-b from-teal-50/20 to-bg-white"
+                        : "border-blue-200/80 bg-gradient-to-b from-blue-50/20 to-bg-white"
+                }`}
+            >
+                {order.isDemo && (
+                    <div className={`absolute top-0 ${isRTL ? "left-0 rounded-tl-[19px] rounded-br-[12px]" : "right-0 rounded-tr-[19px] rounded-bl-[12px]"} bg-primary text-white text-[10px] font-bold px-3 py-1 tracking-wider uppercase shadow-sm z-10`}>
+                        DEMO
+                    </div>
+                )}
+
+                {/* Card Header: Order ID, Date, Payment & Status Badges */}
+                <div className="p-4 sm:p-5 border-b border-border/70 flex flex-wrap items-center justify-between gap-3 bg-surface-muted/30">
+                    <div className="flex flex-wrap items-center gap-3">
+                        <div className="flex items-center gap-2">
+                            <span className="text-xs font-mono font-bold bg-bg-white border border-border px-2.5 py-1 rounded-[10px] text-text-primary shadow-2xs">
+                                #{order._id?.slice(-8) || "—"}
+                            </span>
+                            <span className="text-xs text-text-tertiary flex items-center gap-1">
+                                <Calendar className="w-3.5 h-3.5" />
+                                {new Date(order.createdAt).toLocaleDateString()} {new Date(order.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                            </span>
                         </div>
-                    ))}
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                        <span className="text-xs font-medium px-2.5 py-0.5 rounded-full bg-surface-muted border border-border text-text-secondary flex items-center gap-1">
+                            <CreditCard className="w-3.5 h-3.5" />
+                            {order.paymentType === "COD" ? t("payment.cod") : t("payment.stripe")}
+                        </span>
+                        <span className={`text-xs font-semibold px-2.5 py-0.5 rounded-full ${
+                            order.isPaid
+                                ? "bg-green-100 text-green-700 dark:bg-green-950/40 dark:text-green-400"
+                                : "bg-amber-100 text-amber-700 dark:bg-amber-950/40 dark:text-amber-400"
+                        }`}>
+                            {order.isPaid ? t("seller.paid") : t("seller.pending")}
+                        </span>
+                        {getStatusBadge(order.status || "Order Placed")}
+                    </div>
+                </div>
+
+                {/* Products Details List */}
+                <div className="p-4 sm:p-5 space-y-3">
+                    <div className="flex items-center justify-between pb-1">
+                        <h4 className="text-xs font-bold uppercase tracking-wider text-text-tertiary flex items-center gap-1.5">
+                            <ShoppingBag className="w-3.5 h-3.5 text-primary" />
+                            {t("seller.items_count")} ({totalItemsCount})
+                        </h4>
+                    </div>
+
+                    <div className="space-y-2.5">
+                        {order.items?.map((item, itemIdx) => {
+                            const product = item.product || {};
+                            const imgSrc = getProductImage(product);
+                            const unitPrice = product.offerPrice && product.offerPrice > 0 ? product.offerPrice : (product.price || 0);
+                            const qty = item.quantity || 1;
+                            const lineTotal = unitPrice * qty;
+
+                            return (
+                                <div 
+                                    key={item._id || itemIdx}
+                                    className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-3 rounded-[14px] bg-surface-muted/40 border border-border/60 hover:bg-surface-muted/70 transition-colors"
+                                >
+                                    {/* Image + Product Details */}
+                                    <div className="flex items-center gap-3.5 min-w-0">
+                                        <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-[12px] bg-bg-white border border-border/80 p-1 flex items-center justify-center shrink-0 overflow-hidden shadow-2xs">
+                                            <img
+                                                src={imgSrc}
+                                                alt={product.name || "Product"}
+                                                className="w-full h-full object-contain"
+                                                onError={(e) => { e.currentTarget.src = assets.box_icon; }}
+                                            />
+                                        </div>
+                                        <div className="min-w-0 space-y-1">
+                                            <h5 className="font-heading font-bold text-text-primary text-sm sm:text-base leading-snug truncate max-w-[260px] sm:max-w-md">
+                                                {product.name || "Product"}
+                                            </h5>
+                                            <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                                                {product.category && (
+                                                    <span className="text-[11px] font-semibold px-2 py-0.5 rounded-md bg-bg-light-mint text-primary">
+                                                        {tCategory(product.category)}
+                                                    </span>
+                                                )}
+                                                {product.weight && (
+                                                    <span className="text-[11px] font-medium px-2 py-0.5 rounded-md bg-surface-muted border border-border/60 text-text-secondary">
+                                                        {product.weight}
+                                                    </span>
+                                                )}
+                                                {product.inStock !== undefined && (
+                                                    <span className={`text-[10px] font-semibold px-1.5 py-0.5 rounded ${
+                                                        product.inStock ? "text-green-600 bg-green-50" : "text-red-500 bg-red-50"
+                                                    }`}>
+                                                        {product.inStock ? t("seller.in_stock") : t("seller.out_of_stock")}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* Price & Quantity Breakdown */}
+                                    <div className="flex items-center justify-between sm:justify-end gap-5 pt-2 sm:pt-0 border-t sm:border-t-0 border-border/40 shrink-0 text-sm">
+                                        <div className="text-left sm:text-right">
+                                            <p className="text-xs text-text-tertiary">{t("seller.unit_price")}</p>
+                                            <div className="flex items-center gap-1.5">
+                                                <span className="font-semibold text-text-primary">{formatPrice(unitPrice, currency)}</span>
+                                                {product.offerPrice && product.offerPrice < product.price && (
+                                                    <span className="text-xs line-through text-text-tertiary">
+                                                        {formatPrice(product.price, currency)}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </div>
+                                        <div className="text-center sm:text-right px-2.5 py-1 rounded-[10px] bg-bg-white border border-border/80">
+                                            <span className="text-xs text-text-tertiary block">{t("seller.qty")}</span>
+                                            <span className="font-bold text-primary text-sm">× {qty}</span>
+                                        </div>
+                                        <div className="text-right min-w-[70px]">
+                                            <p className="text-xs text-text-tertiary">{t("seller.subtotal")}</p>
+                                            <p className="font-bold text-text-primary text-sm">{formatPrice(lineTotal, currency)}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        })}
+                    </div>
+                </div>
+
+                {/* Bottom Section: Address, Order Total & Status Update */}
+                <div className="p-4 sm:p-5 bg-surface-muted/30 border-t border-border/70 grid grid-cols-1 md:grid-cols-3 gap-5 items-start">
+                    {/* Customer Shipping Address */}
+                    <div className="text-xs text-text-secondary space-y-1.5">
+                        <div className="flex items-center gap-1.5 font-bold text-text-primary text-sm">
+                            <MapPin className="w-4 h-4 text-primary shrink-0" />
+                            <span>{order.address?.firstName || "Customer"} {order.address?.lastName || ""}</span>
+                        </div>
+                        <p className="text-text-secondary leading-relaxed pl-5">
+                            {order.address?.street ? `${order.address.street}, ` : ""}
+                            {order.address?.city ? `${order.address.city}, ` : ""}
+                            {order.address?.state ? `${order.address.state}, ` : ""}
+                            {order.address?.zipCode || order.address?.zipcode || ""}
+                            {order.address?.country ? `, ${order.address.country}` : ""}
+                        </p>
+                        {order.address?.phone && (
+                            <p className="text-xs text-text-primary flex items-center gap-1.5 font-medium pl-5">
+                                <Phone className="w-3.5 h-3.5 text-text-tertiary shrink-0" />
+                                {order.address.phone}
+                            </p>
+                        )}
+                    </div>
+
+                    {/* Financial Breakdown */}
+                    <div className="space-y-1 md:border-x md:border-border/60 md:px-5">
+                        <div className="flex justify-between items-center text-xs text-text-secondary">
+                            <span>{t("seller.total_amount")}:</span>
+                            <span className="font-bold text-lg text-primary">{formatPrice(order.amount, currency)}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs text-text-tertiary">
+                            <span>{t("seller.payment_method")}:</span>
+                            <span className="font-medium text-text-secondary">{order.paymentType || t("payment.cod")}</span>
+                        </div>
+                        <div className="flex justify-between items-center text-xs text-text-tertiary">
+                            <span>{t("seller.payment_status")}:</span>
+                            <span className={order.isPaid ? "text-green-600 font-semibold" : "text-amber-600 font-semibold"}>
+                                {order.isPaid ? t("seller.paid") : t("seller.pending")}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Status Changer */}
+                    <div className="space-y-1.5">
+                        <label className="text-xs font-bold text-text-secondary block">
+                            {t("seller.change_status")}
+                        </label>
+                        <OrderStatusDropdown
+                            currentStatus={order.status || "Order Placed"}
+                            onStatusChange={(newStatus) => handleStatusChange(order._id, newStatus, order.isDemo)}
+                        />
+                    </div>
                 </div>
             </div>
-
-            <div className="text-sm text-text-secondary">
-                <p className='font-bold text-text-primary mb-1'>
-                    {order.address?.firstName || "N/A"} {order.address?.lastName || ""}
-                </p>
-                <p>{order.address?.street || ""}, {order.address?.city || ""}</p>
-                <p>{order.address?.state || ""}, {order.address?.zipCode || order.address?.zipcode || ""}, {order.address?.country || ""}</p>
-                <p className="mt-1 text-xs">{t("addaddress.phone")}: {order.address?.phone || ""}</p>
-            </div>
-
-            <div className="flex flex-col gap-1.5">
-                <p className="font-semibold text-lg text-primary">{formatPrice(order.amount, currency)}</p>
-                <div className="mt-0.5">
-                    {getStatusBadge(order.status || "Order Placed")}
-                </div>
-            </div>
-
-            <div className="flex flex-col text-sm text-text-secondary gap-1.5">
-                <p><span className="font-medium">{t("seller.action")}:</span> {order.paymentType || t("payment.cod")}</p>
-                <p><span className="font-medium">{t("seller.date")}:</span> {new Date(order.createdAt).toLocaleDateString()}</p>
-                <p><span className="font-medium">{t("seller.status")}:</span> <span className={order.isPaid ? "text-green-600 font-semibold" : "text-amber-600 font-semibold"}>{order.isPaid ? (isRTL ? "تم الدفع" : "Paid") : (isRTL ? "قيد الانتظار" : "Pending")}</span></p>
-                
-                <div className="mt-2">
-                    <label className="text-[11px] font-bold text-text-tertiary block mb-1 uppercase tracking-wider">{t("seller.status")}</label>
-                    <select
-                        value={order.status || "Order Placed"}
-                        onChange={(e) => handleStatusChange(order._id, e.target.value, order.isDemo)}
-                        className="outline-none border border-border rounded-md px-2.5 py-1.5 text-xs bg-bg-white focus:border-primary focus:ring-1 focus:ring-primary w-full text-text-primary font-semibold cursor-pointer shadow-sm transition-colors"
-                    >
-                        <option value="Order Placed">{t("status.order_placed")}</option>
-                        <option value="Packing">{t("status.packing")}</option>
-                        <option value="Shipped">{t("status.shipped")}</option>
-                        <option value="Out for delivery">{t("status.out_for_delivery")}</option>
-                        <option value="Delivered">{t("status.delivered")}</option>
-                        <option value="Cancelled">{t("status.cancelled")}</option>
-                    </select>
-                </div>
-            </div>
-        </div>
-    );
+        );
+    };
 
     return (
         <div className="space-y-6 animate-fade-in max-w-5xl">
@@ -221,10 +348,8 @@ const OrdersList = () => {
                     onClick={addDemoOrderHandler}
                     className="cursor-pointer bg-primary hover:bg-primary-dark text-white font-semibold py-2.5 px-4 rounded-[16px] transition text-sm flex items-center gap-1.5 shadow-sm self-start sm:self-auto"
                 >
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
-                    </svg>
-                    + {t("seller.demo_order")}
+                    <Plus className="w-4 h-4" strokeWidth={2.5} />
+                    {t("seller.demo_order")}
                 </button>
             </div>
 
@@ -262,9 +387,7 @@ const OrdersList = () => {
             <div className="space-y-4">
                 {filteredActiveOrders.length === 0 ? (
                     <div className="text-center py-12 text-text-tertiary font-medium max-w-4xl border border-dashed border-border rounded-lg flex flex-col items-center justify-center gap-3">
-                        <svg className="w-10 h-10 text-text-placeholder" fill="none" stroke="currentColor" strokeWidth="1.5" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                        </svg>
+                        <ShoppingBag className="w-10 h-10 text-text-placeholder" strokeWidth={1.5} />
                         <p>{t("orders.no_orders")}</p>
                     </div>
                 ) : (
